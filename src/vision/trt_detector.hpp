@@ -32,7 +32,7 @@ struct Detection {
   float class_id;
 };
 
-class Detector {
+class TrtDetector {
   template <typename T>
   using UniquePtr = std::unique_ptr<T, TRTDeleter>;
 
@@ -62,8 +62,8 @@ class Detector {
   bool InitMemory();
 
  public:
-  Detector(std::string onnx_file_path, float conf_thresh, float nms_thresh);
-  ~Detector();
+  TrtDetector(const std::string& onnx_file_path, float conf_thresh, float nms_thresh);
+  ~TrtDetector();
   bool TestInfer();
   std::vector<Detection> Infer(cv::Mat &);
 };

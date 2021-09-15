@@ -1,5 +1,5 @@
 
-#include "detector.hpp"
+#include "trt_detector.hpp"
 
 #include <NvOnnxParser.h>
 
@@ -89,7 +89,7 @@ void TRTLogger::log(Severity severity, const char *msg) {
 
 int TRTLogger::GetVerbosity() { return (int)Severity::kVERBOSE; }
 
-std::vector<Detection> Detector::PostProcess(std::vector<float> prob) {
+std::vector<Detection> TrtDetector::PostProcess(std::vector<float> prob) {
   std::vector<Detection> dets;
 
   for (auto it = prob.begin(); it != prob.end(); it += dim_out_.d[4]) {
@@ -115,15 +115,15 @@ std::vector<Detection> Detector::PostProcess(std::vector<float> prob) {
   return dets;
 }
 
-bool Detector::CreateEngine() {
-  SPDLOG_DEBUG("[Detector] CreateEngine.");
+bool TrtDetector::CreateEngine() {
+  SPDLOG_DEBUG("[TrtDetector] CreateEngine.");
 
   auto builder = UniquePtr<IBuilder>(createInferBuilder(logger_));
   if (!builder) {
-    SPDLOG_ERROR("[Detector] createInferBuilder Fail.");
+    SPDLOG_ERROR("[TrtDetector] createInferBuilder Fail.");
     return false;
   } else
-    SPDLOG_DEBUG("[Detector] createInferBuilder OK.");
+    SPDLOG_DEBUG("[TrtDetector] createInferBuilder OK.");
 
   builder->setMaxBatchSize(1);
 
@@ -134,35 +134,35 @@ bool Detector::CreateEngine() {
   auto network =
       UniquePtr<INetworkDefinition>(builder->createNetworkV2(explicit_batch));
   if (!network) {
-    SPDLOG_ERROR("[Detector] createNetworkV2 Fail.");
+    SPDLOG_ERROR("[TrtDetector] createNetworkV2 Fail.");
     return false;
   } else
-    SPDLOG_DEBUG("[Detector] createNetworkV2 OK.");
+    SPDLOG_DEBUG("[TrtDetector] createNetworkV2 OK.");
 
   auto config = UniquePtr<IBuilderConfig>(builder->createBuilderConfig());
   if (!config) {
-    SPDLOG_ERROR("[Detector] createBuilderConfig Fail.");
+    SPDLOG_ERROR("[TrtDetector] createBuilderConfig Fail.");
     return false;
   } else
-    SPDLOG_DEBUG("[Detector] createBuilderConfig OK.");
+    SPDLOG_DEBUG("[TrtDetector] createBuilderConfig OK.");
 
   config->setMaxWorkspaceSize(1 << 30);
 
   auto parser = UniquePtr<nvonnxparser::IParser>(
       nvonnxparser::createParser(*network, logger_));
   if (!parser) {
-    SPDLOG_ERROR("[Detector] createParser Fail.");
+    SPDLOG_ERROR("[TrtDetector] createParser Fail.");
     return false;
   } else
-    SPDLOG_DEBUG("[Detector] createParser OK.");
+    SPDLOG_DEBUG("[TrtDetector] createParser OK.");
 
   auto parsed = parser->parseFromFile(onnx_file_path_.c_str(),
                                       static_cast<int>(logger_.GetVerbosity()));
   if (!parsed) {
-    SPDLOG_ERROR("[Detector] parseFromFile Fail.");
+    SPDLOG_ERROR("[TrtDetector] parseFromFile Fail.");
     return false;
   } else
-    SPDLOG_DEBUG("[Detector] parseFromFile OK.");
+    SPDLOG_DEBUG("[TrtDetector] parseFromFile OK.");
 
   auto profile = builder->createOptimizationProfile();
   profile->setDimensions(network->getInput(0)->getName(),
@@ -177,30 +177,30 @@ bool Detector::CreateEngine() {
   // if (builder->platformHasFastInt8()) config->setFlag(BuilderFlag::kINT8);
 
   if (builder->getNbDLACores() == 0)
-    SPDLOG_WARN("[Detector] The platform doesn't have any DLA cores.");
+    SPDLOG_WARN("[TrtDetector] The platform doesn't have any DLA cores.");
   else {
-    SPDLOG_INFO("[Detector] Using DLA core 0.");
+    SPDLOG_INFO("[TrtDetector] Using DLA core 0.");
     config->setDefaultDeviceType(DeviceType::kDLA);
     config->setDLACore(0);
     config->setFlag(BuilderFlag::kSTRICT_TYPES);
     config->setFlag(BuilderFlag::kGPU_FALLBACK);
   }
 
-  SPDLOG_INFO("[Detector] CreateEngine, please wait for a while...");
+  SPDLOG_INFO("[TrtDetector] CreateEngine, please wait for a while...");
 
   engine_ =
       UniquePtr<ICudaEngine>(builder->buildEngineWithConfig(*network, *config));
 
   if (!engine_) {
-    SPDLOG_ERROR("[Detector] CreateEngine Fail.");
+    SPDLOG_ERROR("[TrtDetector] CreateEngine Fail.");
     return false;
   }
-  SPDLOG_INFO("[Detector] CreateEngine OK.");
+  SPDLOG_INFO("[TrtDetector] CreateEngine OK.");
   return true;
 }
 
-bool Detector::LoadEngine() {
-  SPDLOG_DEBUG("[Detector] LoadEngine.");
+bool TrtDetector::LoadEngine() {
+  SPDLOG_DEBUG("[TrtDetector] LoadEngine.");
 
   std::vector<char> engine_bin;
   std::ifstream engine_file(engine_path_, std::ios::binary);
@@ -212,7 +212,7 @@ bool Detector::LoadEngine() {
     engine_file.read(engine_bin.data(), engine_bin.size());
     engine_file.close();
   } else {
-    SPDLOG_ERROR("[Detector] LoadEngine Fail. Could not open file.");
+    SPDLOG_ERROR("[TrtDetector] LoadEngine Fail. Could not open file.");
     return false;
   }
 
@@ -222,45 +222,45 @@ bool Detector::LoadEngine() {
       runtime->deserializeCudaEngine(engine_bin.data(), engine_bin.size()));
 
   if (!engine_) {
-    SPDLOG_ERROR("[Detector] LoadEngine Fail.");
+    SPDLOG_ERROR("[TrtDetector] LoadEngine Fail.");
     return false;
   }
-  SPDLOG_DEBUG("[Detector] LoadEngine OK.");
+  SPDLOG_DEBUG("[TrtDetector] LoadEngine OK.");
   return true;
 }
 
-bool Detector::SaveEngine() {
-  SPDLOG_ERROR("[Detector] SaveEngine.");
+bool TrtDetector::SaveEngine() {
+  SPDLOG_ERROR("[TrtDetector] SaveEngine.");
 
   if (engine_) {
     auto engine_serialized = UniquePtr<IHostMemory>(engine_->serialize());
     std::ofstream engine_file(engine_path_, std::ios::binary);
     if (!engine_file) {
-      SPDLOG_ERROR("[Detector] SaveEngine Fail. Could not open file.");
+      SPDLOG_ERROR("[TrtDetector] SaveEngine Fail. Could not open file.");
       return false;
     }
     engine_file.write(reinterpret_cast<const char *>(engine_serialized->data()),
                       engine_serialized->size());
 
-    SPDLOG_DEBUG("[Detector] SaveEngine OK.");
+    SPDLOG_DEBUG("[TrtDetector] SaveEngine OK.");
     return true;
   }
-  SPDLOG_ERROR("[Detector] SaveEngine Fail. No engine_.");
+  SPDLOG_ERROR("[TrtDetector] SaveEngine Fail. No engine_.");
   return false;
 }
 
-bool Detector::CreateContex() {
-  SPDLOG_DEBUG("[Detector] CreateContex.");
+bool TrtDetector::CreateContex() {
+  SPDLOG_DEBUG("[TrtDetector] CreateContex.");
   context_ = UniquePtr<IExecutionContext>(engine_->createExecutionContext());
   if (!context_) {
-    SPDLOG_ERROR("[Detector] CreateContex Fail.");
+    SPDLOG_ERROR("[TrtDetector] CreateContex Fail.");
     return false;
   }
-  SPDLOG_DEBUG("[Detector] CreateContex OK.");
+  SPDLOG_DEBUG("[TrtDetector] CreateContex OK.");
   return true;
 }
 
-bool Detector::InitMemory() {
+bool TrtDetector::InitMemory() {
   idx_in_ = engine_->getBindingIndex("images");
   idx_out_ = engine_->getBindingIndex("output");
   dim_in_ = engine_->getBindingDimensions(idx_in_);
@@ -279,7 +279,7 @@ bool Detector::InitMemory() {
         break;
 
       default:
-        SPDLOG_ERROR("[Detector] Do not support input type: {}", type);
+        SPDLOG_ERROR("[TrtDetector] Do not support input type: {}", type);
         break;
     }
 
@@ -288,12 +288,12 @@ bool Detector::InitMemory() {
     bindings_.push_back(device_memory);
     bingings_size_.push_back(volume);
 
-    SPDLOG_DEBUG("[Detector] Binding {} : {}", i, engine_->getBindingName(i));
+    SPDLOG_DEBUG("[TrtDetector] Binding {} : {}", i, engine_->getBindingName(i));
   }
   return true;
 }
 
-Detector::Detector(const std::string& onnx_file_path, float conf_thresh = 0.5,
+TrtDetector::TrtDetector(const std::string& onnx_file_path, float conf_thresh = 0.5,
                    float nms_thresh = 0.5)
     : onnx_file_path_(onnx_file_path),
       conf_thresh_(conf_thresh),
@@ -306,19 +306,19 @@ Detector::Detector(const std::string& onnx_file_path, float conf_thresh = 0.5,
   }
   CreateContex();
   InitMemory();
-  SPDLOG_DEBUG("[Detector] Constructed.");
+  SPDLOG_DEBUG("[TrtDetector] Constructed.");
 }
 
-Detector::~Detector() {
-  SPDLOG_DEBUG("[Detector] Destructing.");
+TrtDetector::~TrtDetector() {
+  SPDLOG_DEBUG("[TrtDetector] Destructing.");
 
   for (auto it = bindings_.begin(); it != bindings_.end(); ++it) cudaFree(*it);
 
-  SPDLOG_DEBUG("[Detector] Destructed.");
+  SPDLOG_DEBUG("[TrtDetector] Destructed.");
 }
 
-bool Detector::TestInfer() {
-  SPDLOG_DEBUG("[Detector] TestInfer.");
+bool TrtDetector::TestInfer() {
+  SPDLOG_DEBUG("[TrtDetector] TestInfer.");
   cv::Mat image = cv::imread("./image/test.jpg");
   cv::resize(image, image, cv::Size(608, 608));
   cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
@@ -348,12 +348,12 @@ bool Detector::TestInfer() {
 
   cv::imwrite("./image/test_tensorrt.jpg", image);
 
-  SPDLOG_DEBUG("[Detector] TestInfer done.");
+  SPDLOG_DEBUG("[TrtDetector] TestInfer done.");
   return true;
 }
 
-std::vector<Detection> Detector::Infer(cv::Mat &raw) {
-  SPDLOG_DEBUG("[Detector] Infer.");
+std::vector<Detection> TrtDetector::Infer(cv::Mat &raw) {
+  SPDLOG_DEBUG("[TrtDetector] Infer.");
 
   std::vector<float> output(bingings_size_.at(idx_out_) / sizeof(float));
   auto image = Preprocess(raw);
@@ -367,6 +367,6 @@ std::vector<Detection> Detector::Infer(cv::Mat &raw) {
   auto dets = PostProcess(output);
   NonMaxSuppression(dets, nms_thresh_);
 
-  SPDLOG_DEBUG("[Detector] Infered.");
+  SPDLOG_DEBUG("[TrtDetector] Infered.");
   return dets;
 }

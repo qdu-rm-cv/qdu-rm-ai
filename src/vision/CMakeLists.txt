@@ -20,3 +20,19 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 add_dependencies(${PROJECT_NAME}
     component
 )
+
+if (CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
+    target_include_directories(${PROJECT_NAME} PUBLIC /usr/local/cuda/targets/aarch64-linux/include)
+    target_link_directories(${PROJECT_NAME} PUBLIC /usr/local/cuda/targets/aarch64-linux/lib)
+else()
+    target_include_directories(${PROJECT_NAME} PUBLIC /usr/local/cuda/include)
+    target_link_directories(${PROJECT_NAME} PUBLIC /usr/local/cuda/lib64)
+endif()
+
+if(BUILD_NN)
+    target_link_libraries(${PROJECT_NAME} PUBLIC
+        nvinfer
+        nvonnxparser
+        cudart
+    )
+endif()
