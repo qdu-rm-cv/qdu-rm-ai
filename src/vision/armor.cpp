@@ -46,10 +46,12 @@ const cv::Point3f kHIT_TARGET(0., 0., kHIT_DEPTH);
 
 cv::RotatedRect Armor::FormRect(const LightBar &left_bar,
                                 const LightBar &right_bar) {
-  const cv::Point2f center = (left_bar.Center() + right_bar.Center()) / 2.;
-  const cv::Size size(cv::norm(left_bar.Center() - right_bar.Center()),
-                      (left_bar.Length() + right_bar.Length()));
-  const float angle = (left_bar.Angle() + right_bar.Angle()) / 2.f;
+  const cv::Point2f center =
+      (left_bar.ImageCenter() + right_bar.ImageCenter()) / 2.;
+  const cv::Size size(
+      cv::norm(left_bar.ImageCenter() - right_bar.ImageCenter()),
+      (left_bar.Length() + right_bar.Length()));
+  const float angle = (left_bar.ImageAngle() + right_bar.ImageAngle()) / 2.f;
   return cv::RotatedRect(center, size, angle);
 }
 

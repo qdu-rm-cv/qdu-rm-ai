@@ -132,7 +132,7 @@ void ArmorDetector::FindLightBars(const cv::Mat &frame) {
     LightBar potential_bar(cv::minAreaRect(contour));
 
     /* 灯条倾斜角度不能太大 */
-    if (std::abs(potential_bar.Angle()) > params_.angle_high_th) continue;
+    if (std::abs(potential_bar.ImageAngle()) > params_.angle_high_th) continue;
 
     /* 灯条在画面中的大小要满足条件 */
     const double bar_area = potential_bar.Area() / frame_area;
@@ -140,7 +140,7 @@ void ArmorDetector::FindLightBars(const cv::Mat &frame) {
     if (bar_area > params_.bar_area_high_th) continue;
 
     /* 灯条的长宽比要满足条件 */
-    const double aspect_ratio = potential_bar.AspectRatio();
+    const double aspect_ratio = potential_bar.ImageRatio();
     if (aspect_ratio < params_.aspect_ratio_low_th) continue;
     if (aspect_ratio > params_.aspect_ratio_high_th) continue;
 
@@ -150,7 +150,7 @@ void ArmorDetector::FindLightBars(const cv::Mat &frame) {
   /* 从左到右排列找到的灯条 */
   std::sort(lightbars_.begin(), lightbars_.end(),
             [](LightBar &bar1, LightBar &bar2) {
-              return bar1.Center().x < bar2.Center().x;
+              return bar1.ImageCenter().x < bar2.ImageCenter().x;
             });
 
   /* 记录运行时间 */
@@ -167,10 +167,10 @@ void ArmorDetector::MatchLightBars() {
     for (auto itj = iti + 1; itj != lightbars_.end(); ++itj) {
       /* 两灯条角度差异 */
       const double angle_diff =
-          algo::RelativeDifference(iti->Angle(), itj->Angle());
+          algo::RelativeDifference(iti->ImageAngle(), itj->ImageAngle());
 
       /* 灯条是否朝同一侧倾斜 */
-      const bool same_side = (iti->Angle() * itj->Angle()) > 0;
+      const bool same_side = (iti->ImageAngle() * itj->ImageAngle()) > 0;
 
       if (same_side) {
         if (angle_diff > params_.angle_diff_th) continue;
@@ -186,7 +186,7 @@ void ArmorDetector::MatchLightBars() {
 
       /* 灯条高度差异 */
       const double height_diff =
-          algo::RelativeDifference(iti->Center().y, itj->Center().y);
+          algo::RelativeDifference(iti->ImageCenter().y, itj->ImageCenter().y);
       if (height_diff > (params_.height_diff_th * frame_size_.height)) continue;
 
       /* 灯条面积差异 */
@@ -195,7 +195,8 @@ void ArmorDetector::MatchLightBars() {
       if (area_diff > params_.area_diff_th) continue;
 
       /* 灯条中心距离 */
-      const double center_dist = cv::norm(iti->Center() - itj->Center());
+      const double center_dist =
+          cv::norm(iti->ImageCenter() - itj->ImageCenter());
       const double l = (iti->Length() + itj->Length()) / 2.;
       if (center_dist < l * params_.center_dist_low_th) continue;
       if (center_dist > l * params_.center_dist_high_th) continue;
@@ -213,17 +214,18 @@ void ArmorDetector::MatchLightBars() {
 void ArmorDetector::VisualizeLightBar(const cv::Mat &output, bool add_lable) {
   if (!lightbars_.empty()) {
     for (auto &bar : lightbars_) {
-      auto vertices = bar.Vertices();
+      auto vertices = bar.ImageVertices();
       auto num_vertices = vertices.size();
       for (std::size_t i = 0; i < num_vertices; ++i)
         cv::line(output, vertices[i], vertices[(i + 1) % num_vertices], kGREEN);
 
-      cv::drawMarker(output, bar.Center(), kGREEN, cv::MARKER_CROSS);
+      cv::drawMarker(output, bar.ImageCenter(), kGREEN, cv::MARKER_CROSS);
 
       if (add_lable) {
-        cv::putText(output,
-                    cv::format("%.2f, %.2f", bar.Center().x, bar.Center().y),
-                    vertices[1], kCV_FONT, 1.0, kGREEN);
+        cv::putText(
+            output,
+            cv::format("%.2f, %.2f", bar.ImageCenter().x, bar.ImageCenter().y),
+            vertices[1], kCV_FONT, 1.0, kGREEN);
       }
     }
   }
