@@ -23,10 +23,6 @@ class Armor : public ImageObject, public PhysicObject {
   Armor(const cv::RotatedRect &rect);
   ~Armor();
 
-  double AspectRatio() const;
-
-  std::vector<cv::Point2f> ImageVertices() const;
-
   const cv::RotatedRect &GetRect() const;
   void SetRect(const cv::RotatedRect &rect);
 

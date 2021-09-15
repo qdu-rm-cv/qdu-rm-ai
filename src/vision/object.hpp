@@ -10,14 +10,17 @@ class ImageObject {
   std::vector<cv::Point2f> image_vertices_;
   cv::Point2f image_center_;
   cv::Size face_size_;
-  cv::Mat trans_, face_;
+  cv::Mat trans_;
   float image_angle_;
+  double image_ratio_;
 
   const cv::Point2f &ImageCenter() const { return image_center_; }
 
-  virtual std::vector<cv::Point2f> ImageVertices() const = 0;
+  std::vector<cv::Point2f> ImageVertices() const { return image_vertices_; }
 
   double ImageAngle() const { return image_angle_; }
+
+  double ImageRatio() const { return image_ratio_; }
 
   cv::Mat ImageFace(const cv::Mat &frame) const {
     cv::Mat face;

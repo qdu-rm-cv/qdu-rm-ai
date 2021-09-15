@@ -63,7 +63,7 @@ void Armor::Init() {
   rect_.points(image_vertices_.data());
 
   double len;
-  if (AspectRatio() > 1.2) {
+  if (ImageRatio() > 1.2) {
     trans_ = cv::getPerspectiveTransform(ImageVertices(), kDST_POV_BIG);
     len = kARMOR_LENGTH_BIG;
   } else {
@@ -88,16 +88,6 @@ Armor::Armor(const cv::RotatedRect &rect) {
 }
 
 Armor::~Armor() { SPDLOG_TRACE("Destructed."); }
-
-double Armor::AspectRatio() const {
-  double aspect_ratio = std::max(rect_.size.height, rect_.size.width) /
-                        std::min(rect_.size.height, rect_.size.width);
-  return aspect_ratio;
-}
-
-std::vector<cv::Point2f> Armor::ImageVertices() const {
-  return image_vertices_;
-}
 
 game::Model Armor::GetModel() const { return model_; }
 void Armor::SetModel(game::Model model) {
