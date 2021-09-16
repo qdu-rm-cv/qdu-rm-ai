@@ -5,17 +5,11 @@
 
 Buff::Buff() : center_(cv::Point2f(0, 0)) { SPDLOG_TRACE("Constructed."); }
 
-Buff::Buff(game::Team team) : center_(cv::Point2f(0, 0)) {
-  SetTeam(team);
-  SPDLOG_TRACE("Constructed.");
-}
-
 Buff::Buff(const cv::Point2f& center, const std::vector<Armor>& armors,
-           const Armor& target, game::Team team) {
+           const Armor& target) {
   SetCenter(center);
   SetArmors(armors);
   SetTarget(target);
-  SetTeam(team);
   SPDLOG_TRACE("Constructed.");
 }
 
@@ -38,10 +32,3 @@ void Buff::SetCenter(const cv::Point2f& center) { center_ = center; }
 const Armor& Buff::GetTarget() const { return target_; }
 
 void Buff::SetTarget(const Armor& target) { target_ = target; }
-
-const game::Team& Buff::GetTeam() const {
-  SPDLOG_DEBUG("team_: {}", team_);
-  return team_;
-}
-
-void Buff::SetTeam(const game::Team& team) { team_ = team; }

@@ -10,13 +10,12 @@ class Buff {
   cv::Point2f center_;
   std::vector<Armor> armors_;
   Armor target_;
-  game::Team team_;
 
  public:
   Buff();
   Buff(game::Team team);
   Buff(const cv::Point2f &center, const std::vector<Armor> &armors,
-       const Armor &target, game::Team team = game::Team::kUNKNOWN);
+       const Armor &target);
   ~Buff();
 
   const std::vector<Armor> &GetArmors() const;
@@ -27,7 +26,4 @@ class Buff {
 
   const Armor &GetTarget() const;
   void SetTarget(const Armor &target);
-
-  const game::Team &GetTeam() const;
-  void SetTeam(const game::Team &team);
 };

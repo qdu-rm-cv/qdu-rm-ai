@@ -71,15 +71,15 @@ void BuffDetector::FindRects(const cv::Mat &frame) {
   cv::split(frame, channels);
 
 #if 1
-  if (buff_.GetTeam() == game::Team::kBLUE) {
+  if (team_ == game::Team::kBLUE) {
     img = channels[0] - channels[2];
-  } else if (buff_.GetTeam() == game::Team::kRED) {
+  } else if (team_ == game::Team::kRED) {
     img = channels[2] - channels[0];
   }
 #else
-  if (buff_.GetTeam() == game::Team::kBLUE) {
+  if (team_ == game::Team::kBLUE) {
     result = channels[0] - channels[2];
-  } else if (buff_.GetTeam() == game::Team::kRED) {
+  } else if (team_ == game::Team::kRED) {
     result = channels[2] - channels[0];
   }
 #endif
@@ -218,13 +218,15 @@ void BuffDetector::VisualizeArmors(const cv::Mat &output, bool add_lable) {
 BuffDetector::BuffDetector() { SPDLOG_TRACE("Constructed."); }
 
 BuffDetector::BuffDetector(const std::string &params_path,
-                           game::Team buff_team) {
+                           game::Team enemy_team) {
   LoadParams(params_path);
-  buff_.SetTeam(buff_team);
+  team_ = enemy_team;
   SPDLOG_TRACE("Constructed.");
 }
 
 BuffDetector::~BuffDetector() { SPDLOG_TRACE("Destructed."); }
+
+void BuffDetector::SetEnemyTeam(const game::Team &team) { team_ = team; }
 
 const std::vector<Buff> &BuffDetector::Detect(const cv::Mat &frame) {
   SPDLOG_DEBUG("Detecting");
