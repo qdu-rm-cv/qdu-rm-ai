@@ -88,7 +88,7 @@ void Robot::Init(const std::string &dev_path) {
   thread_trans_ = std::thread(&Robot::ThreadTrans, this);
 }
 
-game::Team Robot::GetTeam() {
+game::Team Robot::GetEnemyTeam() {
   if (ref_.team == AI_TEAM_RED)
     return game::Team::kBLUE;
   else if (ref_.team == AI_TEAM_BLUE)

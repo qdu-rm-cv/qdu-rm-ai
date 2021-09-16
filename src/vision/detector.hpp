@@ -21,7 +21,7 @@ class Detector {
     if (!PrepareParams(path)) {
       InitDefaultParams(path);
       PrepareParams(path);
-      SPDLOG_WARN("Can not find parasm file. Created and reloaded.");
+      SPDLOG_WARN("Can not find params file. Created and reloaded.");
     }
     SPDLOG_DEBUG("Params loaded.");
   }

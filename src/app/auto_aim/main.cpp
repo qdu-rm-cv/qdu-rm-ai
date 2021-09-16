@@ -24,7 +24,7 @@ class AutoAim : private App {
 
     do {
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    } while (robot.GetTeam() != game::Team::kUNKNOWN);
+    } while (robot.GetEnemyTeam() != game::Team::kUNKNOWN);
   }
 
   ~AutoAim() {
