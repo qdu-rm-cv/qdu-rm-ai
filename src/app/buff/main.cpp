@@ -8,28 +8,30 @@
 
 class BuffAim : private App {
  private:
-  Robot robot;
-  HikCamera cam;
-  BuffDetector detector;
-  Predictor predictor;
-  Compensator compensator;
+  Robot robot_;
+  HikCamera cam_;
+  BuffDetector detector_;
+  Predictor predictor_;
+  Compensator compensator_;
 
  public:
   BuffAim(const std::string& log_path) : App(log_path) {
     SPDLOG_WARN("***** Setting Up Buff Aiming system. *****");
 
     /* 初始化设备 */
-    robot.Init("/dev/ttyTHS2");
-    cam.Open(1);
-    cam.Setup(640, 480);
-    detector.LoadParams("RUMT2021_Buff.json");
-    compensator.LoadCameraMat("MV-CA016-10UC-6mm.json");
+    robot_.Init("/dev/ttyTHS2");
+    cam_.Open(1);
+    cam_.Setup(640, 480);
+    detector_.LoadParams("RUMT2021_Buff.json");
+    compensator_.LoadCameraMat("MV-CA016-10UC-6mm.json");
 
     do {
-      predictor.SetTime(robot.GetTime());
+      predictor_.SetTime(robot_.GetTime());
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    } while ((robot.GetEnemyTeam() != game::Team::kUNKNOWN) &&
-             (predictor.GetTime() != 0));
+    } while ((robot_.GetEnemyTeam() != game::Team::kUNKNOWN) &&
+             (predictor_.GetTime() != 0));
+
+    detector_.SetEnemyTeam(robot_.GetEnemyTeam());
   }
 
   ~BuffAim() {
@@ -40,16 +42,16 @@ class BuffAim : private App {
 
   void Run() {
     while (1) {
-      cv::Mat frame = cam.GetFrame();
+      cv::Mat frame = cam_.GetFrame();
       if (frame.empty()) {
         SPDLOG_ERROR("cam.GetFrame is null");
         continue;
       }
-      predictor.SetBuff(detector.Detect(frame).back());
-      predictor.Predict();
+      predictor_.SetBuff(detector_.Detect(frame).back());
+      predictor_.Predict();
 
-      detector.VisualizeResult(frame, 5);
-      predictor.VisualizePrediction(frame, true);
+      detector_.VisualizeResult(frame, 5);
+      predictor_.VisualizePrediction(frame, true);
       cv::imshow("win", frame);
       if (' ' == cv::waitKey(10)) {
         cv::waitKey(0);

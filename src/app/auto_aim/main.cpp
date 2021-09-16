@@ -6,25 +6,27 @@
 
 class AutoAim : private App {
  private:
-  Robot robot;
-  HikCamera cam;
-  ArmorDetector detector;
-  Compensator compensator;
+  Robot robot_;
+  HikCamera cam_;
+  ArmorDetector detector_;
+  Compensator compensator_;
 
  public:
   AutoAim(const std::string& log_path) : App(log_path) {
     SPDLOG_WARN("***** Setting Up Auto Aiming system. *****");
 
     /* 初始化设备 */
-    robot.Init("/dev/ttyTHS2");
-    cam.Open(0);
-    cam.Setup(640, 480);
-    detector.LoadParams("RMUL2021_Armor.json");
-    compensator.LoadCameraMat("MV-CA016-10UC-6mm.json");
+    robot_.Init("/dev/ttyTHS2");
+    cam_.Open(0);
+    cam_.Setup(640, 480);
+    detector_.LoadParams("RMUL2021_Armor.json");
+    compensator_.LoadCameraMat("MV-CA016-10UC-6mm.json");
 
     do {
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    } while (robot.GetEnemyTeam() != game::Team::kUNKNOWN);
+    } while (robot_.GetEnemyTeam() != game::Team::kUNKNOWN);
+
+    detector_.SetEnemyTeam(robot_.GetEnemyTeam());
   }
 
   ~AutoAim() {
@@ -38,13 +40,13 @@ class AutoAim : private App {
     SPDLOG_WARN("***** Running Auto Aiming system. *****");
 
     while (1) {
-      cv::Mat frame = cam.GetFrame();
+      cv::Mat frame = cam_.GetFrame();
       if (frame.empty()) continue;
-      auto armors = detector.Detect(frame);
+      auto armors = detector_.Detect(frame);
       // target = predictor.Predict(armors, frame);
-      // compensator.Apply(target, frame, robot.GetRotMat());
-      // robot.Aim(target.GetAimEuler(), false);
-      detector.VisualizeResult(frame, 10);
+      // compensator_.Apply(target, frame, robot_.GetRotMat());
+      // robot_.Aim(target.GetAimEuler(), false);
+      detector_.VisualizeResult(frame, 10);
       cv::imshow("show", frame);
       if (' ' == cv::waitKey(10)) {
         cv::waitKey(0);
