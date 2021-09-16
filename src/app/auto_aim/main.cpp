@@ -13,14 +13,14 @@ class AutoAim : private App {
 
  public:
   AutoAim(const std::string& log_path) : App(log_path) {
-    SPDLOG_WARN("***** Setting Up Auto Aiming system. *****");
+    SPDLOG_WARN("***** Setting Up Auto Aiming System. *****");
 
     /* 初始化设备 */
     robot_.Init("/dev/ttyTHS2");
     cam_.Open(0);
     cam_.Setup(640, 480);
-    detector_.LoadParams("RMUL2021_Armor.json");
-    compensator_.LoadCameraMat("MV-CA016-10UC-6mm.json");
+    detector_.LoadParams("../../../../runtime/RMUL2021_Armor.json");
+    compensator_.LoadCameraMat("../../../../runtime/MV-CA016-10UC-6mm.json");
 
     do {
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -32,12 +32,12 @@ class AutoAim : private App {
   ~AutoAim() {
     /* 关闭设备 */
 
-    SPDLOG_WARN("***** Shuted Down Auto Aiming system. *****");
+    SPDLOG_WARN("***** Shuted Down Auto Aiming System. *****");
   }
 
   /* 运行的主程序 */
   void Run() {
-    SPDLOG_WARN("***** Running Auto Aiming system. *****");
+    SPDLOG_WARN("***** Running Auto Aiming System. *****");
 
     while (1) {
       cv::Mat frame = cam_.GetFrame();

@@ -16,14 +16,14 @@ class BuffAim : private App {
 
  public:
   BuffAim(const std::string& log_path) : App(log_path) {
-    SPDLOG_WARN("***** Setting Up Buff Aiming system. *****");
+    SPDLOG_WARN("***** Setting Up Buff Aiming System. *****");
 
     /* 初始化设备 */
     robot_.Init("/dev/ttyTHS2");
     cam_.Open(1);
     cam_.Setup(640, 480);
-    detector_.LoadParams("RUMT2021_Buff.json");
-    compensator_.LoadCameraMat("MV-CA016-10UC-6mm.json");
+    detector_.LoadParams("../../../../runtime/RMUT2021_Buff.json");
+    compensator_.LoadCameraMat("../../../../runtime/MV-CA016-10UC-6mm.json");
 
     do {
       predictor_.SetTime(robot_.GetTime());
@@ -37,10 +37,12 @@ class BuffAim : private App {
   ~BuffAim() {
     /* 关闭设备 */
 
-    SPDLOG_WARN("***** Shuted Down Buff Aiming system. *****");
+    SPDLOG_WARN("***** Shuted Down Buff Aiming System. *****");
   }
 
   void Run() {
+    SPDLOG_WARN("***** Running Buff Aiming System. *****");
+
     while (1) {
       cv::Mat frame = cam_.GetFrame();
       if (frame.empty()) {
