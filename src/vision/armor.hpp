@@ -9,7 +9,6 @@
 
 class Armor : public ImageObject, public PhysicObject {
  private:
-  game::Team team_ = game::Team::kUNKNOWN;
   game::Model model_ = game::Model::kUNKNOWN;
   component::Euler aiming_euler_;
   cv::RotatedRect rect_;

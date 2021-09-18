@@ -220,13 +220,20 @@ BuffDetector::BuffDetector() { SPDLOG_TRACE("Constructed."); }
 BuffDetector::BuffDetector(const std::string &params_path,
                            game::Team enemy_team) {
   LoadParams(params_path);
-  team_ = enemy_team;
+  SetTeam(enemy_team);
   SPDLOG_TRACE("Constructed.");
 }
 
 BuffDetector::~BuffDetector() { SPDLOG_TRACE("Destructed."); }
 
-void BuffDetector::SetEnemyTeam(const game::Team &team) { team_ = team; }
+void BuffDetector::SetTeam(const game::Team &team) {
+  if (team == game::Team::kRED)
+    team_ = game::Team::kBLUE;
+  else if (team == game::Team::kBLUE)
+    team_ = game::Team::kRED;
+  else
+    team_ = game::Team::kUNKNOWN;
+}
 
 const std::vector<Buff> &BuffDetector::Detect(const cv::Mat &frame) {
   SPDLOG_DEBUG("Detecting");

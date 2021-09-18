@@ -30,7 +30,7 @@ class BuffDetector : public Detector<Buff, BuffDetectorParam> {
   std::vector<std::vector<cv::Point>> contours_, contours_poly_;
   std::vector<cv::RotatedRect> rects_;
   cv::RotatedRect hammer_;
-  game::Team team_;
+  game::Team team_ = game::Team::kUNKNOWN;
 
   std::chrono::milliseconds duration_armors_, duration_center_, duration_rects_;
 
@@ -47,7 +47,7 @@ class BuffDetector : public Detector<Buff, BuffDetectorParam> {
   BuffDetector(const std::string &param_path, game::Team enemy_team);
   ~BuffDetector();
 
-  void SetEnemyTeam(const game::Team &team);
+  void SetTeam(const game::Team &team);
 
   const std::vector<Buff> &Detect(const cv::Mat &frame);
   void VisualizeResult(const cv::Mat &frame, int verbose);

@@ -31,7 +31,7 @@ class BuffAim : private App {
     } while ((robot_.GetEnemyTeam() != game::Team::kUNKNOWN) &&
              (predictor_.GetTime() != 0));
 
-    detector_.SetEnemyTeam(robot_.GetEnemyTeam());
+    detector_.SetTeam(robot_.GetEnemyTeam());
   }
 
   ~BuffAim() {

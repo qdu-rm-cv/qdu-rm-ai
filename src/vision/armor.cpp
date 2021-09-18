@@ -103,8 +103,5 @@ void Armor::SetModel(game::Model model) {
 const cv::RotatedRect &Armor::GetRect() const { return rect_; }
 void Armor::SetRect(const cv::RotatedRect &rect) { rect_ = rect; }
 
-game::Team Armor::GetTeam() const { return team_; }
-void Armor::SetTeam(game::Team team) { team_ = team; }
-
 component::Euler Armor::GetAimEuler() const { return aiming_euler_; }
 void Armor::SetAimEuler(const component::Euler &elur) { aiming_euler_ = elur; }
