@@ -19,16 +19,33 @@ const double kDELTA = 3;  //总延迟时间
 
 }  // namespace
 
+/**
+ * @brief 辅助函数：旋转角角度计算
+ *
+ * @param p 圆周
+ * @param ctr 圆心
+ * @return double 旋转角(-pi~pi)
+ */
 static double Angle(const cv::Point2f &p, const cv::Point2f &ctr) {
   auto rel = p - ctr;
   return std::atan2(rel.x, rel.y);
 }
 
+/**
+ * @brief 积分运算预测旋转角
+ *
+ * @param t 当前时刻
+ * @return double 旋转角
+ */
 static double DeltaTheta(double t) {
   return 1.305 * kDELTA +
          0.785 / 1.884 * (cos(1.884 * t) - cos(1.884 * (t + kDELTA)));
 }
 
+/**
+ * @brief 匹配旋转方向
+ *
+ */
 void Predictor::MatchDirection() {
   const auto start = std::chrono::system_clock::now();
   SPDLOG_WARN("start MatchDirection");
@@ -62,7 +79,7 @@ void Predictor::MatchDirection() {
                    buff_.GetTarget().ImageCenter().y);
     }
 
-    SPDLOG_WARN("Buff's Direction is {}",
+    SPDLOG_WARN("Buff's Direction is {}", /* TODO */
                 component::DirectionToString(GetDirection()));
     const auto stop = std::chrono::system_clock::now();
     duration_direction_ =
@@ -70,6 +87,14 @@ void Predictor::MatchDirection() {
   }
 }
 
+/**
+ * @brief 根据原装甲板和角度模拟旋转装甲板
+ *
+ * @param armor 原始装甲板
+ * @param theta 旋转角度
+ * @param center 旋转中心
+ * @return Armor 旋转后装甲板
+ */
 Armor Predictor::RotateArmor(const Armor &armor, double theta,
                              const cv::Point2f &center) {
   cv::Point2f predict_point[4];
@@ -86,6 +111,10 @@ Armor Predictor::RotateArmor(const Armor &armor, double theta,
       cv::RotatedRect(predict_point[0], predict_point[1], predict_point[2]));
 }
 
+/**
+ * @brief 匹配预测器
+ *
+ */
 void Predictor::MatchPredict() {
   const auto start = std::chrono::system_clock::now();
   SetPredict(Armor());
@@ -107,7 +136,7 @@ void Predictor::MatchPredict() {
   Armor predict;
 
   double angle = Angle(target_center, center);
-  double theta = DeltaTheta(GetTime());  // GetTime()
+  double theta = DeltaTheta(GetTime());
   SPDLOG_WARN("Delta theta : {}", theta);
   while (angle > 90) angle -= 90;
   if (direction == component::Direction::kCW) theta = -theta;
@@ -120,8 +149,17 @@ void Predictor::MatchPredict() {
   duration_predict_ = duration_cast<std::chrono::milliseconds>(stop - start);
 }
 
+/**
+ * @brief Construct a new Predictor object
+ *
+ */
 Predictor::Predictor() { SPDLOG_TRACE("Constructed."); }
 
+/**
+ * @brief Construct a new Predictor object
+ *
+ * @param buffs 传入的每帧得到的Buff
+ */
 Predictor::Predictor(const std::vector<Buff> &buffs) {
   if (circumference_.size() < 5)
     for (auto buff : buffs) {
@@ -134,38 +172,82 @@ Predictor::Predictor(const std::vector<Buff> &buffs) {
   SPDLOG_TRACE("Constructed.");
 }
 
+/**
+ * @brief Destroy the Predictor object
+ *
+ */
 Predictor::~Predictor() { SPDLOG_TRACE("Destructed."); }
 
+/**
+ * @brief Get the Buff object
+ *
+ * @return const Buff& 返回buff_
+ */
 const Buff &Predictor::GetBuff() const { return buff_; }
 
+/**
+ * @brief Set the Buff object
+ *
+ * @param buff 传入buff_
+ */
 void Predictor::SetBuff(const Buff &buff) {
   SPDLOG_DEBUG("Buff center is {}, {}", buff.GetCenter().x, buff.GetCenter().y);
   buff_ = buff;
 }
 
+/**
+ * @brief Get the Predict object
+ *
+ * @return const Armor& 返回预测装甲板
+ */
 const Armor &Predictor::GetPredict() const { return predict_; }
 
+/**
+ * @brief Set the Predict object
+ *
+ * @param predict 传入预测装甲板
+ */
 void Predictor::SetPredict(const Armor &predict) {
   SPDLOG_DEBUG("Predict center is {},{}", predict.ImageCenter().x,
                predict.ImageCenter().y);
   predict_ = predict;
 }
 
+/**
+ * @brief Get the Direction object
+ *
+ * @return component::Direction 返回旋转方向
+ */
 component::Direction Predictor::GetDirection() {
   SPDLOG_DEBUG("Direction : {}", component::DirectionToString(direction_));
   return direction_;
 }
 
+/**
+ * @brief Set the Direction object
+ *
+ * @param direction 传入旋转方向
+ */
 void Predictor::SetDirection(component::Direction direction) {
   direction_ = direction;
 }
 
+/**
+ * @brief Get the Time object
+ *
+ * @return double 得到当前时间
+ */
 double Predictor::GetTime() const {
   auto time = end_time_ - high_resolution_clock::now();
   SPDLOG_WARN("time_: {}ms", time.count() / 1000000.);
   return (double)time.count() / 1000000.;
 }
 
+/**
+ * @brief Set the Time object
+ *
+ * @param time 传入当前时间
+ */
 void Predictor::SetTime(double time) {
   double duration = 90 - time;
   SPDLOG_WARN("duration : {}", duration);
@@ -179,11 +261,20 @@ void Predictor::SetTime(double time) {
   SPDLOG_WARN("End Ctime : {}", std::ctime(&end_time));
 }
 
+/**
+ * @brief 重新计时
+ *
+ */
 void Predictor::ResetTime() {
   if (buff_.GetArmors().size() < num_) SetTime(0);
   SPDLOG_WARN("Reset time.");
 }
 
+/**
+ * @brief 预测主函数
+ *
+ * @return std::vector<Armor> 返回预测装甲板
+ */
 std::vector<Armor> Predictor::Predict() {
   SPDLOG_DEBUG("Predicting.");
   MatchDirection();
@@ -193,6 +284,12 @@ std::vector<Armor> Predictor::Predict() {
   return targets;
 }
 
+/**
+ * @brief 绘图函数
+ *
+ * @param output 所绘制图像
+ * @param add_lable 标签等级
+ */
 void Predictor::VisualizePrediction(const cv::Mat &output, bool add_lable) {
   SPDLOG_DEBUG("{}, {}", predict_.ImageCenter().x, predict_.ImageCenter().y);
   if (cv::Point2f(0, 0) != predict_.ImageCenter()) {
