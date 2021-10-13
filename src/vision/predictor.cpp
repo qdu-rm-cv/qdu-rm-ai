@@ -26,18 +26,18 @@ const double kDELTA = 3;  //总延迟时间
  * @param ctr 圆心
  * @return double 旋转角(-pi~pi)
  */
-static double Angle(const cv::Point2f &p, const cv::Point2f &ctr) {
+static double CalculateRotatedAngle(const cv::Point2f &p, const cv::Point2f &ctr) {
   auto rel = p - ctr;
   return std::atan2(rel.x, rel.y);
 }
 
 /**
- * @brief 积分运算预测旋转角
+ * @brief 辅助函数：积分运算预测旋转角
  *
  * @param t 当前时刻
  * @return double 旋转角
  */
-static double DeltaTheta(double t) {
+static double IntegralPredictedAngle(double t) {
   return 1.305 * kDELTA +
          0.785 / 1.884 * (cos(1.884 * t) - cos(1.884 * (t + kDELTA)));
 }
@@ -57,7 +57,7 @@ void Predictor::MatchDirection() {
 
     if (circumference_.size() == 5) {
       for (auto point : circumference_) {
-        angle = Angle(point, center);
+        angle = CalculateRotatedAngle(point, center);
         angles.emplace_back(angle);
       }
 
@@ -135,8 +135,8 @@ void Predictor::MatchPredict() {
   component::Direction direction = GetDirection();
   Armor predict;
 
-  double angle = Angle(target_center, center);
-  double theta = DeltaTheta(GetTime());
+  double angle = CalculateRotatedAngle(target_center, center);
+  double theta = IntegralPredictedAngle(GetTime());
   SPDLOG_WARN("Delta theta : {}", theta);
   while (angle > 90) angle -= 90;
   if (direction == component::Direction::kCW) theta = -theta;

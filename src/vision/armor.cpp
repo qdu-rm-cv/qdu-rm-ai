@@ -63,7 +63,7 @@ void Armor::Init() {
   rect_.points(image_vertices_.data());
 
   double len;
-  if (ImageRatio() > 1.2) {
+  if (ImageAspectRatio() > 1.2) {
     trans_ = cv::getPerspectiveTransform(ImageVertices(), kDST_POV_BIG);
     len = kARMOR_LENGTH_BIG;
   } else {

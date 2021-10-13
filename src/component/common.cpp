@@ -13,7 +13,7 @@ std::string DirectionToString(Direction direction) {
     case Direction::kCW:
       return std::string("Clockwise");
     case Direction::kCCW:
-      return std::string("Anticlockwise");
+      return std::string("Counterclockwise");
     default:
       return std::string("Unknown");
   }

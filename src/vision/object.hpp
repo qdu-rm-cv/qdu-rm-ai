@@ -20,7 +20,7 @@ class ImageObject {
 
   double ImageAngle() const { return image_angle_; }
 
-  double ImageRatio() const { return image_ratio_; }
+  double ImageAspectRatio() const { return image_ratio_; }
 
   cv::Mat ImageFace(const cv::Mat &frame) const {
     cv::Mat face;

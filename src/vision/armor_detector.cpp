@@ -140,7 +140,7 @@ void ArmorDetector::FindLightBars(const cv::Mat &frame) {
     if (bar_area > params_.bar_area_high_th) continue;
 
     /* 灯条的长宽比要满足条件 */
-    const double aspect_ratio = potential_bar.ImageRatio();
+    const double aspect_ratio = potential_bar.ImageAspectRatio();
     if (aspect_ratio < params_.aspect_ratio_low_th) continue;
     if (aspect_ratio > params_.aspect_ratio_high_th) continue;
 

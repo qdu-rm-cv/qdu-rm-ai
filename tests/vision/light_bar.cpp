@@ -17,7 +17,7 @@ TEST(TestVision, TestLightBar) {
   ASSERT_GE(light_bar.Length(), size.height);
   ASSERT_GE(light_bar.Length(), size.width);
   ASSERT_FLOAT_EQ(light_bar.Area(), size.area());
-  ASSERT_FLOAT_EQ(light_bar.ImageRatio(), (3. / 2.));
+  ASSERT_FLOAT_EQ(light_bar.ImageAspectRatio(), (3. / 2.));
 
   std::vector<cv::Point2f> p1 = light_bar.ImageVertices();
   cv::Point2f p2[4];
