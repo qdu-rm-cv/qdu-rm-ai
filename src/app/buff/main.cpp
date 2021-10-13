@@ -22,8 +22,8 @@ class BuffAim : private App {
     robot_.Init("/dev/ttyTHS2");
     cam_.Open(1);
     cam_.Setup(640, 480);
-    detector_.LoadParams("../../../../runtime/RMUT2021_Buff.json");
-    compensator_.LoadCameraMat("../../../../runtime/MV-CA016-10UC-6mm.json");
+    detector_.LoadParams("RMUT2021_Buff.json");
+    compensator_.LoadCameraMat("MV-CA016-10UC-6mm.json");
 
     do {
       predictor_.SetTime(robot_.GetTime());
