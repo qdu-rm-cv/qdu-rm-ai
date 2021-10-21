@@ -26,7 +26,7 @@ const double kDELTA = 3;  //总延迟时间
  * @param ctr 圆心
  * @return double 旋转角(-pi~pi)
  */
-static double CalculateRotatedAngle(const cv::Point2f &p, const cv::Point2f &ctr) {
+static double CalRotatedAngle(const cv::Point2f &p, const cv::Point2f &ctr) {
   auto rel = p - ctr;
   return std::atan2(rel.x, rel.y);
 }
@@ -57,7 +57,7 @@ void Predictor::MatchDirection() {
 
     if (circumference_.size() == 5) {
       for (auto point : circumference_) {
-        angle = CalculateRotatedAngle(point, center);
+        angle = CalRotatedAngle(point, center);
         angles.emplace_back(angle);
       }
 
@@ -112,7 +112,7 @@ Armor Predictor::RotateArmor(const Armor &armor, double theta,
 }
 
 /**
- * @brief 匹配预测器
+ * @brief 通过积分运算，原始装甲板数据，计算预测装甲板信息
  *
  */
 void Predictor::MatchPredict() {
@@ -135,7 +135,7 @@ void Predictor::MatchPredict() {
   component::Direction direction = GetDirection();
   Armor predict;
 
-  double angle = CalculateRotatedAngle(target_center, center);
+  double angle = CalRotatedAngle(target_center, center);
   double theta = IntegralPredictedAngle(GetTime());
   SPDLOG_WARN("Delta theta : {}", theta);
   while (angle > 90) angle -= 90;

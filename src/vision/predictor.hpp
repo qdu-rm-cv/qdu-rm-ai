@@ -25,7 +25,7 @@ class Predictor {
   void MatchDirection();
 
   /**
-   * @brief 匹配预测器
+   * @brief 通过积分运算，原始装甲板数据，计算预测装甲板信息
    *
    */
   void MatchPredict();

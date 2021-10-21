@@ -211,6 +211,7 @@ void ArmorDetector::MatchLightBars() {
   SPDLOG_DEBUG("Matched {} armors in {} ms.", targets_.size(),
                duration_armors_.count());
 }
+
 void ArmorDetector::VisualizeLightBar(const cv::Mat &output, bool add_lable) {
   if (!lightbars_.empty()) {
     for (auto &bar : lightbars_) {

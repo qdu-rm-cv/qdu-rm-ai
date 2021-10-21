@@ -8,14 +8,14 @@ file(GLOB ${PROJECT_NAME}_SOURCES
 add_executable(${PROJECT_NAME} ${${PROJECT_NAME}_SOURCES})
 
 target_link_libraries(${PROJECT_NAME} PRIVATE 
-    cuda
+    vision
     gtest
     gtest_main
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
-    $<TARGET_PROPERTY:cuda,INTERFACE_INCLUDE_DIRECTORIES>
+    $<TARGET_PROPERTY:vision,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
-add_test(test_cuda test_cuda)
+add_test(test_vision test_cuda)
