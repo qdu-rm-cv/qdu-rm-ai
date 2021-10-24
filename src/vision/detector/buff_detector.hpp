@@ -3,7 +3,6 @@
 #include <chrono>
 #include <vector>
 
-#include "armor_classifier.hpp"
 #include "armor_detector.hpp"
 #include "buff.hpp"
 #include "detector.hpp"

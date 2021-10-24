@@ -6,6 +6,9 @@ add_executable(${PROJECT_NAME} main.cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE
     device
     vision
+    object
+    detector
+    predictor
     spdlog::spdlog
 )
 
