@@ -1,4 +1,4 @@
-#include "predictor.hpp"
+#include "buff_predictor.hpp"
 
 #include <ctime>
 
@@ -46,7 +46,7 @@ static double IntegralPredictedAngle(double t) {
  * @brief 匹配旋转方向
  *
  */
-void Predictor::MatchDirection() {
+void BuffPredictor::MatchDirection() {
   const auto start = std::chrono::system_clock::now();
   SPDLOG_WARN("start MatchDirection");
 
@@ -95,7 +95,7 @@ void Predictor::MatchDirection() {
  * @param center 旋转中心
  * @return Armor 旋转后装甲板
  */
-Armor Predictor::RotateArmor(const Armor &armor, double theta,
+Armor BuffPredictor::RotateArmor(const Armor &armor, double theta,
                              const cv::Point2f &center) {
   cv::Point2f predict_point[4];
   cv::Matx22d rot(cos(theta), -sin(theta), sin(theta), cos(theta));
@@ -115,7 +115,7 @@ Armor Predictor::RotateArmor(const Armor &armor, double theta,
  * @brief 通过积分运算，原始装甲板数据，计算预测装甲板信息
  *
  */
-void Predictor::MatchPredict() {
+void BuffPredictor::MatchPredict() {
   const auto start = std::chrono::system_clock::now();
   SetPredict(Armor());
 
@@ -150,17 +150,17 @@ void Predictor::MatchPredict() {
 }
 
 /**
- * @brief Construct a new Predictor object
+ * @brief Construct a new BuffPredictor object
  *
  */
-Predictor::Predictor() { SPDLOG_TRACE("Constructed."); }
+BuffPredictor::BuffPredictor() { SPDLOG_TRACE("Constructed."); }
 
 /**
- * @brief Construct a new Predictor object
+ * @brief Construct a new BuffPredictor object
  *
  * @param buffs 传入的每帧得到的Buff
  */
-Predictor::Predictor(const std::vector<Buff> &buffs) {
+BuffPredictor::BuffPredictor(const std::vector<Buff> &buffs) {
   if (circumference_.size() < 5)
     for (auto buff : buffs) {
       circumference_.push_back(buff.GetTarget().ImageCenter());
@@ -173,24 +173,24 @@ Predictor::Predictor(const std::vector<Buff> &buffs) {
 }
 
 /**
- * @brief Destroy the Predictor object
+ * @brief Destroy the BuffPredictor object
  *
  */
-Predictor::~Predictor() { SPDLOG_TRACE("Destructed."); }
+BuffPredictor::~BuffPredictor() { SPDLOG_TRACE("Destructed."); }
 
 /**
  * @brief Get the Buff object
  *
  * @return const Buff& 返回buff_
  */
-const Buff &Predictor::GetBuff() const { return buff_; }
+const Buff &BuffPredictor::GetBuff() const { return buff_; }
 
 /**
  * @brief Set the Buff object
  *
  * @param buff 传入buff_
  */
-void Predictor::SetBuff(const Buff &buff) {
+void BuffPredictor::SetBuff(const Buff &buff) {
   SPDLOG_DEBUG("Buff center is {}, {}", buff.GetCenter().x, buff.GetCenter().y);
   buff_ = buff;
 }
@@ -200,14 +200,14 @@ void Predictor::SetBuff(const Buff &buff) {
  *
  * @return const Armor& 返回预测装甲板
  */
-const Armor &Predictor::GetPredict() const { return predict_; }
+const Armor &BuffPredictor::GetPredict() const { return predict_; }
 
 /**
  * @brief Set the Predict object
  *
  * @param predict 传入预测装甲板
  */
-void Predictor::SetPredict(const Armor &predict) {
+void BuffPredictor::SetPredict(const Armor &predict) {
   SPDLOG_DEBUG("Predict center is {},{}", predict.ImageCenter().x,
                predict.ImageCenter().y);
   predict_ = predict;
@@ -218,7 +218,7 @@ void Predictor::SetPredict(const Armor &predict) {
  *
  * @return component::Direction 返回旋转方向
  */
-component::Direction Predictor::GetDirection() {
+component::Direction BuffPredictor::GetDirection() {
   SPDLOG_DEBUG("Direction : {}", component::DirectionToString(direction_));
   return direction_;
 }
@@ -228,7 +228,7 @@ component::Direction Predictor::GetDirection() {
  *
  * @param direction 传入旋转方向
  */
-void Predictor::SetDirection(component::Direction direction) {
+void BuffPredictor::SetDirection(component::Direction direction) {
   direction_ = direction;
 }
 
@@ -237,7 +237,7 @@ void Predictor::SetDirection(component::Direction direction) {
  *
  * @return double 得到当前时间
  */
-double Predictor::GetTime() const {
+double BuffPredictor::GetTime() const {
   auto time = end_time_ - high_resolution_clock::now();
   SPDLOG_WARN("time_: {}ms", time.count() / 1000000.);
   return (double)time.count() / 1000000.;
@@ -248,7 +248,7 @@ double Predictor::GetTime() const {
  *
  * @param time 传入当前时间
  */
-void Predictor::SetTime(double time) {
+void BuffPredictor::SetTime(double time) {
   double duration = 90 - time;
   SPDLOG_WARN("duration : {}", duration);
   auto now = high_resolution_clock::now();
@@ -265,7 +265,7 @@ void Predictor::SetTime(double time) {
  * @brief 重新计时
  *
  */
-void Predictor::ResetTime() {
+void BuffPredictor::ResetTime() {
   if (buff_.GetArmors().size() < num_) SetTime(0);
   SPDLOG_WARN("Reset time.");
 }
@@ -275,7 +275,7 @@ void Predictor::ResetTime() {
  *
  * @return std::vector<Armor> 返回预测装甲板
  */
-std::vector<Armor> Predictor::Predict() {
+std::vector<Armor> BuffPredictor::Predict() {
   SPDLOG_DEBUG("Predicting.");
   MatchDirection();
   MatchPredict();
@@ -290,7 +290,7 @@ std::vector<Armor> Predictor::Predict() {
  * @param output 所绘制图像
  * @param add_lable 标签等级
  */
-void Predictor::VisualizePrediction(const cv::Mat &output, bool add_lable) {
+void BuffPredictor::VisualizePrediction(const cv::Mat &output, bool add_lable) {
   SPDLOG_DEBUG("{}, {}", predict_.ImageCenter().x, predict_.ImageCenter().y);
   if (cv::Point2f(0, 0) != predict_.ImageCenter()) {
     auto vertices = predict_.ImageVertices();

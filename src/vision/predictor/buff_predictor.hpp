@@ -8,7 +8,7 @@
 #include "common.hpp"
 #include "opencv2/opencv.hpp"
 
-class Predictor {
+class BuffPredictor {
  private:
   Buff buff_;
   Armor predict_;
@@ -43,23 +43,23 @@ class Predictor {
 
  public:
   /**
-   * @brief Construct a new Predictor object
+   * @brief Construct a new BuffPredictor object
    *
    */
-  Predictor();
+  BuffPredictor();
 
   /**
-   * @brief Construct a new Predictor object
+   * @brief Construct a new BuffPredictor object
    *
    * @param buffs 传入的每帧得到的Buff
    */
-  Predictor(const std::vector<Buff> &buffs);
+  BuffPredictor(const std::vector<Buff> &buffs);
 
   /**
-   * @brief Destroy the Predictor object
+   * @brief Destroy the BuffPredictor object
    *
    */
-  ~Predictor();
+  ~BuffPredictor();
 
   /**
    * @brief Get the Buff object

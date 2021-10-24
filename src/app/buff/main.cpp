@@ -3,7 +3,7 @@
 #include "compensator.hpp"
 #include "hik_camera.hpp"
 #include "opencv2/opencv.hpp"
-#include "predictor.hpp"
+#include "buff_predictor.hpp"
 #include "robot.hpp"
 
 class BuffAim : private App {
@@ -11,7 +11,7 @@ class BuffAim : private App {
   Robot robot_;
   HikCamera cam_;
   BuffDetector detector_;
-  Predictor predictor_;
+  BuffPredictor predictor_;
   Compensator compensator_;
 
  public:
