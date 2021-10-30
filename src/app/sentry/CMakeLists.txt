@@ -6,7 +6,6 @@ add_executable(${PROJECT_NAME} main.cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE
     behavior
     device
-    vision
     spdlog::spdlog
 )
 
@@ -17,5 +16,4 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 add_dependencies(${PROJECT_NAME} 
     behavior
     device
-    vision
 )

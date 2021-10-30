@@ -13,7 +13,6 @@ if(BUILD_NN)
 		spdlog::spdlog
 		component
         object
-        component
         classifier
         nvinfer
         nvonnxparser
@@ -38,7 +37,6 @@ else()
         spdlog::spdlog
         component
         object
-        component
         classifier
     )
 
