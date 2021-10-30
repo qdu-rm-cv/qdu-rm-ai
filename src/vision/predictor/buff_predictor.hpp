@@ -6,17 +6,28 @@
 #include "buff.hpp"
 #include "buff_detector.hpp"
 #include "common.hpp"
+#include "filter.hpp"
 #include "opencv2/opencv.hpp"
+#include "predictor.hpp"
 
-class BuffPredictor {
+struct BuffPredictorEKFParam {
+  EKF::Matx55d Q_mat;
+  EKF::Matx33d R_mat;
+  EKF::Matx55d Q_AC_mat;
+  EKF::Matx33d R_AC_mat;
+};
+
+class BuffPredictor : public Predictor<Armor, BuffPredictorEKFParam, EKF> {
  private:
   Buff buff_;
   Armor predict_;
   std::size_t num_;
   std::chrono::system_clock::time_point end_time_;
   std::vector<cv::Point2f> circumference_;
-  component::Direction direction_ = component::Direction::kUNKNOWN;
   std::chrono::milliseconds duration_direction_, duration_predict_;
+
+  void InitDefaultParams(const std::string &path);
+  bool PrepareParams(const std::string &path);
 
   /**
    * @brief 匹配旋转方向
@@ -90,20 +101,6 @@ class BuffPredictor {
   void SetPredict(const Armor &predict);
 
   /**
-   * @brief Get the Direction object
-   *
-   * @return component::Direction 返回旋转方向
-   */
-  component::Direction GetDirection();
-
-  /**
-   * @brief Set the Direction object
-   *
-   * @param direction 传入旋转方向
-   */
-  void SetDirection(component::Direction direction);
-
-  /**
    * @brief Get the Time object
    *
    * @return double 得到当前时间
@@ -128,7 +125,7 @@ class BuffPredictor {
    *
    * @return std::vector<Armor> 返回预测装甲板
    */
-  std::vector<Armor> Predict();
+  const std::vector<Armor> &Predict();
 
   /**
    * @brief 绘图函数

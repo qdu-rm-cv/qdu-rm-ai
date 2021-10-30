@@ -28,6 +28,12 @@ class Predictor {
     SPDLOG_DEBUG("Params loaded.");
   }
 
+  component::Direction GetDirection() {
+    SPDLOG_DEBUG("Direction : {}", component::DirectionToString(direction_));
+    return direction_;
+  }
+  void SetDirection(component::Direction direction) { direction_ = direction; }
+
   virtual const std::vector<Target> &Predict() = 0;
   virtual void VisualizePrediction(const cv::Mat &output, bool add_lable) = 0;
 };

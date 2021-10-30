@@ -37,9 +37,37 @@ static double CalRotatedAngle(const cv::Point2f &p, const cv::Point2f &ctr) {
  * @param t 当前时刻
  * @return double 旋转角
  */
-static double IntegralPredictedAngle(double t) {
+static double PredictIntegralRotatedAngle(double t) {
   return 1.305 * kDELTA +
          0.785 / 1.884 * (cos(1.884 * t) - cos(1.884 * (t + kDELTA)));
+}
+
+void BuffPredictor::InitDefaultParams(const std::string &params_path) {
+  cv::FileStorage fs(params_path,
+                     cv::FileStorage::WRITE | cv::FileStorage::FORMAT_JSON);
+
+  fs << "Q_mat" << EKF::Matx55d::eye();
+  fs << "R_mat" << EKF::Matx33d::eye();
+
+  fs << "Q_AC_mat" << EKF::Matx55d::eye();
+  fs << "R_AC_mat" << EKF::Matx33d::eye();
+
+  SPDLOG_DEBUG("Inited params.");
+}
+
+bool BuffPredictor::PrepareParams(const std::string &params_path) {
+  cv::FileStorage fs(params_path,
+                     cv::FileStorage::READ | cv::FileStorage::FORMAT_JSON);
+  if (fs.isOpened()) {
+    params_.Q_mat = fs["Q_mat"].mat();
+    params_.R_mat = fs["R_mat"].mat();
+    params_.Q_AC_mat = fs["Q_AC_mat"].mat();
+    params_.R_AC_mat = fs["R_AC_mat"].mat();
+    return true;
+  } else {
+    SPDLOG_ERROR("Can not load params.");
+    return false;
+  }
 }
 
 /**
@@ -96,7 +124,7 @@ void BuffPredictor::MatchDirection() {
  * @return Armor 旋转后装甲板
  */
 Armor BuffPredictor::RotateArmor(const Armor &armor, double theta,
-                             const cv::Point2f &center) {
+                                 const cv::Point2f &center) {
   cv::Point2f predict_point[4];
   cv::Matx22d rot(cos(theta), -sin(theta), sin(theta), cos(theta));
 
@@ -112,7 +140,7 @@ Armor BuffPredictor::RotateArmor(const Armor &armor, double theta,
 }
 
 /**
- * @brief 通过积分运算，原始装甲板数据，计算预测装甲板信息
+ * @brief 匹配预测器
  *
  */
 void BuffPredictor::MatchPredict() {
@@ -136,7 +164,7 @@ void BuffPredictor::MatchPredict() {
   Armor predict;
 
   double angle = CalRotatedAngle(target_center, center);
-  double theta = IntegralPredictedAngle(GetTime());
+  double theta = PredictIntegralRotatedAngle(GetTime());
   SPDLOG_WARN("Delta theta : {}", theta);
   while (angle > 90) angle -= 90;
   if (direction == component::Direction::kCW) theta = -theta;
@@ -214,25 +242,6 @@ void BuffPredictor::SetPredict(const Armor &predict) {
 }
 
 /**
- * @brief Get the Direction object
- *
- * @return component::Direction 返回旋转方向
- */
-component::Direction BuffPredictor::GetDirection() {
-  SPDLOG_DEBUG("Direction : {}", component::DirectionToString(direction_));
-  return direction_;
-}
-
-/**
- * @brief Set the Direction object
- *
- * @param direction 传入旋转方向
- */
-void BuffPredictor::SetDirection(component::Direction direction) {
-  direction_ = direction;
-}
-
-/**
  * @brief Get the Time object
  *
  * @return double 得到当前时间
@@ -275,13 +284,13 @@ void BuffPredictor::ResetTime() {
  *
  * @return std::vector<Armor> 返回预测装甲板
  */
-std::vector<Armor> BuffPredictor::Predict() {
+const std::vector<Armor> &BuffPredictor::Predict() {
   SPDLOG_DEBUG("Predicting.");
   MatchDirection();
   MatchPredict();
   SPDLOG_ERROR("Predicted.");
-  std::vector<Armor> targets = {predict_};
-  return targets;
+  predicts_.emplace_back(predict_);
+  return predicts_;
 }
 
 /**
