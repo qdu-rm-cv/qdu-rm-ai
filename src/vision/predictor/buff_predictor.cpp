@@ -108,7 +108,7 @@ void BuffPredictor::MatchDirection() {
     }
 
     SPDLOG_WARN("Buff's Direction is {}", /* TODO */
-                component::DirectionToString(GetDirection()));
+                component::DirectionToString(direction_));
     const auto stop = std::chrono::system_clock::now();
     duration_direction_ =
         duration_cast<std::chrono::milliseconds>(stop - start);
@@ -145,7 +145,7 @@ Armor BuffPredictor::RotateArmor(const Armor &armor, double theta,
  */
 void BuffPredictor::MatchPredict() {
   const auto start = std::chrono::system_clock::now();
-  SetPredict(Armor());
+  predict_ = Armor();
 
   if (cv::Point2f(0, 0) == buff_.GetCenter()) {
     SPDLOG_ERROR("Center is empty.");
@@ -160,19 +160,18 @@ void BuffPredictor::MatchPredict() {
   cv::Point2f target_center = buff_.GetTarget().ImageCenter();
   cv::Point2f center = buff_.GetCenter();
   SPDLOG_DEBUG("center is {},{}", buff_.GetCenter().x, buff_.GetCenter().y);
-  component::Direction direction = GetDirection();
   Armor predict;
 
   double angle = CalRotatedAngle(target_center, center);
   double theta = PredictIntegralRotatedAngle(GetTime());
   SPDLOG_WARN("Delta theta : {}", theta);
   while (angle > 90) angle -= 90;
-  if (direction == component::Direction::kCW) theta = -theta;
+  if (direction_ == component::Direction::kCW) theta = -theta;
 
   theta = theta / 180 * CV_PI;
   SPDLOG_WARN("Theta : {}", theta);
   Armor armor = RotateArmor(buff_.GetTarget(), theta, center);
-  SetPredict(armor);
+  predict_ = armor;
   const auto stop = std::chrono::system_clock::now();
   duration_predict_ = duration_cast<std::chrono::milliseconds>(stop - start);
 }
@@ -221,24 +220,6 @@ const Buff &BuffPredictor::GetBuff() const { return buff_; }
 void BuffPredictor::SetBuff(const Buff &buff) {
   SPDLOG_DEBUG("Buff center is {}, {}", buff.GetCenter().x, buff.GetCenter().y);
   buff_ = buff;
-}
-
-/**
- * @brief Get the Predict object
- *
- * @return const Armor& 返回预测装甲板
- */
-const Armor &BuffPredictor::GetPredict() const { return predict_; }
-
-/**
- * @brief Set the Predict object
- *
- * @param predict 传入预测装甲板
- */
-void BuffPredictor::SetPredict(const Armor &predict) {
-  SPDLOG_DEBUG("Predict center is {},{}", predict.ImageCenter().x,
-               predict.ImageCenter().y);
-  predict_ = predict;
 }
 
 /**

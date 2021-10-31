@@ -87,20 +87,6 @@ class BuffPredictor : public Predictor<Armor, BuffPredictorEKFParam, EKF> {
   void SetBuff(const Buff &buff);
 
   /**
-   * @brief Get the Predict object
-   *
-   * @return const Armor& 返回预测装甲板
-   */
-  const Armor &GetPredict() const;
-
-  /**
-   * @brief Set the Predict object
-   *
-   * @param predict 传入预测装甲板
-   */
-  void SetPredict(const Armor &predict);
-
-  /**
    * @brief Get the Time object
    *
    * @return double 得到当前时间

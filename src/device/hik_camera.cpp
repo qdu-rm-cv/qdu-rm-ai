@@ -206,7 +206,7 @@ int HikCamera::Close() {
     return err;
   }
   if ((err = MV_CC_CloseDevice(camera_handle_)) != MV_OK) {
-    SPDLOG_ERROR("ClosDevice fail! err:{0:x}.", err);
+    SPDLOG_ERROR("CloseDevice fail! err:{0:x}.", err);
     return err;
   }
   if ((err = MV_CC_DestroyHandle(camera_handle_)) != MV_OK) {
