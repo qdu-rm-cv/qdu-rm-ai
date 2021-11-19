@@ -20,8 +20,8 @@ void ArmorDetector::InitDefaultParams(const std::string &params_path) {
                      cv::FileStorage::WRITE | cv::FileStorage::FORMAT_JSON);
 
   fs << "binary_th" << 220;
-  fs << "se_erosion" << 5;
-  fs << "ap_erosion" << 1.;
+  //fs << "se_erosion" << 5;
+  //fs << "ap_erosion" << 1.;
 
   fs << "contour_size_low_th" << 0;
   fs << "contour_area_low_th" << 0.00001;
@@ -46,8 +46,8 @@ bool ArmorDetector::PrepareParams(const std::string &params_path) {
                      cv::FileStorage::READ | cv::FileStorage::FORMAT_JSON);
   if (fs.isOpened()) {
     params_.binary_th = fs["binary_th"];
-    params_.se_erosion = fs["se_erosion"];
-    params_.ap_erosion = fs["ap_erosion"];
+    // params_.se_erosion = fs["se_erosion"];
+    // params_.ap_erosion = fs["ap_erosion"];
 
     params_.contour_size_low_th = static_cast<int>(fs["contour_size_low_th"]);
     params_.contour_area_low_th = fs["contour_area_low_th"];
@@ -98,14 +98,14 @@ void ArmorDetector::FindLightBars(const cv::Mat &frame) {
 #endif
 
   cv::threshold(result, result, params_.binary_th, 255., cv::THRESH_BINARY);
-
+/*
   if (params_.se_erosion >= 0.) {
     cv::Mat kernel = cv::getStructuringElement(
         cv::MORPH_ELLIPSE,
         cv::Size(2 * params_.se_erosion + 1, 2 * params_.se_erosion + 1));
     cv::morphologyEx(result, result, cv::MORPH_OPEN, kernel);
   }
-
+*/
   cv::findContours(result, contours_, cv::RETR_LIST,
                    cv::CHAIN_APPROX_TC89_KCOS);
 
@@ -122,7 +122,7 @@ void ArmorDetector::FindLightBars(const cv::Mat &frame) {
   /* 检查轮廓是否为灯条 */
   for (const auto &contour : contours_) {
     /* 通过轮廓大小先排除明显不是的 */
-    if (contour.size() < params_.contour_size_low_th) continue;
+    if (contour.size() < static_cast<std::size_t>(params_.contour_size_low_th)) continue;
 
     /* 只留下轮廓大小在一定比例内的 */
     const double c_area = cv::contourArea(contour) / frame_area;

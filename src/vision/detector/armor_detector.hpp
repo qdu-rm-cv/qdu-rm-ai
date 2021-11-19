@@ -7,28 +7,9 @@
 #include "common.hpp"
 #include "detector.hpp"
 #include "light_bar.hpp"
+#include "armor_param.hpp"
 
-struct ArmorDetectorParam {
-  double binary_th;
-  int se_erosion;    /* erosion in getStructuringElement */
-  double ap_erosion; /* erosion in approxPolyDP */
-  std::size_t contour_size_low_th;
-  double contour_area_low_th;
-  double contour_area_high_th;
-  double bar_area_low_th;
-  double bar_area_high_th;
-  double angle_high_th;
-  double aspect_ratio_low_th;
-  double aspect_ratio_high_th;
-  double angle_diff_th;
-  double length_diff_th;
-  double height_diff_th;
-  double area_diff_th;
-  double center_dist_low_th;
-  double center_dist_high_th;
-};
-
-class ArmorDetector : public Detector<Armor, ArmorDetectorParam> {
+class ArmorDetector : public Detector<Armor, ArmorDetectorParam<double>> {
  private:
   game::Team enemy_team_;
   std::vector<std::vector<cv::Point>> contours_, contours_poly_;
