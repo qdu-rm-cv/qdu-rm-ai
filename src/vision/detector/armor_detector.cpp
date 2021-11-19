@@ -20,8 +20,8 @@ void ArmorDetector::InitDefaultParams(const std::string &params_path) {
                      cv::FileStorage::WRITE | cv::FileStorage::FORMAT_JSON);
 
   fs << "binary_th" << 220;
-  //fs << "se_erosion" << 5;
-  //fs << "ap_erosion" << 1.;
+  // fs << "se_erosion" << 5;
+  // fs << "ap_erosion" << 1.;
 
   fs << "contour_size_low_th" << 0;
   fs << "contour_area_low_th" << 0.00001;
