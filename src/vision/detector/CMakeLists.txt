@@ -13,6 +13,7 @@ if(BUILD_NN)
 		spdlog::spdlog
 		component
         object
+        param
         classifier
         nvinfer
         nvonnxparser
@@ -37,6 +38,7 @@ else()
         spdlog::spdlog
         component
         object
+        param
         classifier
     )
 
