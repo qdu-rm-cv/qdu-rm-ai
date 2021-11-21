@@ -6,14 +6,16 @@
 
 #include "camera.hpp"
 #include "opencv2/core/mat.hpp"
+#include "opencv2/opencv.hpp"
 
 class RaspiCamera : public Camera {
  private:
-  /**
-   * @brief 相机初始化前的准备工作
-   *
-   */
-  void Prepare();
+  cv::VideoCapture cam_;
+  cv::Mat frame_ = cv::Mat(cv::Size(640, 480), CV_16UC3);
+
+  void GrabPrepare();
+  void GrabLoop();
+  bool OpenPrepare(unsigned int index);
 
  public:
   /**
@@ -44,21 +46,6 @@ class RaspiCamera : public Camera {
    * @param width 输出图像宽度
    */
   void Setup(unsigned int height, unsigned int width);
-
-  /**
-   * @brief 打开相机设备
-   *
-   * @param index 相机索引号
-   * @return int 状态代码
-   */
-  int Open(unsigned int index);
-
-  /**
-   * @brief Get the Frame object
-   *
-   * @return cv::Mat 拍摄的图像
-   */
-  cv::Mat GetFrame();
 
   /**
    * @brief 关闭相机设备
