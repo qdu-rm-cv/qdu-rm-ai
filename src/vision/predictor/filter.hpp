@@ -7,24 +7,28 @@
 
 class Filter {
  private:
-  cv::Mat predict_condition_;
+  bool predict_condition_;
 
  public:
-  virtual const cv::Mat& Predict() = 0;
-  virtual const cv::Mat& Update() = 0;
+  unsigned int measurements_, states_;
+
+  virtual const cv::Mat& Predict(const cv::Mat& measurements,
+                                 const cv::Mat& frame) = 0;
 };
 
 class Kalman : public Filter {
  private:
   cv::KalmanFilter kalman_filter_;
-  void Init(int states, int measurements, int inputs);
+  void Init(int states, int measurements);
+  cv::Mat cur_predict_matx_, last_predict_matx_;
+  cv::Mat cur_measure_matx_, last_measure_matx_;
+  unsigned int error_frame_;
 
  public:
   Kalman();
-  Kalman(int states, int measurements, int inputs);
+  Kalman(int states, int measurements);
   ~Kalman();
-  const cv::Mat& Predict();
-  const cv::Mat& Update(cv::Mat& measurements);
+  const cv::Mat& Predict(const cv::Mat& measurements, const cv::Mat& frame);
 };
 
 class EKF : public Filter {
@@ -53,6 +57,5 @@ class EKF : public Filter {
   EKF();
   EKF(const Vec5d& Xe);
   ~EKF();
-  const cv::Mat& Predict();
-  const cv::Mat& Update();
+  const cv::Mat& Predict(const cv::Mat& measurements, const cv::Mat& frame);
 };
