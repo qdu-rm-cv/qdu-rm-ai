@@ -28,6 +28,8 @@ class Kalman : public Filter {
   Kalman();
   Kalman(int states, int measurements);
   ~Kalman();
+  const cv::Point2d Predict(const cv::Point2d& measurements_point,
+                            const cv::Mat& frame);
   const cv::Mat& Predict(const cv::Mat& measurements, const cv::Mat& frame);
 };
 

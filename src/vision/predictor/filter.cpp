@@ -73,28 +73,58 @@ Kalman::Kalman(int states, int measurements) {
 
 Kalman::~Kalman() { SPDLOG_TRACE("Destructed."); }
 
+const cv::Point2d Kalman::Predict(const cv::Point2d& measurements_point,
+                                  const cv::Mat& frame) {
+  last_predict_matx_ = cur_predict_matx_;
+  last_measure_matx_ = cur_measure_matx_;
+
+  if (abs(measurements_point.x - last_measure_matx_.at<double>(0, 0)) >
+          frame.size().width / kSCALIONGFACTOR ||
+      abs(measurements_point.y - last_measure_matx_.at<double>(0, 1)) >
+          frame.size().height / kSCALIONGFACTOR)
+    error_frame_ += 1;
+  else if (measurements_point == cv::Point2d(0., 0.))
+    error_frame_ += 1;
+
+  if (error_frame_ > 0 && error_frame_ < 5)
+    cur_measure_matx_ = last_predict_matx_.rowRange(0, 2);
+  else {
+    cv::Mat measurements = cv::Mat_<double>::zeros(2, 1);
+    measurements.at<double>(0, 0) = measurements_point.x;
+    measurements.at<double>(0, 1) = measurements_point.y;
+    cur_measure_matx_ = measurements;
+  }
+
+  SPDLOG_WARN("Error frames count : {}", error_frame_);
+  cur_predict_matx_ = kalman_filter_.correct(cur_measure_matx_);
+  cur_predict_matx_ = kalman_filter_.predict();
+  SPDLOG_WARN("Predicted.");
+  return cv::Point2d(cur_predict_matx_.at<double>(0, 0),
+                     cur_predict_matx_.at<double>(0, 1));
+}
+
 const cv::Mat& Kalman::Predict(const cv::Mat& measurements,
                                const cv::Mat& frame) {
   last_predict_matx_ = cur_predict_matx_;
   last_measure_matx_ = cur_measure_matx_;
 
-  std::vector<double> var(measurements_);
   std::vector<double> measure_value(measurements_);
-  double product = 1;
+  std::vector<double> last_measure_value(measurements_);
+  double product = measure_value.size() > 1 ? 1 : measure_value.back();
   const unsigned int edge =
       std::min(frame.size().width, frame.size().height) / kSCALIONGFACTOR;
 
-  for (std::size_t i = 0; i < var.size(); i++) {
-    var[i] = measurements.at<double>(0, i);
-    measure_value[i] = last_measure_matx_.at<double>(0, i);
-    product *= var[i];
+  for (std::size_t i = 0; i < measure_value.size(); i++) {
+    measure_value[i] = measurements.at<double>(0, i);
+    last_measure_value[i] = last_measure_matx_.at<double>(0, i);
+    product *= measure_value[i];
   }
 
   if (product == 0)
     error_frame_ += 1;
   else
-    for (std::size_t i = 0; i < var.size(); i++)
-      if (abs(var[i] - measure_value[i]) > edge) {
+    for (std::size_t i = 0; i < measure_value.size(); i++)
+      if (abs(measure_value[i] - last_measure_value[i]) > edge) {
         error_frame_ += 1;
         break;
       }
