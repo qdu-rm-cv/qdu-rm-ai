@@ -19,6 +19,21 @@ std::string DirectionToString(Direction direction) {
   }
 }
 
+std::string BuffStateToString(BuffState state) {
+  switch (state) {
+    case BuffState::kSMALL:
+      return std::string("Small Buff");
+    case BuffState::kBIG:
+      return std::string("Big Buff");
+    case BuffState::kINVINCIBLE:
+      return std::string("Can't be hit");
+    case BuffState::kUNKNOWN:
+      return std::string("Unknown");
+    default:
+      return std::string("Unknown");
+  }
+}
+
 }  // namespace component
 
 namespace game {

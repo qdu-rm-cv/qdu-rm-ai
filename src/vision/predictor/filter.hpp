@@ -5,6 +5,8 @@
 #include "common.hpp"
 #include "opencv2/opencv.hpp"
 
+enum class Method { kKF, kEKF };
+
 class Filter {
  private:
   bool predict_condition_;

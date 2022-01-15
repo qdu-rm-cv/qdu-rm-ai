@@ -9,8 +9,10 @@ struct Euler {
 };
 
 enum class Direction { kUNKNOWN, kCW, kCCW };
+enum class BuffState { kUNKNOWN, kSMALL, kBIG, kINVINCIBLE };
 
 std::string DirectionToString(Direction direction);
+std::string BuffStateToString(BuffState state);
 
 }  // namespace component
 

@@ -46,11 +46,23 @@ void BuffPredictor::InitDefaultParams(const std::string &params_path) {
   cv::FileStorage fs(params_path,
                      cv::FileStorage::WRITE | cv::FileStorage::FORMAT_JSON);
 
-  fs << "Q_mat" << EKF::Matx55d::eye();
-  fs << "R_mat" << EKF::Matx33d::eye();
-
-  fs << "Q_AC_mat" << EKF::Matx55d::eye();
-  fs << "R_AC_mat" << EKF::Matx33d::eye();
+  if (method_ == Method::kEKF) {
+    fs << "is_EKF" << true;
+    fs << "Q_mat" << EKF::Matx55d::eye();
+    fs << "R_mat" << EKF::Matx33d::eye();
+    fs << "Q_AC_mat" << EKF::Matx55d::eye();
+    fs << "R_AC_mat" << EKF::Matx33d::eye();
+    fs << "is_KF" << false;
+  } else if (method_ == Method::kKF) {
+    fs << "is_EKF" << false;
+    fs << "Q_mat" << EKF::Matx55d::zeros();
+    fs << "R_mat" << EKF::Matx33d::zeros();
+    fs << "Q_AC_mat" << EKF::Matx55d::zeros();
+    fs << "R_AC_mat" << EKF::Matx33d::zeros();
+    fs << "is_KF" << true;
+  }
+  fs << "delay_time" << 0.1542;
+  fs << "error_frame" << 5;
 
   SPDLOG_DEBUG("Inited params.");
 }
@@ -58,11 +70,20 @@ void BuffPredictor::InitDefaultParams(const std::string &params_path) {
 bool BuffPredictor::PrepareParams(const std::string &params_path) {
   cv::FileStorage fs(params_path,
                      cv::FileStorage::READ | cv::FileStorage::FORMAT_JSON);
+
   if (fs.isOpened()) {
+    params_.is_EKF = (int)fs["is_EKF"] != 0 ? true : false;
     params_.Q_mat = fs["Q_mat"].mat();
     params_.R_mat = fs["R_mat"].mat();
     params_.Q_AC_mat = fs["Q_AC_mat"].mat();
     params_.R_AC_mat = fs["R_AC_mat"].mat();
+    params_.is_EKF = (int)fs["is_EKF"] != 0 ? true : false;
+    params_.delay_time = fs["delay_time"];
+    params_.error_frame = fs["error_frame"];
+    if (params_.is_EKF)
+      method_ = Method::kEKF;
+    else if (params_.is_KF)
+      method_ = Method::kKF;
     return true;
   } else {
     SPDLOG_ERROR("Can not load params.");
@@ -123,12 +144,11 @@ void BuffPredictor::MatchDirection() {
  * @param center 旋转中心
  * @return Armor 旋转后装甲板
  */
-Armor BuffPredictor::RotateArmor(const Armor &armor, double theta,
-                                 const cv::Point2f &center) {
+Armor BuffPredictor::RotateArmor(double theta, const cv::Point2f &center) {
   cv::Point2f predict_point[4];
   cv::Matx22d rot(cos(theta), -sin(theta), sin(theta), cos(theta));
 
-  auto vertices = armor.ImageVertices();
+  auto vertices = buff_.GetTarget().ImageVertices();
   for (int i = 0; i < 3; i++) {
     cv::Matx21d vec(vertices[i].x - center.x, vertices[i].y - center.y);
     cv::Matx21d mat = rot * vec;
@@ -170,7 +190,7 @@ void BuffPredictor::MatchPredict() {
 
   theta = theta / 180 * CV_PI;
   SPDLOG_WARN("Theta : {}", theta);
-  Armor armor = RotateArmor(buff_.GetTarget(), theta, center);
+  Armor armor = RotateArmor(theta, center);
   predict_ = armor;
   const auto stop = std::chrono::system_clock::now();
   duration_predict_ = duration_cast<std::chrono::milliseconds>(stop - start);
@@ -187,7 +207,9 @@ BuffPredictor::BuffPredictor() { SPDLOG_TRACE("Constructed."); }
  *
  * @param buffs 传入的每帧得到的Buff
  */
-BuffPredictor::BuffPredictor(const std::vector<Buff> &buffs) {
+BuffPredictor::BuffPredictor(const std::string &param,
+                             const std::vector<Buff> &buffs) {
+  LoadParams(param);
   if (circumference_.size() < 5)
     for (auto buff : buffs) {
       circumference_.push_back(buff.GetTarget().ImageCenter());
