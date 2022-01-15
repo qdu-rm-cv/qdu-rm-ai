@@ -1,4 +1,4 @@
-#include "filter.hpp"
+#include "kalman.hpp"
 
 #include <cmath>
 
@@ -130,7 +130,7 @@ const cv::Mat& Kalman::Predict(const cv::Mat& measurements,
       }
 
   if (error_frame_ > 0 && error_frame_ < 5)
-    cur_measure_matx_ = last_predict_matx_.rowRange(0, 2);
+    cur_measure_matx_ = last_predict_matx_.rowRange(0, states_);
   else
     cur_measure_matx_ = measurements;
 
@@ -139,22 +139,4 @@ const cv::Mat& Kalman::Predict(const cv::Mat& measurements,
   cur_predict_matx_ = kalman_filter_.predict();
   SPDLOG_WARN("Predicted.");
   return cur_predict_matx_;
-}
-
-void EKF::Init(const Vec5d& Xe) {
-  this->Xe = Xe;
-  cv::setIdentity(P);
-  cv::setIdentity(Q);
-  cv::setIdentity(R);
-}
-
-EKF::EKF() { SPDLOG_TRACE("Constructed."); }
-
-EKF::EKF(const Vec5d& Xe = Vec5d::zeros()) { Init(Xe); }
-
-EKF::~EKF() { SPDLOG_TRACE("Destruted."); }
-
-const cv::Mat& EKF::Predict(const cv::Mat& measurements, const cv::Mat& frame) {
-  (void)frame;
-  return measurements;
 }
