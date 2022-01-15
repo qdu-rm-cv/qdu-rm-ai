@@ -15,5 +15,7 @@ class Kalman : public Filter {
   ~Kalman();
   const cv::Point2d Predict(const cv::Point2d& measurements_point,
                             const cv::Mat& frame);
+  const cv::Point3d Predict(const cv::Point3d& measurements_point,
+                            const cv::Mat& frame);
   const cv::Mat& Predict(const cv::Mat& measurements, const cv::Mat& frame);
 };

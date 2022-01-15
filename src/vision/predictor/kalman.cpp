@@ -103,6 +103,42 @@ const cv::Point2d Kalman::Predict(const cv::Point2d& measurements_point,
                      cur_predict_matx_.at<double>(0, 1));
 }
 
+
+const cv::Point3d Kalman::Predict(const cv::Point3d& measurements_point,
+                                  const cv::Mat& frame) {
+  last_predict_matx_ = cur_predict_matx_;
+  last_measure_matx_ = cur_measure_matx_;
+  cv::Size size = frame.size();
+
+  if (abs(measurements_point.x - last_measure_matx_.at<double>(0, 0)) >
+          size.width / kSCALIONGFACTOR ||
+      abs(measurements_point.y - last_measure_matx_.at<double>(0, 1)) >
+          size.height / kSCALIONGFACTOR ||
+      abs(measurements_point.y - last_measure_matx_.at<double>(0, 2)) >
+          std::sqrt(size.area()) / kSCALIONGFACTOR)
+    error_frame_ += 1;
+  else if (measurements_point == cv::Point3d(0., 0., 0.))
+    error_frame_ += 1;
+
+  if (error_frame_ > 0 && error_frame_ < 5)
+    cur_measure_matx_ = last_predict_matx_.rowRange(0, 3);
+  else {
+    cv::Mat measurements = cv::Mat_<double>::zeros(3, 1);
+    measurements.at<double>(0, 0) = measurements_point.x;
+    measurements.at<double>(0, 1) = measurements_point.y;
+    measurements.at<double>(0, 2) = measurements_point.z;
+    cur_measure_matx_ = measurements;
+  }
+
+  SPDLOG_WARN("Error frames count : {}", error_frame_);
+  cur_predict_matx_ = kalman_filter_.correct(cur_measure_matx_);
+  cur_predict_matx_ = kalman_filter_.predict();
+  SPDLOG_WARN("Predicted.");
+  return cv::Point3d(cur_predict_matx_.at<double>(0, 0),
+                     cur_predict_matx_.at<double>(0, 1),
+                     cur_predict_matx_.at<double>(0, 2));
+}
+
 const cv::Mat& Kalman::Predict(const cv::Mat& measurements,
                                const cv::Mat& frame) {
   last_predict_matx_ = cur_predict_matx_;
