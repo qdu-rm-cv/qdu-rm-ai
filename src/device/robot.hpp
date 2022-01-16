@@ -34,6 +34,7 @@ class Robot {
   void Init(const std::string &dev_path);
 
   game::Team GetEnemyTeam();
+  game::Race GetRace();
   double GetTime();
   double GetBalletSpeed();
   cv::Mat GetRotMat();

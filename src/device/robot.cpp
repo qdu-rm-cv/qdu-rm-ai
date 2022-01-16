@@ -96,7 +96,17 @@ game::Team Robot::GetEnemyTeam() {
   return game::Team::kUNKNOWN;
 }
 
-double Robot::GetTime() { return 90 - ref_.time; }
+game::Race Robot::GetRace() {
+  if (ref_.race == AI_RACE_RMUC)
+    return game::Race::kRMUC;
+  else if (ref_.race == AI_RACE_RMUL)
+    return game::Race::kRMUL;
+  else if (ref_.race == AI_RACE_RMUT)
+    return game::Race::kRMUT;
+  return game::Race::kUNKNOWN;
+}
+
+double Robot::GetTime() { return ref_.time; }
 
 double Robot::GetBalletSpeed() { return mcu_.ball_speed; }
 

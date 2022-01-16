@@ -28,6 +28,7 @@ class BuffPredictor : public Predictor<Armor, BuffPredictorParam, Kalman> {
   Method method_;
   std::size_t num_;
   std::chrono::system_clock::time_point end_time_;
+  component::BuffState state_;
   std::vector<cv::Point2f> circumference_;
   std::chrono::milliseconds duration_direction_, duration_predict_;
 
@@ -89,6 +90,20 @@ class BuffPredictor : public Predictor<Armor, BuffPredictorParam, Kalman> {
    * @param buff 传入buff_
    */
   void SetBuff(const Buff &buff);
+
+  /**
+   * @brief Get the State object
+   *
+   * @return component::BuffState& 当前能量机关旋转状态
+   */
+  component::BuffState &GetState();
+
+  /**
+   * @brief Set the State object
+   *
+   * @param state 当前能量机关旋转状态
+   */
+  void SetState(component::BuffState state);
 
   /**
    * @brief Get the Time object

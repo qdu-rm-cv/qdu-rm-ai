@@ -8,8 +8,18 @@ struct Euler {
   double yaw, pitch, roll;
 };
 
-enum class Direction { kUNKNOWN, kCW, kCCW };
-enum class BuffState { kUNKNOWN, kSMALL, kBIG, kINVINCIBLE };
+enum class Direction {
+  kUNKNOWN,
+  kCW,
+  kCCW,
+};
+
+enum class BuffState {
+  kUNKNOWN,
+  kSMALL,
+  kBIG,
+  kINVINCIBLE,
+};
 
 std::string DirectionToString(Direction direction);
 std::string BuffStateToString(BuffState state);
@@ -34,6 +44,13 @@ enum class Model {
   kSENTRY,
   kBASE,
   kOUTPOST,
+};
+
+enum class Race {
+  kUNKNOWN,
+  kRMUT,
+  kRMUL,
+  kRMUC,
 };
 
 std::string TeamToString(Team team);
