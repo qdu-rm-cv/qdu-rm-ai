@@ -7,6 +7,7 @@
 #include "buff_detector.hpp"
 #include "common.hpp"
 #include "ekf.hpp"
+#include "kalman.hpp"
 #include "opencv2/opencv.hpp"
 #include "predictor.hpp"
 
@@ -23,12 +24,12 @@ struct BuffPredictorParam {
 
 class BuffPredictor : public Predictor<Armor, BuffPredictorParam, Kalman> {
  private:
+  game::Race race_;
+  component::BuffState state_;
+
   Buff buff_;
-  Armor predict_;
-  Method method_;
   std::size_t num_;
   std::chrono::system_clock::time_point end_time_;
-  component::BuffState state_;
   std::vector<cv::Point2f> circumference_;
   std::chrono::milliseconds duration_direction_, duration_predict_;
 
@@ -48,13 +49,12 @@ class BuffPredictor : public Predictor<Armor, BuffPredictorParam, Kalman> {
   void MatchPredict();
 
   /**
-   * @brief 根据原装甲板和角度模拟旋转装甲板
+   * @brief 根据原装甲板和能量机关中心夹角角度模拟旋转装甲板
    *
    * @param theta 旋转角度
-   * @param center 旋转中心
    * @return Armor 旋转后装甲板
    */
-  Armor RotateArmor(double theta, const cv::Point2f &center);
+  Armor RotateArmor(double theta);
 
  public:
   /**
@@ -126,6 +126,17 @@ class BuffPredictor : public Predictor<Armor, BuffPredictorParam, Kalman> {
   void ResetTime();
 
   /**
+   * @brief 大符预测
+   *
+   */
+  void BigBuffPredict();
+
+  /**
+   * @brief 小符预测
+   *
+   */
+  void SmallBuffPredict();
+  /**
    * @brief 预测主函数
    *
    * @return std::vector<Armor> 返回预测装甲板
@@ -138,5 +149,5 @@ class BuffPredictor : public Predictor<Armor, BuffPredictorParam, Kalman> {
    * @param output 所绘制图像
    * @param add_lable 标签等级
    */
-  void VisualizePrediction(const cv::Mat &output, bool add_lable);
+  void VisualizePrediction(const cv::Mat &output, int add_lable);
 };

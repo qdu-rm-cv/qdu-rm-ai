@@ -29,5 +29,5 @@ class Predictor {
   }
 
   virtual const std::vector<Target> &Predict() = 0;
-  virtual void VisualizePrediction(const cv::Mat &output, bool add_lable) = 0;
+  virtual void VisualizePrediction(const cv::Mat &output, int add_lable) = 0;
 };

@@ -13,8 +13,9 @@ const auto kCV_FONT = cv::FONT_HERSHEY_SIMPLEX;
 const cv::Scalar kGREEN(0., 255., 0.);
 const cv::Scalar kRED(0., 0., 255.);
 const cv::Scalar kYELLOW(0., 255., 255.);
-const std::chrono::seconds kGAME_TIME(150);
 
+const double kRMUT_TIME = 90.;
+const double kRMUC_TIME = 420.;
 const double kDELTA = 3;  //总延迟时间
 
 }  // namespace
@@ -31,6 +32,7 @@ static double CalRotatedAngle(const cv::Point2f &p, const cv::Point2f &ctr) {
   return std::atan2(rel.x, rel.y);
 }
 
+#if 0
 /**
  * @brief 辅助函数：积分运算预测旋转角
  *
@@ -41,19 +43,32 @@ static double PredictIntegralRotatedAngle(double t) {
   return 1.305 * kDELTA +
          0.785 / 1.884 * (cos(1.884 * t) - cos(1.884 * (t + kDELTA)));
 }
+#else
+/**
+ * @brief 小符角速度 Omega = 10 RPM
+ * \displaystyle{\omega = 10 \texttt{ RPM}} \\ \\
+ * \displaystyle{\theta = \int_{t_{0}}^{t_{0}+\Delta t} \omega t dt = 10t
+ * \bigg|_{t_{0}}}
+ * @param t 当前时刻t0
+ * @return double 积分预测角
+ */
+static double PredictIntegralRotatedAngle(double t) {
+  return 5 * (2 * kDELTA + t) * t;
+}
+#endif
 
 void BuffPredictor::InitDefaultParams(const std::string &params_path) {
   cv::FileStorage fs(params_path,
                      cv::FileStorage::WRITE | cv::FileStorage::FORMAT_JSON);
 
-  if (method_ == Method::kEKF) {
+  if (filter_.method_ == Method::kEKF) {
     fs << "is_EKF" << true;
     fs << "Q_mat" << EKF::Matx55d::eye();
     fs << "R_mat" << EKF::Matx33d::eye();
     fs << "Q_AC_mat" << EKF::Matx55d::eye();
     fs << "R_AC_mat" << EKF::Matx33d::eye();
     fs << "is_KF" << false;
-  } else if (method_ == Method::kKF) {
+  } else if (filter_.method_ == Method::kKF) {
     fs << "is_EKF" << false;
     fs << "Q_mat" << EKF::Matx55d::zeros();
     fs << "R_mat" << EKF::Matx33d::zeros();
@@ -80,10 +95,6 @@ bool BuffPredictor::PrepareParams(const std::string &params_path) {
     params_.is_EKF = (int)fs["is_EKF"] != 0 ? true : false;
     params_.delay_time = fs["delay_time"];
     params_.error_frame = fs["error_frame"];
-    if (params_.is_EKF)
-      method_ = Method::kEKF;
-    else if (params_.is_KF)
-      method_ = Method::kKF;
     return true;
   } else {
     SPDLOG_ERROR("Can not load params.");
@@ -137,15 +148,13 @@ void BuffPredictor::MatchDirection() {
 }
 
 /**
- * @brief 根据原装甲板和角度模拟旋转装甲板
+ * @brief 根据原装甲板和能量机关中心夹角角度模拟旋转装甲板
  *
- * @param armor 原始装甲板
  * @param theta 旋转角度
- * @param center 旋转中心
  * @return Armor 旋转后装甲板
  */
-Armor BuffPredictor::RotateArmor(double theta, const cv::Point2f &center) {
-  cv::Point2f predict_point[4];
+Armor BuffPredictor::RotateArmor(double theta) {
+  cv::Point2f predict_point[4], center = buff_.GetCenter();
   cv::Matx22d rot(cos(theta), -sin(theta), sin(theta), cos(theta));
 
   auto vertices = buff_.GetTarget().ImageVertices();
@@ -165,8 +174,6 @@ Armor BuffPredictor::RotateArmor(double theta, const cv::Point2f &center) {
  */
 void BuffPredictor::MatchPredict() {
   const auto start = std::chrono::system_clock::now();
-  predict_ = Armor();
-
   if (cv::Point2f(0, 0) == buff_.GetCenter()) {
     SPDLOG_ERROR("Center is empty.");
     return;
@@ -176,22 +183,13 @@ void BuffPredictor::MatchPredict() {
     return;
   }
   if (component::Direction::kUNKNOWN == direction_) return;
+  component::BuffState state = GetState();
+  if (state == component::BuffState::kSMALL) {
+    SmallBuffPredict();
+  } else if (state == component::BuffState::kBIG) {
+    BigBuffPredict();
+  }
 
-  cv::Point2f target_center = buff_.GetTarget().ImageCenter();
-  cv::Point2f center = buff_.GetCenter();
-  SPDLOG_DEBUG("center is {},{}", buff_.GetCenter().x, buff_.GetCenter().y);
-  Armor predict;
-
-  double angle = CalRotatedAngle(target_center, center);
-  double theta = PredictIntegralRotatedAngle(GetTime());
-  SPDLOG_WARN("Delta theta : {}", theta);
-  while (angle > 90) angle -= 90;
-  if (direction_ == component::Direction::kCW) theta = -theta;
-
-  theta = theta / 180 * CV_PI;
-  SPDLOG_WARN("Theta : {}", theta);
-  Armor armor = RotateArmor(theta, center);
-  predict_ = armor;
   const auto stop = std::chrono::system_clock::now();
   duration_predict_ = duration_cast<std::chrono::milliseconds>(stop - start);
 }
@@ -210,6 +208,12 @@ BuffPredictor::BuffPredictor() { SPDLOG_TRACE("Constructed."); }
 BuffPredictor::BuffPredictor(const std::string &param,
                              const std::vector<Buff> &buffs) {
   LoadParams(param);
+  if (params_.is_EKF)
+    filter_.method_ = Method::kEKF;
+  else if (params_.is_KF)
+    filter_.method_ = Method::kKF;
+  state_ = component::BuffState::kUNKNOWN;
+
   if (circumference_.size() < 5)
     for (auto buff : buffs) {
       circumference_.push_back(buff.GetTarget().ImageCenter());
@@ -218,6 +222,7 @@ BuffPredictor::BuffPredictor(const std::string &param,
     }
   buff_ = buffs.back();
   num_ = buff_.GetArmors().size();
+
   SPDLOG_TRACE("Constructed.");
 }
 
@@ -245,14 +250,60 @@ void BuffPredictor::SetBuff(const Buff &buff) {
 }
 
 /**
+ * @brief Get the State object
+ *
+ * @return component::BuffState& 当前能量机关旋转状态
+ */
+component::BuffState &BuffPredictor::GetState() {
+  if (race_ == game::Race::kRMUT) {
+    state_ = component::BuffState::kBIG;
+  } else if (race_ == game::Race::kRMUC) {
+    int t = (int)(GetTime() / 60);
+    switch (t) {
+      case 0:
+        state_ = component::BuffState::kINVINCIBLE;
+        break;
+      case 1:
+      case 2:
+        state_ = component::BuffState::kSMALL;
+        break;
+      case 3:
+        state_ = component::BuffState::kINVINCIBLE;
+        break;
+      case 4:
+      case 5:
+      case 6:
+        state_ = component::BuffState::kBIG;
+        break;
+      default:
+        state_ = component::BuffState::kUNKNOWN;
+        break;
+    }
+  }
+  SPDLOG_DEBUG("Now state : {}", component::BuffStateToString(state_));
+  return state_;
+}
+
+/**
+ * @brief Set the State object
+ *
+ * @param state 当前能量机关旋转状态
+ */
+void BuffPredictor::SetState(component::BuffState state) {
+  state_ = state;
+  SPDLOG_DEBUG("State has been set.");
+}
+
+/**
  * @brief Get the Time object
  *
  * @return double 得到当前时间
  */
 double BuffPredictor::GetTime() const {
   auto time = end_time_ - high_resolution_clock::now();
-  SPDLOG_WARN("time_: {}ms", time.count() / 1000000.);
-  return (double)time.count() / 1000000.;
+  auto now = time.count() / 1000000.;
+  SPDLOG_WARN("time_: {}ms", now);
+  return now;
 }
 
 /**
@@ -261,7 +312,14 @@ double BuffPredictor::GetTime() const {
  * @param time 传入当前时间
  */
 void BuffPredictor::SetTime(double time) {
-  double duration = 90 - time;
+  double game_time = 0;
+  game::Race race_ = game::Race::kUNKNOWN;
+  if (race_ == game::Race::kRMUT)
+    game_time = kRMUT_TIME;
+  else if (race_ == game::Race::kRMUC)
+    game_time = kRMUC_TIME;
+
+  auto duration = game_time - time;
   SPDLOG_WARN("duration : {}", duration);
   auto now = high_resolution_clock::now();
   auto end = now + std::chrono::seconds((int64_t)duration);
@@ -283,6 +341,37 @@ void BuffPredictor::ResetTime() {
 }
 
 /**
+ * @brief
+ *
+ */
+void BuffPredictor::BigBuffPredict() {
+  cv::Mat frame(cv::Size(640, 480), CV_8UC3);
+  cv::Point2d target_center = buff_.GetTarget().ImageCenter();
+  cv::Point2d predicts_pt = filter_.Predict(target_center, frame);
+  double theta = CalRotatedAngle(predicts_pt, target_center);
+  Armor armor = RotateArmor(theta);
+  predicts_.emplace_back(armor);
+  SPDLOG_WARN("BigBuff has been predicted.");
+}
+
+/**
+ * @brief 大符预测
+ *
+ */
+void BuffPredictor::SmallBuffPredict() {
+  cv::Point2f center = buff_.GetCenter();
+  SPDLOG_DEBUG("center is {},{}", center.x, center.y);
+
+  double theta = PredictIntegralRotatedAngle(GetTime());
+  if (direction_ == component::Direction::kCW) theta = -theta;
+  theta = theta / 180 * CV_PI;
+  SPDLOG_WARN("Delta theta : {}", theta);
+  Armor armor = RotateArmor(theta);
+  predicts_.emplace_back(armor);
+  SPDLOG_WARN("SmallBuff has been predicted.");
+}
+
+/**
  * @brief 预测主函数
  *
  * @return std::vector<Armor> 返回预测装甲板
@@ -292,7 +381,6 @@ const std::vector<Armor> &BuffPredictor::Predict() {
   MatchDirection();
   MatchPredict();
   SPDLOG_ERROR("Predicted.");
-  predicts_.emplace_back(predict_);
   return predicts_;
 }
 
@@ -302,20 +390,24 @@ const std::vector<Armor> &BuffPredictor::Predict() {
  * @param output 所绘制图像
  * @param add_lable 标签等级
  */
-void BuffPredictor::VisualizePrediction(const cv::Mat &output, bool add_lable) {
-  SPDLOG_DEBUG("{}, {}", predict_.ImageCenter().x, predict_.ImageCenter().y);
-  if (cv::Point2f(0, 0) != predict_.ImageCenter()) {
-    auto vertices = predict_.ImageVertices();
-    for (std::size_t i = 0; i < vertices.size(); ++i)
-      cv::line(output, vertices[i], vertices[(i + 1) % 4], kYELLOW, 8);
-    cv::line(output, buff_.GetCenter(), predict_.ImageCenter(), kRED, 3);
-    if (add_lable) {
-      std::ostringstream buf;
+void BuffPredictor::VisualizePrediction(const cv::Mat &output, int add_lable) {
+  for (auto &predict : predicts_) {
+    SPDLOG_DEBUG("{}, {}", predict.ImageCenter().x, predict.ImageCenter().y);
+    if (cv::Point2f(0, 0) != predict.ImageCenter()) {
+      auto vertices = predict.ImageVertices();
+      for (std::size_t i = 0; i < vertices.size(); ++i)
+        cv::line(output, vertices[i], vertices[(i + 1) % 4], kYELLOW, 8);
+      cv::line(output, buff_.GetCenter(), predict.ImageCenter(), kRED, 3);
+      if (add_lable > 1) {
+        std::ostringstream buf;
+
+        buf << predict.ImageCenter().x << ", " << predict.ImageCenter().y;
+        cv::putText(output, buf.str(), vertices[1], kCV_FONT, 1.0, kRED);
+      }
+    }
+    if (add_lable > 2) {
       std::string label;
       int baseLine, v_pos = 0;
-
-      buf << predict_.ImageCenter().x << ", " << predict_.ImageCenter().y;
-      cv::putText(output, buf.str(), vertices[1], kCV_FONT, 1.0, kRED);
 
       label = cv::format("Direction %s in %ld ms.",
                          component::DirectionToString(direction_).c_str(),
