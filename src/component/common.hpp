@@ -55,6 +55,7 @@ enum class Race {
 
 std::string TeamToString(Team team);
 std::string ModelToString(Model model);
+std::string RaceToString(Race race);
 Model StringToModel(std::string name);
 
 bool HasBigArmor(Model model);

@@ -76,6 +76,21 @@ std::string ModelToString(Model model) {
   }
 }
 
+std::string RaceToString(Race race) {
+  switch (race) {
+    case Race::kUNKNOWN:
+      return std::string("Unknown");
+    case Race::kRMUT:
+      return std::string("RMUT");
+    case Race::kRMUL:
+      return std::string("RMUL");
+    case Race::kRMUC:
+      return std::string("RMUC");
+    default:
+      return std::string("Unknown");
+  }
+}
+
 Model StringToModel(std::string name) {
   std::transform(name.begin(), name.end(), name.begin(),
                  [](unsigned char c) { return std::tolower(c); });
