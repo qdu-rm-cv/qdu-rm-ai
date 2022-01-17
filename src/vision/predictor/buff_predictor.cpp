@@ -7,6 +7,8 @@
 using std::chrono::duration_cast;
 using std::chrono::high_resolution_clock;
 
+#define RMU2022
+
 namespace {
 
 const auto kCV_FONT = cv::FONT_HERSHEY_SIMPLEX;
@@ -32,7 +34,7 @@ static double CalRotatedAngle(const cv::Point2f &p, const cv::Point2f &ctr) {
   return std::atan2(rel.x, rel.y);
 }
 
-#if 0
+#ifdef RMU2021
 /**
  * @brief 辅助函数：积分运算预测旋转角
  *
@@ -169,7 +171,7 @@ Armor BuffPredictor::RotateArmor(double theta) {
 }
 
 /**
- * @brief 匹配预测器
+ * @brief 匹配预测器，根据赛种选择不同的能量机关预测方式
  *
  */
 void BuffPredictor::MatchPredict() {
@@ -195,39 +197,84 @@ void BuffPredictor::MatchPredict() {
 }
 
 /**
- * @brief Construct a new BuffPredictor object
+ * @brief 大符预测
+ *
+ */
+void BuffPredictor::BigBuffPredict() {
+  predicts_.clear();
+  cv::Mat frame(cv::Size(640, 480), CV_8UC3);
+  cv::Point2d target_center = buff_.GetTarget().ImageCenter();
+  cv::Point2d predicts_pt = filter_.Predict(target_center, frame);
+  double theta = CalRotatedAngle(predicts_pt, target_center);
+  Armor armor = RotateArmor(theta);
+  predicts_.emplace_back(armor);
+  SPDLOG_WARN("BigBuff has been predicted.");
+}
+
+/**
+ * @brief 小符预测
+ *
+ */
+void BuffPredictor::SmallBuffPredict() {
+  predicts_.clear();
+  cv::Point2f center = buff_.GetCenter();
+  SPDLOG_DEBUG("center is {},{}", center.x, center.y);
+
+  double theta = PredictIntegralRotatedAngle(GetTime());
+  if (direction_ == component::Direction::kCW) theta = -theta;
+  theta = theta / 180 * CV_PI;
+  SPDLOG_WARN("Delta theta : {}", theta);
+  Armor armor = RotateArmor(theta);
+  predicts_.emplace_back(armor);
+  SPDLOG_WARN("SmallBuff has been predicted.");
+}
+
+/**
+ * @brief Construct a new Buff Predictor:: Buff Predictor object
  *
  */
 BuffPredictor::BuffPredictor() { SPDLOG_TRACE("Constructed."); }
 
 /**
- * @brief Construct a new BuffPredictor object
+ * @brief Construct a new Buff Predictor:: Buff Predictor object
  *
+ * @param param 参数文件路径
  * @param buffs 传入的每帧得到的Buff
  */
 BuffPredictor::BuffPredictor(const std::string &param,
                              const std::vector<Buff> &buffs) {
   LoadParams(param);
+
+  /* filter init */
   if (params_.is_EKF)
     filter_.method_ = Method::kEKF;
   else if (params_.is_KF)
     filter_.method_ = Method::kKF;
-  state_ = component::BuffState::kUNKNOWN;
+  std::vector<double> init_vec;
+  if (filter_.method_ == Method::kKF) {
+    init_vec.emplace_back(4);
+    init_vec.emplace_back(2);
+  } else if (filter_.method_ == Method::kEKF) {
+    for (std::size_t i = 0; i < 5; i++) init_vec.emplace_back(0);
+  }
+  filter_.Init(init_vec);
 
-  if (circumference_.size() < 5)
-    for (auto buff : buffs) {
-      circumference_.push_back(buff.GetTarget().ImageCenter());
-      SPDLOG_DEBUG("Get Buff Center{},{} ", buff_.GetTarget().ImageCenter().x,
-                   buff_.GetTarget().ImageCenter().y);
-    }
+  /* pridictor init */
+  race_ = game::Race::kUNKNOWN;
+  state_ = component::BuffState::kUNKNOWN;
   buff_ = buffs.back();
   num_ = buff_.GetArmors().size();
+  if (circumference_.size() < 5) {
+    circumference_.push_back(buff_.GetTarget().ImageCenter());
+    SPDLOG_DEBUG("Get Buff Center{},{} ", buff_.GetTarget().ImageCenter().x,
+                 buff_.GetTarget().ImageCenter().y);
+  }
 
   SPDLOG_TRACE("Constructed.");
 }
 
 /**
- * @brief Destroy the BuffPredictor object
+ * @brief Destroy the Buff Predictor:: Buff Predictor object
  *
  */
 BuffPredictor::~BuffPredictor() { SPDLOG_TRACE("Destructed."); }
@@ -341,34 +388,13 @@ void BuffPredictor::ResetTime() {
 }
 
 /**
- * @brief
+ * @brief Set the Race object
  *
+ * @param race 当前赛制
  */
-void BuffPredictor::BigBuffPredict() {
-  cv::Mat frame(cv::Size(640, 480), CV_8UC3);
-  cv::Point2d target_center = buff_.GetTarget().ImageCenter();
-  cv::Point2d predicts_pt = filter_.Predict(target_center, frame);
-  double theta = CalRotatedAngle(predicts_pt, target_center);
-  Armor armor = RotateArmor(theta);
-  predicts_.emplace_back(armor);
-  SPDLOG_WARN("BigBuff has been predicted.");
-}
-
-/**
- * @brief 大符预测
- *
- */
-void BuffPredictor::SmallBuffPredict() {
-  cv::Point2f center = buff_.GetCenter();
-  SPDLOG_DEBUG("center is {},{}", center.x, center.y);
-
-  double theta = PredictIntegralRotatedAngle(GetTime());
-  if (direction_ == component::Direction::kCW) theta = -theta;
-  theta = theta / 180 * CV_PI;
-  SPDLOG_WARN("Delta theta : {}", theta);
-  Armor armor = RotateArmor(theta);
-  predicts_.emplace_back(armor);
-  SPDLOG_WARN("SmallBuff has been predicted.");
+void BuffPredictor::SetRace(game::Race race) {
+  race_ = race;
+  SPDLOG_DEBUG("Race type : {}", game::RaceToString(race));
 }
 
 /**
@@ -391,34 +417,35 @@ const std::vector<Armor> &BuffPredictor::Predict() {
  * @param add_lable 标签等级
  */
 void BuffPredictor::VisualizePrediction(const cv::Mat &output, int add_lable) {
-  for (auto &predict : predicts_) {
-    SPDLOG_DEBUG("{}, {}", predict.ImageCenter().x, predict.ImageCenter().y);
-    if (cv::Point2f(0, 0) != predict.ImageCenter()) {
-      auto vertices = predict.ImageVertices();
-      for (std::size_t i = 0; i < vertices.size(); ++i)
-        cv::line(output, vertices[i], vertices[(i + 1) % 4], kYELLOW, 8);
+  auto predict = predicts_.front();
+
+  SPDLOG_DEBUG("{}, {}", predict.ImageCenter().x, predict.ImageCenter().y);
+
+  if (add_lable > 0) {
+    auto vertices = predict.ImageVertices();
+    for (std::size_t i = 0; i < vertices.size(); ++i)
+      cv::line(output, vertices[i], vertices[(i + 1) % 4], kYELLOW, 8);
+    std::ostringstream buf;
+    buf << predict.ImageCenter().x << ", " << predict.ImageCenter().y;
+    cv::putText(output, buf.str(), vertices[1], kCV_FONT, 1.0, kRED);
+  }
+  if (add_lable > 1) {
+    if (cv::Point2f(0, 0) != predict.ImageCenter())
       cv::line(output, buff_.GetCenter(), predict.ImageCenter(), kRED, 3);
-      if (add_lable > 1) {
-        std::ostringstream buf;
+  }
+  if (add_lable > 2) {
+    std::string label;
+    int baseLine, v_pos = 0;
 
-        buf << predict.ImageCenter().x << ", " << predict.ImageCenter().y;
-        cv::putText(output, buf.str(), vertices[1], kCV_FONT, 1.0, kRED);
-      }
-    }
-    if (add_lable > 2) {
-      std::string label;
-      int baseLine, v_pos = 0;
+    label = cv::format("Direction %s in %ld ms.",
+                       component::DirectionToString(direction_).c_str(),
+                       duration_direction_.count());
+    cv::Size text_size = cv::getTextSize(label, kCV_FONT, 1.0, 2, &baseLine);
+    v_pos += 3 * static_cast<int>(1.3 * text_size.height);
+    cv::putText(output, label, cv::Point(0, v_pos), kCV_FONT, 1.0, kGREEN);
 
-      label = cv::format("Direction %s in %ld ms.",
-                         component::DirectionToString(direction_).c_str(),
-                         duration_direction_.count());
-      cv::Size text_size = cv::getTextSize(label, kCV_FONT, 1.0, 2, &baseLine);
-      v_pos += 3 * static_cast<int>(1.3 * text_size.height);
-      cv::putText(output, label, cv::Point(0, v_pos), kCV_FONT, 1.0, kGREEN);
-
-      label = cv::format("Find predict in %ld ms.", duration_predict_.count());
-      v_pos += static_cast<int>(1.3 * text_size.height);
-      cv::putText(output, label, cv::Point(0, v_pos), kCV_FONT, 1.0, kGREEN);
-    }
+    label = cv::format("Find predict in %ld ms.", duration_predict_.count());
+    v_pos += static_cast<int>(1.3 * text_size.height);
+    cv::putText(output, label, cv::Point(0, v_pos), kCV_FONT, 1.0, kGREEN);
   }
 }

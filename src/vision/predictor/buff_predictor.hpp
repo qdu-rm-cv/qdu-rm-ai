@@ -43,7 +43,7 @@ class BuffPredictor : public Predictor<Armor, BuffPredictorParam, Kalman> {
   void MatchDirection();
 
   /**
-   * @brief 通过积分运算，原始装甲板数据，计算预测装甲板信息
+   * @brief 匹配预测器，根据赛种选择不同的能量机关预测方式
    *
    */
   void MatchPredict();
@@ -55,6 +55,18 @@ class BuffPredictor : public Predictor<Armor, BuffPredictorParam, Kalman> {
    * @return Armor 旋转后装甲板
    */
   Armor RotateArmor(double theta);
+
+  /**
+   * @brief 大符预测
+   *
+   */
+  void BigBuffPredict();
+
+  /**
+   * @brief 小符预测
+   *
+   */
+  void SmallBuffPredict();
 
  public:
   /**
@@ -126,16 +138,11 @@ class BuffPredictor : public Predictor<Armor, BuffPredictorParam, Kalman> {
   void ResetTime();
 
   /**
-   * @brief 大符预测
+   * @brief Set the Race object
    *
    */
-  void BigBuffPredict();
+  void SetRace(game::Race race);
 
-  /**
-   * @brief 小符预测
-   *
-   */
-  void SmallBuffPredict();
   /**
    * @brief 预测主函数
    *
