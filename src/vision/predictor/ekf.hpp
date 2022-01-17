@@ -21,11 +21,14 @@ class EKF : public Filter {
   Matx35d K;  // Matx35d kalman_gain_;              /* 卡尔曼增益 */
   Vec3d Yp;   // Vec3d predict_obs_;                /* 预测观测量 */
 
-  void Init(const Vec5d& Xe);
+  void InnerInit(const Vec5d& Xe);
 
  public:
   EKF();
   EKF(const Vec5d& Xe);
   ~EKF();
+
+  void Init(const std::vector<double>& vec);
+
   const cv::Mat& Predict(const cv::Mat& measurements, const cv::Mat& frame);
 };

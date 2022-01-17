@@ -10,7 +10,7 @@ const unsigned int kSCALIONGFACTOR = 10;
 
 }  // namespace
 
-void Kalman::Init(int states, int measurements) {
+void Kalman::InnerInit(int states = 4, int measurements = 2) {
   error_frame_ = 0;
   states_ = states;
   measurements_ = measurements;
@@ -62,16 +62,20 @@ void Kalman::Init(int states, int measurements) {
 }
 
 Kalman::Kalman() {
-  Init(4, 2);
+  InnerInit(4, 2);
   SPDLOG_TRACE("Constructed.");
 }
 
 Kalman::Kalman(int states, int measurements) {
-  Init(states, measurements);
+  InnerInit(states, measurements);
   SPDLOG_TRACE("Constructed.");
 }
 
 Kalman::~Kalman() { SPDLOG_TRACE("Destructed."); }
+
+void Kalman::Init(const std::vector<double>& vec) {
+  Init(std::static_cast<int>(vec[0]), std::static_cast<int>(vec[1]));
+}
 
 const cv::Point2d Kalman::Predict(const cv::Point2d& measurements_point,
                                   const cv::Mat& frame) {
@@ -102,7 +106,6 @@ const cv::Point2d Kalman::Predict(const cv::Point2d& measurements_point,
   return cv::Point2d(cur_predict_matx_.at<double>(0, 0),
                      cur_predict_matx_.at<double>(0, 1));
 }
-
 
 const cv::Point3d Kalman::Predict(const cv::Point3d& measurements_point,
                                   const cv::Mat& frame) {

@@ -19,6 +19,8 @@ class Filter {
   Method method_ = Method::kUNKNOWN;
   unsigned int measurements_, states_;
 
+  virtual void Init(const std::vector<double>& vec) == 0;
+
   virtual const cv::Mat& Predict(const cv::Mat& measurements,
                                  const cv::Mat& frame) = 0;
 };
