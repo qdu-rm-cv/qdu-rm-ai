@@ -74,7 +74,7 @@ Kalman::Kalman(int states, int measurements) {
 Kalman::~Kalman() { SPDLOG_TRACE("Destructed."); }
 
 void Kalman::Init(const std::vector<double>& vec) {
-  Init(std::static_cast<int>(vec[0]), std::static_cast<int>(vec[1]));
+  InnerInit(static_cast<int>(vec[0]), static_cast<int>(vec[1]));
 }
 
 const cv::Point2d Kalman::Predict(const cv::Point2d& measurements_point,
