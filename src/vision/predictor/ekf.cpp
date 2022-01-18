@@ -17,6 +17,7 @@ EKF::EKF(const Vec5d& Xe = Vec5d::zeros()) { InnerInit(Xe); }
 EKF::~EKF() { SPDLOG_TRACE("Destruted."); }
 
 void EKF::Init(const std::vector<double>& vec) {
+  if (method_ == Method::kUNKNOWN) method_ = Method::kEKF;
   InnerInit(Vec5d(vec[0], vec[1], vec[2], vec[3], vec[4]));
 }
 

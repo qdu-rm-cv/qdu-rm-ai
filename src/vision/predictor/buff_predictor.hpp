@@ -79,22 +79,14 @@ class BuffPredictor : public Predictor<Armor, BuffPredictorParam, Kalman> {
    * @brief Construct a new Buff Predictor object
    *
    * @param param 参数文件路径
-   * @param buffs 传入的每帧得到的Buff
    */
-  BuffPredictor(const std::string &param, const std::vector<Buff> &buffs);
+  BuffPredictor(const std::string &param);
 
   /**
    * @brief Destroy the BuffPredictor object
    *
    */
   ~BuffPredictor();
-
-  /**
-   * @brief Get the Buff object
-   *
-   * @return const Buff& 返回buff_
-   */
-  const Buff &GetBuff() const;
 
   /**
    * @brief Set the Buff object

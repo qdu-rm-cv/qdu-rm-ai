@@ -62,25 +62,28 @@ static double PredictIntegralRotatedAngle(double t) {
 void BuffPredictor::InitDefaultParams(const std::string &params_path) {
   cv::FileStorage fs(params_path,
                      cv::FileStorage::WRITE | cv::FileStorage::FORMAT_JSON);
-
-  if (filter_.method_ == Method::kEKF) {
-    fs << "is_EKF" << true;
-    fs << "Q_mat" << EKF::Matx55d::eye();
-    fs << "R_mat" << EKF::Matx33d::eye();
-    fs << "Q_AC_mat" << EKF::Matx55d::eye();
-    fs << "R_AC_mat" << EKF::Matx33d::eye();
-    fs << "is_KF" << false;
-  } else if (filter_.method_ == Method::kKF) {
-    fs << "is_EKF" << false;
-    fs << "Q_mat" << EKF::Matx55d::zeros();
-    fs << "R_mat" << EKF::Matx33d::zeros();
-    fs << "Q_AC_mat" << EKF::Matx55d::zeros();
-    fs << "R_AC_mat" << EKF::Matx33d::zeros();
-    fs << "is_KF" << true;
+  SPDLOG_WARN("[BuffPredictor][InitDefaultParams] filter method: {}",
+              filter_.method_);
+  if (filter_.method_ != Method::kUNKNOWN) {
+    if (filter_.method_ == Method::kEKF) {
+      fs << "is_EKF" << true;
+      fs << "Q_mat" << EKF::Matx55d::eye();
+      fs << "R_mat" << EKF::Matx33d::eye();
+      fs << "Q_AC_mat" << EKF::Matx55d::eye();
+      fs << "R_AC_mat" << EKF::Matx33d::eye();
+      fs << "is_KF" << false;
+    } else if (filter_.method_ == Method::kKF) {
+      SPDLOG_WARN("[BuffPredictor][InitDefaultParams] write kf param");
+      fs << "is_EKF" << false;
+      fs << "Q_mat" << EKF::Matx55d::zeros();
+      fs << "R_mat" << EKF::Matx33d::zeros();
+      fs << "Q_AC_mat" << EKF::Matx55d::zeros();
+      fs << "R_AC_mat" << EKF::Matx33d::zeros();
+      fs << "is_KF" << true;
+    }
+    fs << "delay_time" << 0.1542;
+    fs << "error_frame" << 5;
   }
-  fs << "delay_time" << 0.1542;
-  fs << "error_frame" << 5;
-
   SPDLOG_DEBUG("Inited params.");
 }
 
@@ -94,7 +97,7 @@ bool BuffPredictor::PrepareParams(const std::string &params_path) {
     params_.R_mat = fs["R_mat"].mat();
     params_.Q_AC_mat = fs["Q_AC_mat"].mat();
     params_.R_AC_mat = fs["R_AC_mat"].mat();
-    params_.is_EKF = (int)fs["is_EKF"] != 0 ? true : false;
+    params_.is_KF = (int)fs["is_KF"] != 0 ? true : false;
     params_.delay_time = fs["delay_time"];
     params_.error_frame = fs["error_frame"];
     return true;
@@ -238,37 +241,57 @@ BuffPredictor::BuffPredictor() { SPDLOG_TRACE("Constructed."); }
 /**
  * @brief Construct a new Buff Predictor:: Buff Predictor object
  *
+ * 1st. 初始化后不必修改
+ *    1. filter 2. param
+ * 2ed. 需要robot设置
+ *    3. race   4. end_time
+ * 3rd. 需要每帧更新
+ *    5. buff   6. state    7.num   8.circumference
+ *
  * @param param 参数文件路径
- * @param buffs 传入的每帧得到的Buff
  */
-BuffPredictor::BuffPredictor(const std::string &param,
-                             const std::vector<Buff> &buffs) {
-  LoadParams(param);
-
-  /* filter init */
-  if (params_.is_EKF)
-    filter_.method_ = Method::kEKF;
-  else if (params_.is_KF)
-    filter_.method_ = Method::kKF;
+BuffPredictor::BuffPredictor(const std::string &param) {
+  SPDLOG_WARN("[BuffPredictor][Construct] Start construct");
+#if 0
+  //* 1. filter init
+  if (filter_.method_ == Method::kUNKNOWN) {
+    if (params_.is_EKF)
+      filter_.method_ = Method::kEKF;
+    else if (params_.is_KF)
+      filter_.method_ = Method::kKF;
+  }
+  SPDLOG_WARN("[BuffPredictor][Construct] filter method : {}", filter_.method_);
   std::vector<double> init_vec;
   if (filter_.method_ == Method::kKF) {
-    init_vec.emplace_back(4);
-    init_vec.emplace_back(2);
+    init_vec.push_back(4.);
+    init_vec.push_back(2.);
   } else if (filter_.method_ == Method::kEKF) {
-    for (std::size_t i = 0; i < 5; i++) init_vec.emplace_back(0);
+    for (std::size_t i = 0; i < 5; i++) init_vec.push_back(0.);
   }
   filter_.Init(init_vec);
+  SPDLOG_WARN("[BuffPredictor][Construct] filter init");
+#else
+  //* 1st. filter init
+  std::vector<double> init_vec;
+  init_vec.push_back(4.);
+  init_vec.push_back(2.);
+  filter_.Init(init_vec);
+  SPDLOG_WARN("[BuffPredictor][Construct] filter init");
+#endif
+  LoadParams(param);
+  SPDLOG_WARN("[BuffPredictor][Construct] param init");
 
-  /* pridictor init */
+  //* 2nd. robot relation init
   race_ = game::Race::kUNKNOWN;
+  SetTime(-200);
+  SPDLOG_WARN("[BuffPredictor][Construct] race and end_time init");
+
+  //* 3rd. buff init
   state_ = component::BuffState::kUNKNOWN;
-  buff_ = buffs.back();
-  num_ = buff_.GetArmors().size();
-  if (circumference_.size() < 5) {
-    circumference_.push_back(buff_.GetTarget().ImageCenter());
-    SPDLOG_DEBUG("Get Buff Center{},{} ", buff_.GetTarget().ImageCenter().x,
-                 buff_.GetTarget().ImageCenter().y);
-  }
+  buff_ = Buff();
+  num_ = 0;
+  circumference_.clear();
+  SPDLOG_WARN("[BuffPredictor][Construct] buff init");
 
   SPDLOG_TRACE("Constructed.");
 }
@@ -280,20 +303,19 @@ BuffPredictor::BuffPredictor(const std::string &param,
 BuffPredictor::~BuffPredictor() { SPDLOG_TRACE("Destructed."); }
 
 /**
- * @brief Get the Buff object
- *
- * @return const Buff& 返回buff_
- */
-const Buff &BuffPredictor::GetBuff() const { return buff_; }
-
-/**
  * @brief Set the Buff object
  *
  * @param buff 传入buff_
  */
 void BuffPredictor::SetBuff(const Buff &buff) {
-  SPDLOG_DEBUG("Buff center is {}, {}", buff.GetCenter().x, buff.GetCenter().y);
+  state_ = GetState();
   buff_ = buff;
+  num_ = buff_.GetArmors().size();
+  if (circumference_.size() < 5) {
+    circumference_.push_back(buff_.GetTarget().ImageCenter());
+    SPDLOG_DEBUG("Get Buff Center{},{} ", buff_.GetTarget().ImageCenter().x,
+                 buff_.GetTarget().ImageCenter().y);
+  }
 }
 
 /**

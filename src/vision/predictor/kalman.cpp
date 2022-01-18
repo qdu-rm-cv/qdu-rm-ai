@@ -11,9 +11,9 @@ const unsigned int kSCALIONGFACTOR = 10;
 }  // namespace
 
 void Kalman::InnerInit(int states = 4, int measurements = 2) {
-  error_frame_ = 0;
   states_ = states;
   measurements_ = measurements;
+  error_frame_ = 0;
 
   cv::Mat empty_matx(cv::Mat_<double>::zeros(2, 1));
   cur_predict_matx_ = empty_matx.clone();
@@ -74,6 +74,8 @@ Kalman::Kalman(int states, int measurements) {
 Kalman::~Kalman() { SPDLOG_TRACE("Destructed."); }
 
 void Kalman::Init(const std::vector<double>& vec) {
+  if (method_ == Method::kUNKNOWN) method_ = Method::kKF;
+  SPDLOG_WARN("{}, {}", vec[0], vec[1]);
   InnerInit(static_cast<int>(vec[0]), static_cast<int>(vec[1]));
 }
 
