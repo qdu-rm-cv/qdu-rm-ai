@@ -30,7 +30,7 @@ void ArmorDetector::InitDefaultParams(const std::string &params_path) {
   fs << "bar_area_high_th" << 0.001;
   fs << "angle_high_th" << 60;
   fs << "aspect_ratio_low_th" << 2;
-  fs << "aspect_ratio_high_th" << 6;
+  fs << "aspect_ratio_high_th" << 1000;
 
   fs << "angle_diff_th" << 0.2;
   fs << "length_diff_th" << 0.2;
@@ -83,7 +83,12 @@ void ArmorDetector::FindLightBars(const cv::Mat &frame) {
   cv::Mat result;
   cv::split(frame, channels);
 
-#if 1
+  if (this->enemy_team_ == game::Team::kUNKNOWN) {
+    SPDLOG_ERROR("enemy team unknown");
+    return;
+  }
+
+#if 0
   if (enemy_team_ == game::Team::kBLUE) {
     result = channels[0];
   } else if (enemy_team_ == game::Team::kRED) {
@@ -98,15 +103,15 @@ void ArmorDetector::FindLightBars(const cv::Mat &frame) {
 #endif
 
   cv::threshold(result, result, params_.binary_th, 255., cv::THRESH_BINARY);
-/*
-  if (params_.se_erosion >= 0.) {
-    cv::Mat kernel = cv::getStructuringElement(
-        cv::MORPH_ELLIPSE,
-        cv::Size(2 * params_.se_erosion + 1, 2 * params_.se_erosion + 1));
-    cv::morphologyEx(result, result, cv::MORPH_OPEN, kernel);
-  }
-*/
-  cv::findContours(result, contours_, cv::RETR_LIST,
+  /*
+    if (params_.se_erosion >= 0.) {
+      cv::Mat kernel = cv::getStructuringElement(
+          cv::MORPH_ELLIPSE,
+          cv::Size(2 * params_.se_erosion + 1, 2 * params_.se_erosion + 1));
+      cv::morphologyEx(result, result, cv::MORPH_OPEN, kernel);
+    }
+  */
+  cv::findContours(result, contours_, cv::RETR_EXTERNAL,
                    cv::CHAIN_APPROX_TC89_KCOS);
 
 #if 0 /* 平滑轮廓应该有用，但是这里简化轮廓没用 */
@@ -121,26 +126,32 @@ void ArmorDetector::FindLightBars(const cv::Mat &frame) {
 
   /* 检查轮廓是否为灯条 */
   for (const auto &contour : contours_) {
-    /* 通过轮廓大小先排除明显不是的 */
-    if (contour.size() < static_cast<std::size_t>(params_.contour_size_low_th)) continue;
+    if (contour.size() < static_cast<std::size_t>(params_.contour_size_low_th))
+      continue;
 
     /* 只留下轮廓大小在一定比例内的 */
     const double c_area = cv::contourArea(contour) / frame_area;
+    SPDLOG_DEBUG("c_area is {}", c_area);
     if (c_area < params_.contour_area_low_th) continue;
     if (c_area > params_.contour_area_high_th) continue;
 
     LightBar potential_bar(cv::minAreaRect(contour));
 
     /* 灯条倾斜角度不能太大 */
+    SPDLOG_DEBUG("angle is {}", std::abs(potential_bar.ImageAngle()));
     if (std::abs(potential_bar.ImageAngle()) > params_.angle_high_th) continue;
 
     /* 灯条在画面中的大小要满足条件 */
     const double bar_area = potential_bar.Area() / frame_area;
+    SPDLOG_DEBUG("bar_area is {}", bar_area);
     if (bar_area < params_.bar_area_low_th) continue;
     if (bar_area > params_.bar_area_high_th) continue;
 
     /* 灯条的长宽比要满足条件 */
     const double aspect_ratio = potential_bar.ImageAspectRatio();
+    SPDLOG_DEBUG("aspect_ratio is {}", aspect_ratio);
+    SPDLOG_DEBUG("aspect_ratio_low_th is {}", params_.aspect_ratio_low_th);
+    SPDLOG_DEBUG("aspect_ratio_high_th is {}", params_.aspect_ratio_high_th);
     if (aspect_ratio < params_.aspect_ratio_low_th) continue;
     if (aspect_ratio > params_.aspect_ratio_high_th) continue;
 
@@ -182,11 +193,13 @@ void ArmorDetector::MatchLightBars() {
       /* 灯条长度差异 */
       const double length_diff =
           algo::RelativeDifference(iti->Length(), itj->Length());
+      SPDLOG_INFO("length_diff is {}", length_diff);
       if (length_diff > params_.length_diff_th) continue;
 
       /* 灯条高度差异 */
       const double height_diff =
           algo::RelativeDifference(iti->ImageCenter().y, itj->ImageCenter().y);
+      SPDLOG_INFO("height_diff is {}", height_diff);
       if (height_diff > (params_.height_diff_th * frame_size_.height)) continue;
 
       /* 灯条面积差异 */
@@ -198,8 +211,8 @@ void ArmorDetector::MatchLightBars() {
       const double center_dist =
           cv::norm(iti->ImageCenter() - itj->ImageCenter());
       const double l = (iti->Length() + itj->Length()) / 2.;
-      if (center_dist < l * params_.center_dist_low_th) continue;
-      if (center_dist > l * params_.center_dist_high_th) continue;
+      //    if (center_dist < l * params_.center_dist_low_th) continue;
+      //   if (center_dist > l * params_.center_dist_high_th) continue;
 
       auto armor = Armor(*iti, *itj);
       targets_.emplace_back(armor);
