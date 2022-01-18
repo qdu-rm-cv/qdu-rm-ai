@@ -83,8 +83,8 @@ void ArmorDetector::FindLightBars(const cv::Mat &frame) {
   cv::Mat result;
   cv::split(frame, channels);
 
-  if (this->enemy_team_ == game::Team::kUNKNOWN) {
-    SPDLOG_ERROR("enemy team unknown");
+  if (enemy_team_ == game::Team::kUNKNOWN) {
+    SPDLOG_ERROR("enemy_team_ is {}", game::TeamToString(enemy_team_));
     return;
   }
 
@@ -126,6 +126,7 @@ void ArmorDetector::FindLightBars(const cv::Mat &frame) {
 
   /* 检查轮廓是否为灯条 */
   for (const auto &contour : contours_) {
+    /* 通过轮廓大小先排除明显不是的 */
     if (contour.size() < static_cast<std::size_t>(params_.contour_size_low_th))
       continue;
 
@@ -150,8 +151,6 @@ void ArmorDetector::FindLightBars(const cv::Mat &frame) {
     /* 灯条的长宽比要满足条件 */
     const double aspect_ratio = potential_bar.ImageAspectRatio();
     SPDLOG_DEBUG("aspect_ratio is {}", aspect_ratio);
-    SPDLOG_DEBUG("aspect_ratio_low_th is {}", params_.aspect_ratio_low_th);
-    SPDLOG_DEBUG("aspect_ratio_high_th is {}", params_.aspect_ratio_high_th);
     if (aspect_ratio < params_.aspect_ratio_low_th) continue;
     if (aspect_ratio > params_.aspect_ratio_high_th) continue;
 
@@ -211,8 +210,8 @@ void ArmorDetector::MatchLightBars() {
       const double center_dist =
           cv::norm(iti->ImageCenter() - itj->ImageCenter());
       const double l = (iti->Length() + itj->Length()) / 2.;
-      //    if (center_dist < l * params_.center_dist_low_th) continue;
-      //   if (center_dist > l * params_.center_dist_high_th) continue;
+      if (center_dist < l * params_.center_dist_low_th) continue;
+      if (center_dist > l * params_.center_dist_high_th) continue;
 
       auto armor = Armor(*iti, *itj);
       targets_.emplace_back(armor);
