@@ -208,6 +208,7 @@ void BuffPredictor::BigBuffPredict() {
   cv::Point2d target_center = buff_.GetTarget().ImageCenter();
   cv::Point2d predicts_pt = filter_.Predict(target_center, frame);
   double theta = CalRotatedAngle(predicts_pt, buff_.GetCenter());
+  theta = theta / 180 * CV_PI;
   Armor armor = RotateArmor(theta);
   predicts_.emplace_back(armor);
   SPDLOG_WARN("BigBuff has been predicted.");
@@ -234,17 +235,24 @@ void BuffPredictor::SmallBuffPredict() {
  * @brief Construct a new Buff Predictor:: Buff Predictor object
  *
  */
-BuffPredictor::BuffPredictor() { SPDLOG_TRACE("Constructed."); }
+BuffPredictor::BuffPredictor() {
+  std::vector<double> init_vec = {4., 2.};
+  filter_.Init(init_vec);
+  SPDLOG_DEBUG("[BuffPredictor][Construct] filter init");
+  race_ = game::Race::kUNKNOWN;
+  SetTime(-200);
+  SPDLOG_TRACE("Constructed.");
+}
 
 /**
  * @brief Construct a new Buff Predictor:: Buff Predictor object
  *
  * 1st. 初始化后不必修改
  *    1. filter 2. param
- * 2ed. 需要robot设置
+ * 2nd. 需要robot设置
  *    3. race   4. end_time
  * 3rd. 需要每帧更新
- *    5. buff   6. state    7.num   8.circumference
+ *    5. buff   6. state    7.circumference
  *
  * @param param 参数文件路径
  */
@@ -285,7 +293,6 @@ BuffPredictor::BuffPredictor(const std::string &param) {
   //* 3rd. buff init
   state_ = component::BuffState::kUNKNOWN;
   buff_ = Buff();
-  num_ = 0;
   circumference_.clear();
   SPDLOG_DEBUG("[BuffPredictor][Construct] buff init");
 
@@ -306,7 +313,6 @@ BuffPredictor::~BuffPredictor() { SPDLOG_TRACE("Destructed."); }
 void BuffPredictor::SetBuff(const Buff &buff) {
   state_ = GetState();
   buff_ = buff;
-  num_ = buff_.GetArmors().size();
   if (circumference_.size() < 5) {
     circumference_.push_back(buff_.GetTarget().ImageCenter());
     SPDLOG_DEBUG("[BuffPredictor][SetBuff]Get Buff Center {},{} ",
@@ -332,7 +338,7 @@ component::BuffState &BuffPredictor::GetState() {
       state_ = component::BuffState::kINVINCIBLE;
     else if (t >= 1 * 60 && t < 3 * 60)
       state_ = component::BuffState::kSMALL;
-    else if (t >= 4 * 60 && t < 6 * 60)
+    else if (t >= 4 * 60 && t < 7 * 60)
       state_ = component::BuffState::kBIG;
   }
 
@@ -390,15 +396,6 @@ void BuffPredictor::SetTime(double time) {
   std::time_t end_time = std::chrono::system_clock::to_time_t(end);
   SPDLOG_WARN("Now Ctime : {}", std::ctime(&now_time));
   SPDLOG_WARN("End Ctime : {}", std::ctime(&end_time));
-}
-
-/**
- * @brief 重新计时
- *
- */
-void BuffPredictor::ResetTime() {
-  if (buff_.GetArmors().size() < num_) SetTime(0);
-  SPDLOG_WARN("Reset time.");
 }
 
 /**

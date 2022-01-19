@@ -1,9 +1,9 @@
 #include "app.hpp"
 #include "buff_detector.hpp"
+#include "buff_predictor.hpp"
 #include "compensator.hpp"
 #include "hik_camera.hpp"
 #include "opencv2/opencv.hpp"
-#include "buff_predictor.hpp"
 #include "robot.hpp"
 
 class BuffAim : private App {
@@ -20,18 +20,20 @@ class BuffAim : private App {
 
     /* 初始化设备 */
     robot_.Init("/dev/ttyTHS2");
-    cam_.Open(1);
+    cam_.Open(0);
     cam_.Setup(640, 480);
     detector_.LoadParams("RMUT2021_Buff.json");
+    predictor_.LoadParams("RMUT2022_Buff_Pre.json");
     compensator_.LoadCameraMat("MV-CA016-10UC-6mm.json");
 
     do {
-      predictor_.SetTime(robot_.GetTime());
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
     } while ((robot_.GetEnemyTeam() != game::Team::kUNKNOWN) &&
-             (predictor_.GetTime() != 0));
-
+             (robot_.GetTime() != 0) &&
+             (robot_.GetRace() != game::Race::kUNKNOWN));
     detector_.SetTeam(robot_.GetEnemyTeam());
+    predictor_.SetTime(robot_.GetTime());
+    predictor_.SetRace(robot_.GetRace());
   }
 
   ~BuffAim() {
@@ -53,7 +55,7 @@ class BuffAim : private App {
       predictor_.Predict();
 
       detector_.VisualizeResult(frame, 5);
-      predictor_.VisualizePrediction(frame, true);
+      predictor_.VisualizePrediction(frame, 5);
       cv::imshow("win", frame);
       if (' ' == cv::waitKey(10)) {
         cv::waitKey(0);

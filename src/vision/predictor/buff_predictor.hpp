@@ -28,7 +28,6 @@ class BuffPredictor : public Predictor<Armor, BuffPredictorParam, Kalman> {
   component::BuffState state_;
 
   Buff buff_;
-  std::size_t num_;
   std::chrono::system_clock::time_point end_time_;
   std::vector<cv::Point2f> circumference_;
   std::chrono::milliseconds duration_direction_, duration_predict_;
@@ -122,12 +121,6 @@ class BuffPredictor : public Predictor<Armor, BuffPredictorParam, Kalman> {
    * @param time 传入当前时间
    */
   void SetTime(double time);
-
-  /**
-   * @brief 重新计时
-   *
-   */
-  void ResetTime();
 
   /**
    * @brief Set the Race object
