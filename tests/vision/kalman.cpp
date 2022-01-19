@@ -20,7 +20,7 @@ const std::vector<cv::Point2d> points = {
     cv::Point2d(800., 50.), cv::Point2d(850., 50.),  cv::Point2d(900., 50.),
     cv::Point2d(950., 50.), cv::Point2d(1000., 50.), cv::Point2d(1050., 50.)};
 
-const std::string kVIDEO = "../../../../redbuff.avi";
+const std::string kVIDEO = "../../../../redbuff01.avi";
 const std::string kPARAM = "../../../runtime/RMUT2021_Buff.json";
 
 }  // namespace

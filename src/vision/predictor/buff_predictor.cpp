@@ -204,11 +204,10 @@ void BuffPredictor::MatchPredict() {
  *
  */
 void BuffPredictor::BigBuffPredict() {
-  predicts_.clear();
   cv::Mat frame(cv::Size(640, 480), CV_8UC3);
   cv::Point2d target_center = buff_.GetTarget().ImageCenter();
   cv::Point2d predicts_pt = filter_.Predict(target_center, frame);
-  double theta = CalRotatedAngle(predicts_pt, target_center);
+  double theta = CalRotatedAngle(predicts_pt, buff_.GetCenter());
   Armor armor = RotateArmor(theta);
   predicts_.emplace_back(armor);
   SPDLOG_WARN("BigBuff has been predicted.");
@@ -219,7 +218,6 @@ void BuffPredictor::BigBuffPredict() {
  *
  */
 void BuffPredictor::SmallBuffPredict() {
-  predicts_.clear();
   cv::Point2f center = buff_.GetCenter();
   SPDLOG_DEBUG("center is {},{}", center.x, center.y);
 
@@ -260,7 +258,7 @@ BuffPredictor::BuffPredictor(const std::string &param) {
     else if (params_.is_KF)
       filter_.method_ = Method::kKF;
   }
-  SPDLOG_WARN("[BuffPredictor][Construct] filter method : {}", filter_.method_);
+  SPDLOG_DEBUG("[BuffPredictor][Construct] filter method : {}", filter_.method_);
   std::vector<double> init_vec;
   if (filter_.method_ == Method::kKF) {
     init_vec.push_back(4.);
@@ -269,29 +267,27 @@ BuffPredictor::BuffPredictor(const std::string &param) {
     for (std::size_t i = 0; i < 5; i++) init_vec.push_back(0.);
   }
   filter_.Init(init_vec);
-  SPDLOG_WARN("[BuffPredictor][Construct] filter init");
+  SPDLOG_DEBUG("[BuffPredictor][Construct] filter init");
 #else
   //* 1st. filter init
-  std::vector<double> init_vec;
-  init_vec.push_back(4.);
-  init_vec.push_back(2.);
+  std::vector<double> init_vec = {4., 2.};
   filter_.Init(init_vec);
-  SPDLOG_WARN("[BuffPredictor][Construct] filter init");
+  SPDLOG_DEBUG("[BuffPredictor][Construct] filter init");
 #endif
   LoadParams(param);
-  SPDLOG_WARN("[BuffPredictor][Construct] param init");
+  SPDLOG_DEBUG("[BuffPredictor][Construct] param init");
 
   //* 2nd. robot relation init
   race_ = game::Race::kUNKNOWN;
   SetTime(-200);
-  SPDLOG_WARN("[BuffPredictor][Construct] race and end_time init");
+  SPDLOG_DEBUG("[BuffPredictor][Construct] race and end_time init");
 
   //* 3rd. buff init
   state_ = component::BuffState::kUNKNOWN;
   buff_ = Buff();
   num_ = 0;
   circumference_.clear();
-  SPDLOG_WARN("[BuffPredictor][Construct] buff init");
+  SPDLOG_DEBUG("[BuffPredictor][Construct] buff init");
 
   SPDLOG_TRACE("Constructed.");
 }
@@ -313,7 +309,8 @@ void BuffPredictor::SetBuff(const Buff &buff) {
   num_ = buff_.GetArmors().size();
   if (circumference_.size() < 5) {
     circumference_.push_back(buff_.GetTarget().ImageCenter());
-    SPDLOG_DEBUG("Get Buff Center{},{} ", buff_.GetTarget().ImageCenter().x,
+    SPDLOG_DEBUG("[BuffPredictor][SetBuff]Get Buff Center {},{} ",
+                 buff_.GetTarget().ImageCenter().x,
                  buff_.GetTarget().ImageCenter().y);
   }
 }
@@ -324,31 +321,21 @@ void BuffPredictor::SetBuff(const Buff &buff) {
  * @return component::BuffState& 当前能量机关旋转状态
  */
 component::BuffState &BuffPredictor::GetState() {
+  SPDLOG_DEBUG("{}, {}", game::RaceToString(race_),
+               component::BuffStateToString(state_));
+
   if (race_ == game::Race::kRMUT) {
     state_ = component::BuffState::kBIG;
   } else if (race_ == game::Race::kRMUC) {
-    int t = (int)(GetTime() / 60);
-    switch (t) {
-      case 0:
-        state_ = component::BuffState::kINVINCIBLE;
-        break;
-      case 1:
-      case 2:
-        state_ = component::BuffState::kSMALL;
-        break;
-      case 3:
-        state_ = component::BuffState::kINVINCIBLE;
-        break;
-      case 4:
-      case 5:
-      case 6:
-        state_ = component::BuffState::kBIG;
-        break;
-      default:
-        state_ = component::BuffState::kUNKNOWN;
-        break;
-    }
+    double t = GetTime();
+    if (t < 1 * 60 || (t >= 3 * 60 && t < 4 * 60))
+      state_ = component::BuffState::kINVINCIBLE;
+    else if (t >= 1 * 60 && t < 3 * 60)
+      state_ = component::BuffState::kSMALL;
+    else if (t >= 4 * 60 && t < 6 * 60)
+      state_ = component::BuffState::kBIG;
   }
+
   SPDLOG_DEBUG("Now state : {}", component::BuffStateToString(state_));
   return state_;
 }
@@ -381,19 +368,24 @@ double BuffPredictor::GetTime() const {
  * @param time 传入当前时间
  */
 void BuffPredictor::SetTime(double time) {
-  double game_time = 0;
-  game::Race race_ = game::Race::kUNKNOWN;
-  if (race_ == game::Race::kRMUT)
-    game_time = kRMUT_TIME;
-  else if (race_ == game::Race::kRMUC)
-    game_time = kRMUC_TIME;
-
-  auto duration = game_time - time;
-  SPDLOG_WARN("duration : {}", duration);
   auto now = high_resolution_clock::now();
-  auto end = now + std::chrono::seconds((int64_t)duration);
-  end_time_ = end;
-
+  auto end = high_resolution_clock::time_point();
+  if (time < 0) {
+    end_time_ = now;
+    SPDLOG_WARN("[BuffPredictor][SetTime]time < 0");
+  }
+  if (end_time_ == now) {
+    double game_time = 0;
+    if (race_ == game::Race::kUNKNOWN) {
+      if (race_ == game::Race::kRMUT)
+        game_time = kRMUT_TIME;
+      else if (race_ == game::Race::kRMUC)
+        game_time = kRMUC_TIME;
+    }
+    double duration = game_time - time;
+    end = now + std::chrono::seconds((int64_t)duration);
+    end_time_ = end;
+  }
   std::time_t now_time = std::chrono::system_clock::to_time_t(now);
   std::time_t end_time = std::chrono::system_clock::to_time_t(end);
   SPDLOG_WARN("Now Ctime : {}", std::ctime(&now_time));
@@ -425,10 +417,11 @@ void BuffPredictor::SetRace(game::Race race) {
  * @return std::vector<Armor> 返回预测装甲板
  */
 const std::vector<Armor> &BuffPredictor::Predict() {
-  SPDLOG_DEBUG("Predicting.");
+  predicts_.clear();
+  SPDLOG_WARN("Predicting.");
   MatchDirection();
   MatchPredict();
-  SPDLOG_ERROR("Predicted.");
+  SPDLOG_WARN("Predicted.");
   return predicts_;
 }
 
@@ -439,35 +432,35 @@ const std::vector<Armor> &BuffPredictor::Predict() {
  * @param add_lable 标签等级
  */
 void BuffPredictor::VisualizePrediction(const cv::Mat &output, int add_lable) {
-  auto predict = predicts_.front();
+  for (auto predict : predicts_) {
+    SPDLOG_WARN("{}, {}", predict.ImageCenter().x, predict.ImageCenter().y);
 
-  SPDLOG_DEBUG("{}, {}", predict.ImageCenter().x, predict.ImageCenter().y);
+    if (add_lable > 0) {
+      auto vertices = predict.ImageVertices();
+      for (std::size_t i = 0; i < vertices.size(); ++i)
+        cv::line(output, vertices[i], vertices[(i + 1) % 4], kYELLOW, 8);
+      std::ostringstream buf;
+      buf << predict.ImageCenter().x << ", " << predict.ImageCenter().y;
+      cv::putText(output, buf.str(), vertices[1], kCV_FONT, 1.0, kRED);
+    }
+    if (add_lable > 1) {
+      if (cv::Point2f(0, 0) != predict.ImageCenter())
+        cv::line(output, buff_.GetCenter(), predict.ImageCenter(), kRED, 3);
+    }
+    if (add_lable > 2) {
+      std::string label;
+      int baseLine, v_pos = 0;
 
-  if (add_lable > 0) {
-    auto vertices = predict.ImageVertices();
-    for (std::size_t i = 0; i < vertices.size(); ++i)
-      cv::line(output, vertices[i], vertices[(i + 1) % 4], kYELLOW, 8);
-    std::ostringstream buf;
-    buf << predict.ImageCenter().x << ", " << predict.ImageCenter().y;
-    cv::putText(output, buf.str(), vertices[1], kCV_FONT, 1.0, kRED);
-  }
-  if (add_lable > 1) {
-    if (cv::Point2f(0, 0) != predict.ImageCenter())
-      cv::line(output, buff_.GetCenter(), predict.ImageCenter(), kRED, 3);
-  }
-  if (add_lable > 2) {
-    std::string label;
-    int baseLine, v_pos = 0;
+      label = cv::format("Direction %s in %ld ms.",
+                         component::DirectionToString(direction_).c_str(),
+                         duration_direction_.count());
+      cv::Size text_size = cv::getTextSize(label, kCV_FONT, 1.0, 2, &baseLine);
+      v_pos += 3 * static_cast<int>(1.3 * text_size.height);
+      cv::putText(output, label, cv::Point(0, v_pos), kCV_FONT, 1.0, kGREEN);
 
-    label = cv::format("Direction %s in %ld ms.",
-                       component::DirectionToString(direction_).c_str(),
-                       duration_direction_.count());
-    cv::Size text_size = cv::getTextSize(label, kCV_FONT, 1.0, 2, &baseLine);
-    v_pos += 3 * static_cast<int>(1.3 * text_size.height);
-    cv::putText(output, label, cv::Point(0, v_pos), kCV_FONT, 1.0, kGREEN);
-
-    label = cv::format("Find predict in %ld ms.", duration_predict_.count());
-    v_pos += static_cast<int>(1.3 * text_size.height);
-    cv::putText(output, label, cv::Point(0, v_pos), kCV_FONT, 1.0, kGREEN);
+      label = cv::format("Find predict in %ld ms.", duration_predict_.count());
+      v_pos += static_cast<int>(1.3 * text_size.height);
+      cv::putText(output, label, cv::Point(0, v_pos), kCV_FONT, 1.0, kGREEN);
+    }
   }
 }

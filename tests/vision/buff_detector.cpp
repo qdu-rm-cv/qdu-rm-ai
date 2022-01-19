@@ -22,7 +22,7 @@ TEST(TestVision, TestBuffDetectorVideo) {
   BuffDetector buff_detector("../../../runtime/RMUT2021_Buff.json",
                              game::Team::kRED);
 
-  cv::VideoCapture cap("../../../redbuff.avi");
+  cv::VideoCapture cap("../../../redbuff01.avi");
   cv::Mat frame;
   ASSERT_TRUE(cap.isOpened()) << "cap not opened";
   while (cap.isOpened()) {
@@ -33,4 +33,5 @@ TEST(TestVision, TestBuffDetectorVideo) {
     cv::imshow("result", frame);
     cv::waitKey(1);
   }
+  cap.release();
 }

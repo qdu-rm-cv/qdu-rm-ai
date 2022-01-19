@@ -236,11 +236,11 @@ void BuffDetector::SetTeam(const game::Team &team) {
 }
 
 const std::vector<Buff> &BuffDetector::Detect(const cv::Mat &frame) {
+  targets_.clear();
   SPDLOG_DEBUG("Detecting");
   FindRects(frame);
   MatchArmors();
   SPDLOG_DEBUG("Detected.");
-  targets_.clear();
   targets_.emplace_back(buff_);
   return targets_;
 }
