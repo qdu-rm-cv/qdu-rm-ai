@@ -59,7 +59,7 @@ TEST(TestVision, TestKalmanBuffPredictor) {
     cv::circle(frame, target_center, 3, kGREEN, -1);
     cv::circle(frame, pt, 3, kBLUE, -1);
     cv::imshow("WINDOW", frame);
-    int key = cv::waitKey(20);
+    int key = cv::waitKey(10);
     switch (key) {
       case 'q':
         return;

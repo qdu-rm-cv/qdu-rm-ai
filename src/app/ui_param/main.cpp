@@ -88,7 +88,7 @@ class UIParam : private App {
       char key = cv::waitKey(10);
       if (key == 's' || key == 'S') {
         armor_param_.Write(kPARAM);
-      } else if (key == 'q' || key == 27) {
+      } else if (key == 'q' || key == 27 || key == 'Q') {
         cv::destroyAllWindows();
         return;
       }

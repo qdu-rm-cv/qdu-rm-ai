@@ -39,7 +39,7 @@ TEST(TestVision, TestKalmanPredictor) {
     predictor.VisualizePrediction(frame, 3);
 
     cv::imshow("Predictor", frame);
-    auto key = cv::waitKey(100);
+    auto key = cv::waitKey(10);
     if (key == 'q') {
       cv::waitKey(0);
       cap.release();

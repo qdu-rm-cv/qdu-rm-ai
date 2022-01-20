@@ -193,7 +193,7 @@ void BuffDetector::VisualizeArmors(const cv::Mat &output, bool add_lable) {
   tbb::concurrent_vector<Armor> armors = buff_.GetArmors();
   auto draw_armor = [&](const auto &armor) {
     auto vertices = armor.ImageVertices();
-    if (vertices == buff_.GetTarget().ImageVertices()) continue;
+    if (vertices == buff_.GetTarget().ImageVertices()) return;
 
     auto num_vertices = vertices.size();
     for (std::size_t i = 0; i < num_vertices; ++i) {

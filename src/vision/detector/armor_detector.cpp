@@ -130,29 +130,29 @@ void ArmorDetector::FindLightBars(const cv::Mat &frame) {
   auto check_lightbar = [&](const auto &contour) {
     /* 通过轮廓大小先排除明显不是的 */
     if (contour.size() < static_cast<std::size_t>(params_.contour_size_low_th))
-        return;
+      return;
 
     /* 只留下轮廓大小在一定比例内的 */
     const double c_area = cv::contourArea(contour) / frame_area;
-    SPDLOG_DEBUG("c_area is {}", c_area);
+    SPDLOG_INFO("c_area is {}", c_area);
     if (c_area < params_.contour_area_low_th) return;
     if (c_area > params_.contour_area_high_th) return;
 
     LightBar potential_bar(cv::minAreaRect(contour));
 
     /* 灯条倾斜角度不能太大 */
-    SPDLOG_DEBUG("angle is {}", std::abs(potential_bar.ImageAngle()));
+    SPDLOG_INFO("angle is {}", std::abs(potential_bar.ImageAngle()));
     if (std::abs(potential_bar.ImageAngle()) > params_.angle_high_th) return;
 
     /* 灯条在画面中的大小要满足条件 */
     const double bar_area = potential_bar.Area() / frame_area;
-    SPDLOG_DEBUG("bar_area is {}", bar_area);
+    SPDLOG_INFO("bar_area is {}", bar_area);
     if (bar_area < params_.bar_area_low_th) return;
     if (bar_area > params_.bar_area_high_th) return;
 
     /* 灯条的长宽比要满足条件 */
     const double aspect_ratio = potential_bar.ImageAspectRatio();
-    SPDLOG_DEBUG("aspect_ratio is {}", aspect_ratio);
+    SPDLOG_INFO("aspect_ratio is {}", aspect_ratio);
     if (aspect_ratio < params_.aspect_ratio_low_th) return;
     if (aspect_ratio > params_.aspect_ratio_high_th) return;
 
@@ -314,7 +314,6 @@ void ArmorDetector::VisualizeResult(const cv::Mat &output, int verbose) {
 
     label = cv::format("%ld armors in %ld ms.", targets_.size(),
                        duration_armors_.count());
-    text_size = cv::getTextSize(label, kCV_FONT, 1.0, 2, &baseLine);
     v_pos += static_cast<int>(1.3 * text_size.height);
     cv::putText(output, label, cv::Point(0, v_pos), kCV_FONT, 1.0, kGREEN);
   }
