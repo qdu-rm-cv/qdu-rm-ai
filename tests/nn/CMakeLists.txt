@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.12)
 project(test_cuda)
 
 file(GLOB ${PROJECT_NAME}_SOURCES
@@ -7,7 +7,7 @@ file(GLOB ${PROJECT_NAME}_SOURCES
 
 add_executable(${PROJECT_NAME} ${${PROJECT_NAME}_SOURCES})
 
-target_link_libraries(${PROJECT_NAME} PRIVATE 
+target_link_libraries(${PROJECT_NAME} PRIVATE
     vision
     gtest
     gtest_main

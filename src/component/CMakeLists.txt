@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.12)
 project(component)
 
 file(GLOB ${PROJECT_NAME}_SOURCES
@@ -7,7 +7,7 @@ file(GLOB ${PROJECT_NAME}_SOURCES
 
 add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_SOURCES})
 
-target_link_libraries(${PROJECT_NAME} PUBLIC 
+target_link_libraries(${PROJECT_NAME} PUBLIC
     spdlog::spdlog
 )
 

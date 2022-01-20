@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.12)
 project(device)
 
 file(GLOB ${PROJECT_NAME}_SOURCES
@@ -15,7 +15,7 @@ target_link_libraries(${PROJECT_NAME}
     component
 )
 
-target_link_directories(${PROJECT_NAME} PUBLIC 
+target_link_directories(${PROJECT_NAME} PUBLIC
     if (CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
         /opt/MVS/lib/aarch64/
     else()
@@ -29,6 +29,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     /opt/MVS/include
 )
 
-add_dependencies(${PROJECT_NAME} 
+add_dependencies(${PROJECT_NAME}
     component
 )
