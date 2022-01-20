@@ -5,6 +5,7 @@
 #include <thread>
 
 #include "opencv2/core/mat.hpp"
+#include "opencv2/imgproc.hpp"
 #include "spdlog/spdlog.h"
 
 class Camera {
@@ -71,6 +72,7 @@ class Camera {
     if (!frame_stack_.empty()) {
       frame = frame_stack_.front();
       frame_stack_.clear();
+      cv::resize(frame, frame, cv::Size(frame_w_, frame_h_));
     } else {
       SPDLOG_ERROR("Empty frame stack!");
     }
