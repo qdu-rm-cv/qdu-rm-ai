@@ -1,5 +1,7 @@
 #include "armor_detector.hpp"
 
+#include <execution>
+
 #include "opencv2/opencv.hpp"
 #include "spdlog/spdlog.h"
 
@@ -30,7 +32,7 @@ void ArmorDetector::InitDefaultParams(const std::string &params_path) {
   fs << "bar_area_high_th" << 0.001;
   fs << "angle_high_th" << 60;
   fs << "aspect_ratio_low_th" << 2;
-  fs << "aspect_ratio_high_th" << 6;
+  fs << "aspect_ratio_high_th" << 1000;
 
   fs << "angle_diff_th" << 0.2;
   fs << "length_diff_th" << 0.2;
@@ -83,7 +85,12 @@ void ArmorDetector::FindLightBars(const cv::Mat &frame) {
   cv::Mat result;
   cv::split(frame, channels);
 
-#if 1
+  if (enemy_team_ == game::Team::kUNKNOWN) {
+    SPDLOG_ERROR("enemy_team_ is {}", game::TeamToString(enemy_team_));
+    return;
+  }
+
+#if 0
   if (enemy_team_ == game::Team::kBLUE) {
     result = channels[0];
   } else if (enemy_team_ == game::Team::kRED) {
@@ -106,7 +113,7 @@ void ArmorDetector::FindLightBars(const cv::Mat &frame) {
       cv::morphologyEx(result, result, cv::MORPH_OPEN, kernel);
     }
   */
-  cv::findContours(result, contours_, cv::RETR_LIST,
+  cv::findContours(result, contours_, cv::RETR_EXTERNAL,
                    cv::CHAIN_APPROX_TC89_KCOS);
 
 #if 0 /* 平滑轮廓应该有用，但是这里简化轮廓没用 */
@@ -120,33 +127,41 @@ void ArmorDetector::FindLightBars(const cv::Mat &frame) {
   SPDLOG_DEBUG("Found contours: {}", contours_.size());
 
   /* 检查轮廓是否为灯条 */
-  for (const auto &contour : contours_) {
+  auto check_lightbar = [&](const auto &contour) {
     /* 通过轮廓大小先排除明显不是的 */
     if (contour.size() < static_cast<std::size_t>(params_.contour_size_low_th))
-      continue;
+        return;
 
     /* 只留下轮廓大小在一定比例内的 */
     const double c_area = cv::contourArea(contour) / frame_area;
-    if (c_area < params_.contour_area_low_th) continue;
-    if (c_area > params_.contour_area_high_th) continue;
+    SPDLOG_DEBUG("c_area is {}", c_area);
+    if (c_area < params_.contour_area_low_th) return;
+    if (c_area > params_.contour_area_high_th) return;
 
     LightBar potential_bar(cv::minAreaRect(contour));
 
     /* 灯条倾斜角度不能太大 */
-    if (std::abs(potential_bar.ImageAngle()) > params_.angle_high_th) continue;
+    SPDLOG_DEBUG("angle is {}", std::abs(potential_bar.ImageAngle()));
+    if (std::abs(potential_bar.ImageAngle()) > params_.angle_high_th) return;
 
     /* 灯条在画面中的大小要满足条件 */
     const double bar_area = potential_bar.Area() / frame_area;
-    if (bar_area < params_.bar_area_low_th) continue;
-    if (bar_area > params_.bar_area_high_th) continue;
+    SPDLOG_DEBUG("bar_area is {}", bar_area);
+    if (bar_area < params_.bar_area_low_th) return;
+    if (bar_area > params_.bar_area_high_th) return;
 
     /* 灯条的长宽比要满足条件 */
     const double aspect_ratio = potential_bar.ImageAspectRatio();
-    if (aspect_ratio < params_.aspect_ratio_low_th) continue;
-    if (aspect_ratio > params_.aspect_ratio_high_th) continue;
+    SPDLOG_DEBUG("aspect_ratio is {}", aspect_ratio);
+    if (aspect_ratio < params_.aspect_ratio_low_th) return;
+    if (aspect_ratio > params_.aspect_ratio_high_th) return;
 
     lightbars_.emplace_back(potential_bar);
-  }
+  };
+
+  /* 并行验证灯条 */
+  std::for_each(std::execution::par_unseq, contours_.begin(), contours_.end(),
+                check_lightbar);
 
   /* 从左到右排列找到的灯条 */
   std::sort(lightbars_.begin(), lightbars_.end(),
@@ -183,11 +198,13 @@ void ArmorDetector::MatchLightBars() {
       /* 灯条长度差异 */
       const double length_diff =
           algo::RelativeDifference(iti->Length(), itj->Length());
+      SPDLOG_INFO("length_diff is {}", length_diff);
       if (length_diff > params_.length_diff_th) continue;
 
       /* 灯条高度差异 */
       const double height_diff =
           algo::RelativeDifference(iti->ImageCenter().y, itj->ImageCenter().y);
+      SPDLOG_INFO("height_diff is {}", height_diff);
       if (height_diff > (params_.height_diff_th * frame_size_.height)) continue;
 
       /* 灯条面积差异 */
@@ -214,42 +231,46 @@ void ArmorDetector::MatchLightBars() {
 }
 
 void ArmorDetector::VisualizeLightBar(const cv::Mat &output, bool add_lable) {
-  if (!lightbars_.empty()) {
-    for (auto &bar : lightbars_) {
-      auto vertices = bar.ImageVertices();
-      auto num_vertices = vertices.size();
-      for (std::size_t i = 0; i < num_vertices; ++i)
-        cv::line(output, vertices[i], vertices[(i + 1) % num_vertices], kGREEN);
+  auto draw_lightbar = [&](const auto &bar) {
+    auto vertices = bar.ImageVertices();
+    auto num_vertices = vertices.size();
+    for (std::size_t i = 0; i < num_vertices; ++i)
+      cv::line(output, vertices[i], vertices[(i + 1) % num_vertices], kGREEN);
 
-      cv::drawMarker(output, bar.ImageCenter(), kGREEN, cv::MARKER_CROSS);
+    cv::drawMarker(output, bar.ImageCenter(), kGREEN, cv::MARKER_CROSS);
 
-      if (add_lable) {
-        cv::putText(
-            output,
-            cv::format("%.2f, %.2f", bar.ImageCenter().x, bar.ImageCenter().y),
-            vertices[1], kCV_FONT, 1.0, kGREEN);
-      }
+    if (add_lable) {
+      cv::putText(
+          output,
+          cv::format("%.2f, %.2f", bar.ImageCenter().x, bar.ImageCenter().y),
+          vertices[1], kCV_FONT, 1.0, kGREEN);
     }
+  };
+  if (!lightbars_.empty()) {
+    std::for_each(std::execution::par_unseq, lightbars_.begin(),
+                  lightbars_.end(), draw_lightbar);
   }
 }
 
 void ArmorDetector::VisualizeArmor(const cv::Mat &output, bool add_lable) {
-  if (!targets_.empty()) {
-    for (auto &armor : targets_) {
-      auto vertices = armor.ImageVertices();
-      auto num_vertices = vertices.size();
-      for (std::size_t i = 0; i < num_vertices; ++i) {
-        cv::line(output, vertices[i], vertices[(i + 1) % num_vertices], kGREEN);
-      }
-      cv::drawMarker(output, armor.ImageCenter(), kGREEN, cv::MARKER_DIAMOND);
-
-      if (add_lable) {
-        cv::putText(output,
-                    cv::format("%.2f, %.2f", armor.ImageCenter().x,
-                               armor.ImageCenter().y),
-                    vertices[1], kCV_FONT, 1.0, kGREEN);
-      }
+  auto draw_armor = [&](const auto &armor) {
+    auto vertices = armor.ImageVertices();
+    auto num_vertices = vertices.size();
+    for (std::size_t i = 0; i < num_vertices; ++i) {
+      cv::line(output, vertices[i], vertices[(i + 1) % num_vertices], kGREEN);
     }
+    cv::drawMarker(output, armor.ImageCenter(), kGREEN, cv::MARKER_DIAMOND);
+
+    if (add_lable) {
+      cv::putText(output,
+                  cv::format("%.2f, %.2f", armor.ImageCenter().x,
+                             armor.ImageCenter().y),
+                  vertices[1], kCV_FONT, 1.0, kGREEN);
+    }
+  };
+  if (!targets_.empty()) {
+    std::for_each(std::execution::par_unseq, targets_.begin(), targets_.end(),
+                  draw_armor);
   }
 }
 
