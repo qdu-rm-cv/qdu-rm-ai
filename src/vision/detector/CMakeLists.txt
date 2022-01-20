@@ -10,6 +10,7 @@ if(BUILD_NN)
 
     target_link_libraries(${PROJECT_NAME} PUBLIC
 		${OpenCV_LIBS}
+        tbb
 		spdlog::spdlog
 		component
         object
@@ -35,6 +36,7 @@ else()
 
     target_link_libraries(${PROJECT_NAME} PUBLIC
         ${OpenCV_LIBS}
+        tbb
         spdlog::spdlog
         component
         object

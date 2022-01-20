@@ -157,7 +157,7 @@ void BuffDetector::FindRects(const cv::Mat &frame) {
 
 void BuffDetector::MatchArmors() {
   const auto start = high_resolution_clock::now();
-  std::vector<Armor> armors;
+  tbb::concurrent_vector<Armor> armors;
 
   for (auto &rect : rects_) {
     armors.emplace_back(Armor(rect));
@@ -183,7 +183,7 @@ void BuffDetector::MatchArmors() {
 }
 
 void BuffDetector::VisualizeArmors(const cv::Mat &output, bool add_lable) {
-  std::vector<Armor> armors = buff_.GetArmors();
+  tbb::concurrent_vector<Armor> armors = buff_.GetArmors();
   if (!armors.empty()) {
     for (auto &armor : armors) {
       auto vertices = armor.ImageVertices();
@@ -235,7 +235,7 @@ void BuffDetector::SetTeam(const game::Team &team) {
     team_ = game::Team::kUNKNOWN;
 }
 
-const std::vector<Buff> &BuffDetector::Detect(const cv::Mat &frame) {
+const tbb::concurrent_vector<Buff> &BuffDetector::Detect(const cv::Mat &frame) {
   targets_.clear();
   SPDLOG_DEBUG("Detecting");
   FindRects(frame);

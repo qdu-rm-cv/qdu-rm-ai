@@ -5,7 +5,7 @@
 
 Buff::Buff() : center_(cv::Point2f(0, 0)) { SPDLOG_TRACE("Constructed."); }
 
-Buff::Buff(const cv::Point2f& center, const std::vector<Armor>& armors,
+Buff::Buff(const cv::Point2f& center, const tbb::concurrent_vector<Armor>& armors,
            const Armor& target) {
   SetCenter(center);
   SetArmors(armors);
@@ -15,12 +15,12 @@ Buff::Buff(const cv::Point2f& center, const std::vector<Armor>& armors,
 
 Buff::~Buff() { SPDLOG_TRACE("Destructed."); }
 
-const std::vector<Armor>& Buff::GetArmors() const {
+const tbb::concurrent_vector<Armor>& Buff::GetArmors() const {
   SPDLOG_DEBUG("armors_: {}", armors_.size());
   return armors_;
 }
 
-void Buff::SetArmors(const std::vector<Armor>& armors) { armors_ = armors; }
+void Buff::SetArmors(const tbb::concurrent_vector<Armor>& armors) { armors_ = armors; }
 
 const cv::Point2f& Buff::GetCenter() const {
   SPDLOG_DEBUG("center_: {}, {}", center_.x, center_.y);

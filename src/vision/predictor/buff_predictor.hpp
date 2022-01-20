@@ -131,9 +131,9 @@ class BuffPredictor : public Predictor<Armor, BuffPredictorParam, Kalman> {
   /**
    * @brief 预测主函数
    *
-   * @return std::vector<Armor> 返回预测装甲板
+   * @return tbb::concurrent_vector<Armor> 返回预测装甲板
    */
-  const std::vector<Armor> &Predict();
+  const tbb::concurrent_vector<Armor> &Predict();
 
   /**
    * @brief 绘图函数

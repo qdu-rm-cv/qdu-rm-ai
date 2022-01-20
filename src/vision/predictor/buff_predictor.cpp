@@ -411,9 +411,9 @@ void BuffPredictor::SetRace(game::Race race) {
 /**
  * @brief 预测主函数
  *
- * @return std::vector<Armor> 返回预测装甲板
+ * @return tbb::concurrent_vector<Armor> 返回预测装甲板
  */
-const std::vector<Armor> &BuffPredictor::Predict() {
+const tbb::concurrent_vector<Armor> &BuffPredictor::Predict() {
   predicts_.clear();
   SPDLOG_WARN("Predicting.");
   MatchDirection();
@@ -430,7 +430,7 @@ const std::vector<Armor> &BuffPredictor::Predict() {
  */
 void BuffPredictor::VisualizePrediction(const cv::Mat &output, int add_lable) {
   for (auto predict : predicts_) {
-    SPDLOG_WARN("{}, {}", predict.ImageCenter().x, predict.ImageCenter().y);
+    SPDLOG_DEBUG("{}, {}", predict.ImageCenter().x, predict.ImageCenter().y);
 
     if (add_lable > 0) {
       auto vertices = predict.ImageVertices();

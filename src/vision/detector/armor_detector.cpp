@@ -98,14 +98,14 @@ void ArmorDetector::FindLightBars(const cv::Mat &frame) {
 #endif
 
   cv::threshold(result, result, params_.binary_th, 255., cv::THRESH_BINARY);
-/*
-  if (params_.se_erosion >= 0.) {
-    cv::Mat kernel = cv::getStructuringElement(
-        cv::MORPH_ELLIPSE,
-        cv::Size(2 * params_.se_erosion + 1, 2 * params_.se_erosion + 1));
-    cv::morphologyEx(result, result, cv::MORPH_OPEN, kernel);
-  }
-*/
+  /*
+    if (params_.se_erosion >= 0.) {
+      cv::Mat kernel = cv::getStructuringElement(
+          cv::MORPH_ELLIPSE,
+          cv::Size(2 * params_.se_erosion + 1, 2 * params_.se_erosion + 1));
+      cv::morphologyEx(result, result, cv::MORPH_OPEN, kernel);
+    }
+  */
   cv::findContours(result, contours_, cv::RETR_LIST,
                    cv::CHAIN_APPROX_TC89_KCOS);
 
@@ -122,7 +122,8 @@ void ArmorDetector::FindLightBars(const cv::Mat &frame) {
   /* 检查轮廓是否为灯条 */
   for (const auto &contour : contours_) {
     /* 通过轮廓大小先排除明显不是的 */
-    if (contour.size() < static_cast<std::size_t>(params_.contour_size_low_th)) continue;
+    if (contour.size() < static_cast<std::size_t>(params_.contour_size_low_th))
+      continue;
 
     /* 只留下轮廓大小在一定比例内的 */
     const double c_area = cv::contourArea(contour) / frame_area;
@@ -267,7 +268,8 @@ void ArmorDetector::SetEnemyTeam(game::Team enemy_team) {
   enemy_team_ = enemy_team;
 }
 
-const std::vector<Armor> &ArmorDetector::Detect(const cv::Mat &frame) {
+const tbb::concurrent_vector<Armor> &ArmorDetector::Detect(
+    const cv::Mat &frame) {
   SPDLOG_DEBUG("Detecting");
   FindLightBars(frame);
   MatchLightBars();

@@ -4,16 +4,16 @@
 
 #include "armor.hpp"
 #include "armor_classifier.hpp"
+#include "armor_param.hpp"
 #include "common.hpp"
 #include "detector.hpp"
 #include "light_bar.hpp"
-#include "armor_param.hpp"
 
 class ArmorDetector : public Detector<Armor, ArmorDetectorParam<double>> {
  private:
   game::Team enemy_team_;
   std::vector<std::vector<cv::Point>> contours_, contours_poly_;
-  std::vector<LightBar> lightbars_;
+  tbb::concurrent_vector<LightBar> lightbars_;
 
   std::chrono::milliseconds duration_bars_, duration_armors_;
 
@@ -34,6 +34,6 @@ class ArmorDetector : public Detector<Armor, ArmorDetectorParam<double>> {
 
   void SetEnemyTeam(game::Team enemy_team);
 
-  const std::vector<Armor> &Detect(const cv::Mat &frame);
+  const tbb::concurrent_vector<Armor> &Detect(const cv::Mat &frame);
   void VisualizeResult(const cv::Mat &output, int verbose = 1);
 };

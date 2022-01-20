@@ -48,6 +48,6 @@ class BuffDetector : public Detector<Buff, BuffDetectorParam> {
 
   void SetTeam(const game::Team &team);
 
-  const std::vector<Buff> &Detect(const cv::Mat &frame);
+  const tbb::concurrent_vector<Buff> &Detect(const cv::Mat &frame);
   void VisualizeResult(const cv::Mat &frame, int verbose);
 };
