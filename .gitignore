@@ -198,3 +198,6 @@ dask-worker-space/
 # runtime
 *.engine
 lightning_logs/
+
+# local history
+.history/

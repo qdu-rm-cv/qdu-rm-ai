@@ -1,0 +1,21 @@
+{
+	// See https://go.microsoft.com/fwlink/?LinkId=827846 to learn about workspace recommendations.
+	// Extension identifier format: ${publisher}.${name}. Example: vscode.csharp
+	// List of extensions which should be recommended for users of this workspace.
+	"recommendations": [
+		"jeff-hykin.better-cpp-syntax", 		// 高亮C++标识符
+		"ms-vscode.cpptools", 					// Microsoft出品C++套件
+		"twxs.cmake",							// CMake
+		"ms-vscode.cmake-tools",				// CMake Tools套件
+		"cschlosser.doxdocgen",					// 快速注释生成
+		"eamodio.gitlens",						// Git常见指令可视化扩展包
+		"davidanson.vscode-markdownlint",		// Markdown语法扩展
+		"aaron-bond.better-comments",			// 更多种类的高亮注释
+		"coenraads.bracket-pair-colorizer-2",	// 彩虹括号2
+		"xyz.local-history",					// 本地历史记录
+		"hediet.vscode-drawio",					// 内嵌的draw.io
+		"guyutongxue.cpp-reference"				// VSC快速查找cppreference.com
+	],
+	// List of extensions recommended by VS Code that should not be recommended for users of this workspace.
+	"unwantedRecommendations": []
+}
