@@ -99,11 +99,21 @@ game::Team Robot::GetEnemyTeam() {
 game::Race Robot::GetRace() {
   if (ref_.race == AI_RACE_RMUC)
     return game::Race::kRMUC;
-  else if (ref_.race == AI_RACE_RMUL)
-    return game::Race::kRMUL;
   else if (ref_.race == AI_RACE_RMUT)
     return game::Race::kRMUT;
+  else if (ref_.race == AI_RACE_RMUL1)
+    return game::Race::kRMUL1;
+  else if (ref_.race == AI_RACE_RMUL3)
+    return game::Race::kRMUL3;
   return game::Race::kUNKNOWN;
+}
+
+game::RFID Robot::GetRFID() {
+  if (ref_.rfid == AI_RFID_BUFF)
+    return game::RFID::kBUFF;
+  else if (ref_.rfid == AI_RFID_SNIP)
+    return game::RFID::kSNIPE;
+  return game::RFID::kUNKNOWN;
 }
 
 double Robot::GetTime() { return ref_.time; }

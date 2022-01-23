@@ -21,14 +21,31 @@ std::string DirectionToString(Direction direction) {
 
 std::string BuffStateToString(BuffState state) {
   switch (state) {
+    case BuffState::kUNKNOWN:
+      return std::string("Unknown");
     case BuffState::kSMALL:
       return std::string("Small Buff");
     case BuffState::kBIG:
       return std::string("Big Buff");
     case BuffState::kINVINCIBLE:
       return std::string("Can't be hit");
-    case BuffState::kUNKNOWN:
+    default:
       return std::string("Unknown");
+  }
+}
+
+std::string AimMethodToString(AimMethod method) {
+  switch (method) {
+    case AimMethod::kUNKNOWN:
+      return std::string("Unknown");
+    case AimMethod::kARMOR:
+      return std::string("Use Armor Detector");
+    case AimMethod::kBUFF:
+      return std::string("Use Buff Detector");
+    case AimMethod::kORECUBE:
+      return std::string("Use OreCube Detector");
+    case AimMethod::kSNIPE:
+      return std::string("Use Snipe Detector");
     default:
       return std::string("Unknown");
   }
@@ -80,12 +97,27 @@ std::string RaceToString(Race race) {
   switch (race) {
     case Race::kUNKNOWN:
       return std::string("Unknown");
-    case Race::kRMUT:
-      return std::string("RMUT");
-    case Race::kRMUL:
-      return std::string("RMUL");
     case Race::kRMUC:
       return std::string("RMUC");
+    case Race::kRMUT:
+      return std::string("RMUT");
+    case Race::kRMUL1:
+      return std::string("RMUL 1v1");
+    case Race::kRMUL3:
+      return std::string("RMUL 3v3");
+    default:
+      return std::string("Unknown");
+  }
+}
+
+std::string RFIDToString(RFID rfid) {
+  switch (rfid) {
+    case RFID::kUNKNOWN:
+      return std::string("Unknown");
+    case RFID::kBUFF:
+      return std::string("Buff activation point");
+    case RFID::kSNIPE:
+      return std::string("Snipe point");
     default:
       return std::string("Unknown");
   }

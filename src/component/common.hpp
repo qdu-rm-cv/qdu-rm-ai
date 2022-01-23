@@ -21,8 +21,17 @@ enum class BuffState {
   kINVINCIBLE,
 };
 
+enum class AimMethod {
+  kUNKNOWN,
+  kARMOR,
+  kBUFF,
+  kORECUBE,
+  kSNIPE,
+};
+
 std::string DirectionToString(Direction direction);
 std::string BuffStateToString(BuffState state);
+std::string AimMethodToString(AimMethod method);
 
 }  // namespace component
 
@@ -48,14 +57,22 @@ enum class Model {
 
 enum class Race {
   kUNKNOWN,
-  kRMUT,
-  kRMUL,
   kRMUC,
+  kRMUT,
+  kRMUL1,
+  kRMUL3,
+};
+
+enum class RFID{
+  kUNKNOWN,
+  kBUFF,
+  kSNIPE,
 };
 
 std::string TeamToString(Team team);
 std::string ModelToString(Model model);
 std::string RaceToString(Race race);
+std::string RFIDToString(RFID rfid);
 Model StringToModel(std::string name);
 
 bool HasBigArmor(Model model);
