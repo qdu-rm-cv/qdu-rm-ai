@@ -238,10 +238,10 @@ BuffDetector::BuffDetector(const std::string &params_path,
 
 BuffDetector::~BuffDetector() { SPDLOG_TRACE("Destructed."); }
 
-void BuffDetector::SetTeam(const game::Team &team) {
-  if (team == game::Team::kRED)
+void BuffDetector::SetTeam(game::Team enemy_team) {
+  if (enemy_team == game::Team::kRED)
     team_ = game::Team::kBLUE;
-  else if (team == game::Team::kBLUE)
+  else if (enemy_team == game::Team::kBLUE)
     team_ = game::Team::kRED;
   else
     team_ = game::Team::kUNKNOWN;
