@@ -22,14 +22,8 @@ class Armor : public ImageObject, public PhysicObject {
   Armor(const cv::RotatedRect &rect);
   ~Armor();
 
-  const cv::RotatedRect &GetRect() const;
-  void SetRect(const cv::RotatedRect &rect);
-
   game::Model GetModel() const;
   void SetModel(game::Model model);
-
-  game::Team GetTeam() const;
-  void SetTeam(game::Team team);
 
   component::Euler GetAimEuler() const;
   void SetAimEuler(const component::Euler &elur);

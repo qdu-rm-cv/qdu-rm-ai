@@ -44,7 +44,7 @@ class ImageObject {
 
 class PhysicObject {
  public:
-  cv::Mat rot_vec_, rot_mat_, trans_vec_, vertices_;
+  cv::Mat rot_vec_, rot_mat_, trans_vec_, physic_vertices_;
 
   const cv::Mat &GetRotVec() const { return rot_vec_; }
   void SetRotVec(const cv::Mat &rot_vec) {
@@ -67,5 +67,5 @@ class PhysicObject {
                    rot_mat_.at<double>(1, 0) - rot_mat_.at<double>(0, 1));
     return axis;
   }
-  const cv::Mat PhysicVertices() const { return vertices_; }
+  const cv::Mat PhysicVertices() const { return physic_vertices_; }
 };

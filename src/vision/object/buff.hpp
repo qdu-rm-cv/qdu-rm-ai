@@ -14,7 +14,6 @@ class Buff {
 
  public:
   Buff();
-  Buff(game::Team team);
   Buff(const cv::Point2f &center, const tbb::concurrent_vector<Armor> &armors,
        const Armor &target);
   ~Buff();

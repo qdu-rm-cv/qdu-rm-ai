@@ -58,7 +58,8 @@ cv::RotatedRect Armor::FormRect(const LightBar &left_bar,
 void Armor::Init() {
   image_center_ = rect_.center;
   image_angle_ = rect_.angle;
-
+  image_ratio_ = std::max(rect_.size.height, rect_.size.width) /
+                 std::min(rect_.size.height, rect_.size.width);
   image_vertices_.resize(4);
   rect_.points(image_vertices_.data());
 
@@ -94,14 +95,11 @@ void Armor::SetModel(game::Model model) {
   model_ = model;
 
   if (game::HasBigArmor(model_)) {
-    vertices_ = cv::Mat(kCOORD_BIG_ARMOR);
+    physic_vertices_ = cv::Mat(kCOORD_BIG_ARMOR);
   } else {
-    vertices_ = cv::Mat(kCOORD_SMALL_ARMOR);
+    physic_vertices_ = cv::Mat(kCOORD_SMALL_ARMOR);
   }
 }
-
-const cv::RotatedRect &Armor::GetRect() const { return rect_; }
-void Armor::SetRect(const cv::RotatedRect &rect) { rect_ = rect; }
 
 component::Euler Armor::GetAimEuler() const { return aiming_euler_; }
 void Armor::SetAimEuler(const component::Euler &elur) { aiming_euler_ = elur; }
