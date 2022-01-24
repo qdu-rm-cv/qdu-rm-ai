@@ -11,6 +11,8 @@
 #include "opencv2/opencv.hpp"
 #include "predictor.hpp"
 
+// TODO : 修改参数，使KF可以上场使用
+
 struct BuffPredictorParam {
   bool is_EKF;
   EKF::Matx55d Q_mat;

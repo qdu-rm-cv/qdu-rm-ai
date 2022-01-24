@@ -87,8 +87,8 @@ cv::Vec3f Compensator::EstimateWorldCoord(Armor& armor) {
   return cv::Vec3f(world_coord);
 }
 
-void Compensator::Apply(tbb::concurrent_vector<Armor>& armors, const cv::Mat& frame,
-                        const cv::Mat& rot_mat) {
+void Compensator::Apply(tbb::concurrent_vector<Armor>& armors,
+                        const cv::Mat& frame, const cv::Mat& rot_mat) {
   for (auto& armor : armors) {
     const auto cam_coord = EstimateWorldCoord(armor);
     const cv::Point3f real_coord(cam_coord.dot(rot_mat));
@@ -115,3 +115,5 @@ void Compensator::VisualizeResult(tbb::concurrent_vector<Armor>& armors,
     VisualizePnp(armor, output, verbose > 1);
   }
 }
+
+// TODO : 测试Compensator准确度
