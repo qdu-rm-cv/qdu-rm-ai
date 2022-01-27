@@ -55,6 +55,17 @@ enum class Model {
   kOUTPOST,
 };
 
+enum class Arm {
+  kUNKNOWN,
+  kINFANTRY,
+  kHERO,
+  kENGINEER,
+  kDRONE,
+  kSENTRY,
+  kDART,
+  kRADAR,
+};
+
 enum class Race {
   kUNKNOWN,
   kRMUC,
@@ -63,7 +74,7 @@ enum class Race {
   kRMUL3,
 };
 
-enum class RFID{
+enum class RFID {
   kUNKNOWN,
   kBUFF,
   kSNIPE,
@@ -71,6 +82,7 @@ enum class RFID{
 
 std::string TeamToString(Team team);
 std::string ModelToString(Model model);
+std::string ArmToString(Arm arm);
 std::string RaceToString(Race race);
 std::string RFIDToString(RFID rfid);
 Model StringToModel(std::string name);

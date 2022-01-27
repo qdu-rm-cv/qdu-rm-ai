@@ -2,34 +2,39 @@
 
 AimAssitant::AimAssitant() { SPDLOG_TRACE("Constructed."); }
 
-AimAssitant::AimAssitant(game::Model model) {
-  model_ = model;
+AimAssitant::AimAssitant(game::Arm arm) {
+  arm_ = arm;
   SPDLOG_TRACE("Constructed.");
 }
 
 AimAssitant::~AimAssitant() { SPDLOG_TRACE("Destructed."); }
 
 void AimAssitant::SetRFID(game::RFID rfid) {
-  if (model_ == game::Model::kUNKNOWN) {
+  if (arm_ == game::Arm::kUNKNOWN) {
     method_ = component::AimMethod::kUNKNOWN;
     return;
   }
 
-  if (model_ == game::Model::kHERO) {
+  if (arm_ == game::Arm::kHERO) {
     if (rfid == game::RFID::kSNIPE) {
       method_ = component::AimMethod::kSNIPE;
     } else if (rfid == game::RFID::kUNKNOWN) {
       method_ = component::AimMethod::kARMOR;
     }
-  } else if (model_ == game::Model::kINFANTRY) {
+  } else if (arm_ == game::Arm::kINFANTRY) {
     if (rfid == game::RFID::kBUFF) {
       method_ = component::AimMethod::kBUFF;
     } else if (rfid == game::RFID::kUNKNOWN) {
       method_ = component::AimMethod::kARMOR;
     }
   }
-  SPDLOG_INFO("Now Arms : {}, AimMethod : {}", game::ModelToString(model_),
+  SPDLOG_INFO("Now Arms : {}, AimMethod : {}", game::ArmToString(arm_),
               component::AimMethodToString(method_));
+}
+
+void AimAssitant::SetArm(game::Arm arm) {
+  arm_ = arm;
+  SPDLOG_DEBUG("Arm : {}", game::ArmToString(arm_));
 }
 
 void AimAssitant::Init(const std::string& armor_param,

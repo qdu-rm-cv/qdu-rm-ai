@@ -93,6 +93,29 @@ std::string ModelToString(Model model) {
   }
 }
 
+std::string ArmToString(Arm arm) {
+  switch (arm) {
+    case Arm::kUNKNOWN:
+      return std::string("Unknown");
+    case Arm::kINFANTRY:
+      return std::string("Infantry");
+    case Arm::kHERO:
+      return std::string("Hero");
+    case Arm::kENGINEER:
+      return std::string("Engineer");
+    case Arm::kDRONE:
+      return std::string("Drone");
+    case Arm::kSENTRY:
+      return std::string("Sentry");
+    case Arm::kDART:
+      return std::string("Dart");
+    case Arm::kRADAR:
+      return std::string("Radar");
+    default:
+      return std::string("Unknown");
+  }
+}
+
 std::string RaceToString(Race race) {
   switch (race) {
     case Race::kUNKNOWN:
