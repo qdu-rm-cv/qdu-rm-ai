@@ -7,21 +7,21 @@ namespace Action {
 
 class Track : public BT::SyncActionNode {
  public:
-  Track(const std::string &name, const BT::NodeConfiguration& node_cfg);
+  Track(const std::string &name, const BT::NodeConfiguration &node_cfg);
   BT::NodeStatus tick() override;
   static BT::PortsList providedPorts();
 };
 
 class Attack : public BT::SyncActionNode {
  public:
-  Attack(const std::string &name, const BT::NodeConfiguration& node_cfg);
+  Attack(const std::string &name, const BT::NodeConfiguration &node_cfg);
   BT::NodeStatus tick() override;
   static BT::PortsList providedPorts();
 };
 
 class Dodge : public BT::SyncActionNode {
  public:
-  Dodge(const std::string &name, const BT::NodeConfiguration& node_cfg);
+  Dodge(const std::string &name, const BT::NodeConfiguration &node_cfg);
   BT::NodeStatus tick() override;
   static BT::PortsList providedPorts();
 };
@@ -32,28 +32,37 @@ namespace Condition {
 
 class EnamyVisable : public BT::ConditionNode {
  public:
-  EnamyVisable(const std::string &name, const BT::NodeConfiguration& node_cfg);
+  EnamyVisable(const std::string &name, const BT::NodeConfiguration &node_cfg);
   BT::NodeStatus tick() override;
   static BT::PortsList providedPorts();
+
+ private:
+  bool is_visible_;
 };
 
 class LowHP : public BT::ConditionNode {
  public:
-  LowHP(const std::string &name, const BT::NodeConfiguration& node_cfg);
+  LowHP(const std::string &name, const BT::NodeConfiguration &node_cfg);
   BT::NodeStatus tick() override;
   static BT::PortsList providedPorts();
+
+ private:
+  bool is_low_HP_;
 };
 
 class UnderAttack : public BT::ConditionNode {
  public:
-  UnderAttack(const std::string &name, const BT::NodeConfiguration& node_cfg);
+  UnderAttack(const std::string &name, const BT::NodeConfiguration &node_cfg);
   BT::NodeStatus tick() override;
   static BT::PortsList providedPorts();
+
+ private:
+  bool is_under_attack_;
 };
 
 class NoAmmo : public BT::ConditionNode {
  public:
-  NoAmmo(const std::string &name, const BT::NodeConfiguration& node_cfg);
+  NoAmmo(const std::string &name, const BT::NodeConfiguration &node_cfg);
   BT::NodeStatus tick() override;
   static BT::PortsList providedPorts();
 };

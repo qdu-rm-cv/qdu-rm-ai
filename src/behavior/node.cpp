@@ -7,7 +7,7 @@ namespace Action {
 
 Track::Track(const std::string& name, const BT::NodeConfiguration& node_cfg)
     : BT::SyncActionNode(name, node_cfg) {
-  SPDLOG_DEBUG("[Action::Track] Constructe: {}.", name);
+  SPDLOG_DEBUG("[Action::Track] Construct: {}.", name);
 }
 
 BT::NodeStatus Track::tick() {
@@ -21,7 +21,7 @@ BT::PortsList Track::providedPorts() {
 
 Attack::Attack(const std::string& name, const BT::NodeConfiguration& node_cfg)
     : BT::SyncActionNode(name, node_cfg) {
-  SPDLOG_DEBUG("[Action::Attack] Constructe: {}.", name);
+  SPDLOG_DEBUG("[Action::Attack] Construct: {}.", name);
 }
 
 BT::NodeStatus Attack::tick() {
@@ -35,7 +35,7 @@ BT::PortsList Attack::providedPorts() {
 
 Dodge::Dodge(const std::string& name, const BT::NodeConfiguration& node_cfg)
     : BT::SyncActionNode(name, node_cfg) {
-  SPDLOG_DEBUG("[Action::Dodge] Constructe: {}.", name);
+  SPDLOG_DEBUG("[Action::Dodge] Construct: {}.", name);
 }
 
 BT::NodeStatus Dodge::tick() {
@@ -55,7 +55,7 @@ EnamyVisable::EnamyVisable(const std::string& name,
                            const BT::NodeConfiguration& node_cfg)
     : BT::ConditionNode(name, {}) {
   (void)node_cfg;
-  SPDLOG_DEBUG("[Condition::EnamyVisable] Constructe: {}.", name);
+  SPDLOG_DEBUG("[Condition::EnamyVisable] Construct: {}.", name);
 }
 
 BT::NodeStatus EnamyVisable::tick() {
@@ -70,7 +70,7 @@ BT::PortsList EnamyVisable::providedPorts() {
 LowHP::LowHP(const std::string& name, const BT::NodeConfiguration& node_cfg)
     : BT::ConditionNode(name, {}) {
   (void)node_cfg;
-  SPDLOG_DEBUG("[Condition::LowHP] Constructe: {}.", name);
+  SPDLOG_DEBUG("[Condition::LowHP] Construct: {}.", name);
 }
 
 BT::NodeStatus LowHP::tick() {
@@ -86,7 +86,7 @@ UnderAttack::UnderAttack(const std::string& name,
                          const BT::NodeConfiguration& node_cfg)
     : BT::ConditionNode(name, {}) {
   (void)node_cfg;
-  SPDLOG_DEBUG("[Condition::LowHP] Constructe: {}.", name);
+  SPDLOG_DEBUG("[Condition::LowHP] Construct: {}.", name);
 }
 
 BT::NodeStatus UnderAttack::tick() {
@@ -101,7 +101,7 @@ BT::PortsList UnderAttack::providedPorts() {
 NoAmmo::NoAmmo(const std::string& name, const BT::NodeConfiguration& node_cfg)
     : BT::ConditionNode(name, {}) {
   (void)node_cfg;
-  SPDLOG_DEBUG("[Condition::NoAmmo] Constructe: {}.", name);
+  SPDLOG_DEBUG("[Condition::NoAmmo] Construct: {}.", name);
 }
 
 BT::NodeStatus NoAmmo::tick() {

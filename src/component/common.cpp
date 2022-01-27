@@ -159,7 +159,7 @@ Model StringToModel(std::string name) {
   if (!name.compare("engineer") || !name.compare("2")) {
     return Model::kENGINEER;
   }
-  if (!name.compare("frone")) {
+  if (!name.compare("drone")) {
     return Model::kDRONE;
   }
   if (!name.compare("sentry")) {
