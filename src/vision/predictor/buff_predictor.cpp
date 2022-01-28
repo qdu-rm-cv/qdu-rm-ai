@@ -219,8 +219,7 @@ void BuffPredictor::BigBuffPredict() {
  *
  */
 void BuffPredictor::SmallBuffPredict() {
-  cv::Point2f center = buff_.GetCenter();
-  SPDLOG_DEBUG("center is {},{}", center.x, center.y);
+  SPDLOG_DEBUG("center is {},{}", buff_.GetCenter().x, buff_.GetCenter().y);
 
   double theta = PredictIntegralRotatedAngle(GetTime());
   if (direction_ == component::Direction::kCW) theta = -theta;
