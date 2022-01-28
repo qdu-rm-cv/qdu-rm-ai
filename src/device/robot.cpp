@@ -5,7 +5,7 @@
 
 namespace {
 
-const double kLIMIT = 0.04;
+const double kFACTOR = 0.04;
 
 }  // namespace
 
@@ -108,6 +108,8 @@ game::Race Robot::GetRace() {
   return game::Race::kUNKNOWN;
 }
 
+double Robot::GetTime() { return ref_.time; }
+
 game::RFID Robot::GetRFID() {
   if (ref_.rfid == AI_RFID_BUFF)
     return game::RFID::kBUFF;
@@ -116,22 +118,50 @@ game::RFID Robot::GetRFID() {
   return game::RFID::kUNKNOWN;
 }
 
-double Robot::GetTime() { return ref_.time; }
+int Robot::GetBaseHP() { return ref_.base_hp; }
 
-double Robot::GetBalletSpeed() { return mcu_.ball_speed; }
+int Robot::GetSentryHP() { return ref_.sentry_hp; }
+
+int Robot::GetBalletRemain() { return ref_.ballet_remain; }
+
+game::Arm Robot::GetArm() {
+  int num = 0;
+  for (int i = 0; i < 6; i++) {
+    num += ((mcu_.notice >> (i)) & 0x01);
+  }
+  if (num != 1)
+    return game::Arm::kUNKNOWN;
+  else
+    switch (mcu_.notice & 0x7F) {
+      case AI_NOTICE_INFENCY:
+        return game::Arm::kINFANTRY;
+      case AI_NOTICE_HERO:
+        return game::Arm::kHERO;
+      case AI_NOTICE_ENGINEER:
+        return game::Arm::kENGINEER;
+      case AI_NOTICE_DRONE:
+        return game::Arm::kDRONE;
+      case AI_NOTICE_SENTRY:
+        return game::Arm::kSENTRY;
+      case AI_NOTICE_DART:
+        return game::Arm::kDART;
+      case AI_NOTICE_RADAR:
+        return game::Arm::kRADAR;
+      default:
+        return game::Arm::kUNKNOWN;
+    }
+}
 
 cv::Mat Robot::GetRotMat() {
   cv::Quatf q(mcu_.quat.q0, mcu_.quat.q1, mcu_.quat.q2, mcu_.quat.q3);
   return cv::Mat(q.toRotMat3x3(), true);
 }
 
-void Robot::Aim(component::Euler aiming_eulr, bool auto_fire) {
-  data_.gimbal.pit = aiming_eulr.pitch;
-  data_.gimbal.rol = aiming_eulr.roll;
-  data_.gimbal.yaw = aiming_eulr.yaw;
+float Robot::GetBalletSpeed() { return mcu_.ball_speed; }
 
-  // TODO
+float Robot::GetChassicSpeed() { return mcu_.chassis_speed; }
 
+void Robot::Pack(Protocol_DownData_t &data, double distance) {
   double w = mcu_.quat.q0, x = mcu_.quat.q1, y = mcu_.quat.q2, z = mcu_.quat.q3;
   component::Euler euler;
 
@@ -150,20 +180,15 @@ void Robot::Aim(component::Euler aiming_eulr, bool auto_fire) {
   const float cosy_cosp = 1.0f - 2.0f * (y * y + z * z);
   euler.yaw = atan2f(siny_cosp, cosy_cosp);
 
-  if (!auto_fire)
-    data_.notice |= 0x07;
-  else {
-    if (fabs(euler.pitch - aiming_eulr.pitch) >= kLIMIT)
-      ;
-    else if (fabs(euler.roll - aiming_eulr.roll) >= kLIMIT)
-      ;
-    else if (fabs(euler.yaw - aiming_eulr.pitch) >= kLIMIT)
-      ;
-    else
-      data_.notice |= AI_NOTICE_FIRE;
-  }
+  data.notice &= ~AI_NOTICE_FIRE;
+  if (fabs(euler.pitch - data.gimbal.pit) >= kFACTOR * distance)
+    ;
+  else if (fabs(euler.roll - data.gimbal.rol) >= kFACTOR * distance)
+    ;
+  else if (fabs(euler.yaw - data.gimbal.yaw) >= kFACTOR * distance)
+    ;
+  else
+    data.notice |= AI_NOTICE_FIRE;
 
-  commandq_.push(data_);
+  commandq_.push(data);
 }
-
-void Robot::Move() {}
