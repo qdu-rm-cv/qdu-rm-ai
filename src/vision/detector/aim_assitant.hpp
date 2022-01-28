@@ -19,8 +19,9 @@ class AimAssitant {
   AimAssitant(game::Arm arm);
   ~AimAssitant();
 
-  void Init(const std::string& armor_param, const std::string& buff_param,
-            const std::string& snipe_param, game::Team enemy_team);
+  void LoadParams(const std::string& armor_param, const std::string& buff_param,
+                  const std::string& snipe_param);
+  void SetEnemyTeam(game::Team enemy_team);
   void SetRFID(game::RFID rfid);
   void SetArm(game::Arm arm);
 

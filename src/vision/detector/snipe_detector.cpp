@@ -39,6 +39,7 @@ void SnipeDetector::FindArmor(const cv::Mat &frame) { (void)frame; }
 void SnipeDetector::VisualizeArmor(const cv::Mat &output, bool add_lable) {
   (void)output;
   (void)add_lable;
+  // TODO : Realize
 }
 
 SnipeDetector::SnipeDetector() { SPDLOG_TRACE("Constructed."); }
@@ -46,6 +47,7 @@ SnipeDetector::SnipeDetector() { SPDLOG_TRACE("Constructed."); }
 SnipeDetector::SnipeDetector(const std::string &params_path,
                              game::Team enemy_team) {
   LoadParams(params_path);
+  enemy_team_ = enemy_team;
   SPDLOG_TRACE("Constructed.");
 }
 
@@ -59,11 +61,12 @@ void SnipeDetector::SetEnemyTeam(game::Team enemy_team) {
 const tbb::concurrent_vector<Armor> &SnipeDetector::Detect(
     const cv::Mat &frame) {
   (void)frame;
+  targets_.clear();
+  // TODO : Realize
   targets_.emplace_back(Armor());
-
   return targets_;
 }
 
 void SnipeDetector::VisualizeResult(const cv::Mat &output, int verbose) {
-  (void)output;
+  VisualizeArmor(output, verbose > 2);
 }
