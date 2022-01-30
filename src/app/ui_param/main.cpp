@@ -23,7 +23,7 @@ class UIParam : private App {
 
     /* 初始化设备 */
     cam_.Open(0);
-    cam_.Setup(480, 640);
+    cam_.Setup(640, 480);
     detector_.SetEnemyTeam(game::Team::kBLUE);
     armor_param_.Read(kPARAM);
   }

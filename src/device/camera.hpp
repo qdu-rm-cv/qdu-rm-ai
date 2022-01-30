@@ -34,12 +34,12 @@ class Camera {
   /**
    * @brief 设置相机参数
    *
-   * @param height 输出图像高度
    * @param width 输出图像宽度
+   * @param height 输出图像高度
    */
-  void Setup(unsigned int height, unsigned int width) {
-    frame_h_ = height;
+  void Setup(unsigned int width, unsigned int height) {
     frame_w_ = width;
+    frame_h_ = height;
 
     // TODO: 配置相机输入输出
   }
