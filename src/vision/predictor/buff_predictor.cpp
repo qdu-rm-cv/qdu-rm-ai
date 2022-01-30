@@ -62,8 +62,7 @@ static double PredictIntegralRotatedAngle(double t) {
 void BuffPredictor::InitDefaultParams(const std::string &params_path) {
   cv::FileStorage fs(params_path,
                      cv::FileStorage::WRITE | cv::FileStorage::FORMAT_JSON);
-  SPDLOG_WARN("[BuffPredictor][InitDefaultParams] filter method: {}",
-              filter_.method_);
+  SPDLOG_WARN("filter method: {}", filter_.method_);
   if (filter_.method_ != Method::kUNKNOWN) {
     if (filter_.method_ == Method::kEKF) {
       fs << "is_EKF" << true;
@@ -73,7 +72,7 @@ void BuffPredictor::InitDefaultParams(const std::string &params_path) {
       fs << "R_AC_mat" << EKF::Matx33d::eye();
       fs << "is_KF" << false;
     } else if (filter_.method_ == Method::kKF) {
-      SPDLOG_WARN("[BuffPredictor][InitDefaultParams] write kf param");
+      SPDLOG_WARN("write kf param");
       fs << "is_EKF" << false;
       fs << "Q_mat" << EKF::Matx55d::zeros();
       fs << "R_mat" << EKF::Matx33d::zeros();
@@ -237,7 +236,7 @@ void BuffPredictor::SmallBuffPredict() {
 BuffPredictor::BuffPredictor() {
   std::vector<double> init_vec = {4., 2.};
   filter_.Init(init_vec);
-  SPDLOG_DEBUG("[BuffPredictor][Construct] filter init");
+  SPDLOG_DEBUG("filter init");
   race_ = game::Race::kUNKNOWN;
   SetTime(-200);
   SPDLOG_TRACE("Constructed.");
@@ -256,7 +255,7 @@ BuffPredictor::BuffPredictor() {
  * @param param 参数文件路径
  */
 BuffPredictor::BuffPredictor(const std::string &param) {
-  SPDLOG_WARN("[BuffPredictor][Construct] Start construct");
+  SPDLOG_WARN("Start construct");
 #if 0
   //* 1. filter init
   if (filter_.method_ == Method::kUNKNOWN) {
@@ -265,7 +264,7 @@ BuffPredictor::BuffPredictor(const std::string &param) {
     else if (params_.is_KF)
       filter_.method_ = Method::kKF;
   }
-  SPDLOG_DEBUG("[BuffPredictor][Construct] filter method : {}", filter_.method_);
+  SPDLOG_DEBUG("Filter method : {}", filter_.method_);
   std::vector<double> init_vec;
   if (filter_.method_ == Method::kKF) {
     init_vec.push_back(4.);
@@ -274,26 +273,26 @@ BuffPredictor::BuffPredictor(const std::string &param) {
     for (std::size_t i = 0; i < 5; i++) init_vec.push_back(0.);
   }
   filter_.Init(init_vec);
-  SPDLOG_DEBUG("[BuffPredictor][Construct] filter init");
+  SPDLOG_DEBUG("Filter init");
 #else
   //* 1st. filter init
   std::vector<double> init_vec = {4., 2.};
   filter_.Init(init_vec);
-  SPDLOG_DEBUG("[BuffPredictor][Construct] filter init");
+  SPDLOG_INFO("Filter init");
 #endif
   LoadParams(param);
-  SPDLOG_DEBUG("[BuffPredictor][Construct] param init");
+  SPDLOG_INFO("Param init");
 
   //* 2nd. robot relation init
   race_ = game::Race::kUNKNOWN;
   SetTime(-200);
-  SPDLOG_DEBUG("[BuffPredictor][Construct] race and end_time init");
+  SPDLOG_INFO("Race and end_time init");
 
   //* 3rd. buff init
   state_ = component::BuffState::kUNKNOWN;
   buff_ = Buff();
   circumference_.clear();
-  SPDLOG_DEBUG("[BuffPredictor][Construct] buff init");
+  SPDLOG_INFO("Buff init");
 
   SPDLOG_TRACE("Constructed.");
 }
@@ -314,8 +313,7 @@ void BuffPredictor::SetBuff(const Buff &buff) {
   buff_ = buff;
   if (circumference_.size() < 5) {
     circumference_.push_back(buff_.GetTarget().ImageCenter());
-    SPDLOG_DEBUG("[BuffPredictor][SetBuff]Get Buff Center {},{} ",
-                 buff_.GetTarget().ImageCenter().x,
+    SPDLOG_DEBUG("Get Buff Center {},{} ", buff_.GetTarget().ImageCenter().x,
                  buff_.GetTarget().ImageCenter().y);
   }
 }
@@ -377,7 +375,7 @@ void BuffPredictor::SetTime(double time) {
   auto end = high_resolution_clock::time_point();
   if (time < 0) {
     end_time_ = now;
-    SPDLOG_WARN("[BuffPredictor][SetTime]time < 0");
+    SPDLOG_WARN("time < 0");
   }
   if (end_time_ == now) {
     double game_time = 0;

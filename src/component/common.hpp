@@ -2,6 +2,8 @@
 
 #include <string>
 
+#include "spdlog/spdlog.h"
+
 namespace component {
 
 struct Euler {
@@ -96,3 +98,16 @@ namespace algo {
 double RelativeDifference(double a, double b);
 
 }  // namespace algo
+
+namespace RMlogger {
+
+const std::string fmt0("%+");
+const std::string fmt1("[%Y-%m-%d %T.%3!u] %^[%l] [%!]%$ [%s:%#] %v");
+const std::string fmt2(
+    "[%Y-%m-%d %T.%3!u] %^[%l]%$ [%s:%#] \033[34m[%!]\033[0m %v");
+
+void SetLogger(
+    spdlog::level::level_enum level = spdlog::level::level_enum::debug,
+    const std::string& fmt = fmt2);
+
+}  // namespace RMlogger

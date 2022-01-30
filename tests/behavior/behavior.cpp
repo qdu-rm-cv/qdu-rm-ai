@@ -2,11 +2,13 @@
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
+#include "common.hpp"
 #include "gtest/gtest.h"
 #include "node.hpp"
+#include "spdlog/fmt/bin_to_hex.h"
 #include "spdlog/spdlog.h"
 
-TEST(TestBehavior, ExampleTest) { EXPECT_EQ(1, 1); }
+namespace {
 
 static const char *const xml_tree_test = R"(
 
@@ -25,6 +27,8 @@ static const char *const xml_tree_test = R"(
  
 )";
 
+}
+
 TEST(TestBehavior, TestSimpleTree) {
   BT::BehaviorTreeFactory factory;
 
@@ -36,6 +40,7 @@ TEST(TestBehavior, TestSimpleTree) {
 }
 
 TEST(TestBehavior, TestWithoutTree) {
+  RMlogger::SetLogger(spdlog::level::level_enum::warn);
   Behavior manager(false, false, false);
   manager.Init(300, 400, 200);
   component::Euler elur = {1, 1, 1};
@@ -49,7 +54,7 @@ TEST(TestBehavior, TestWithoutTree) {
     float pitch = data.gimbal.pit;
     float yaw = data.gimbal.yaw;
     float roll = data.gimbal.rol;
-    SPDLOG_WARN("{}", data.notice);
+    SPDLOG_WARN("{0:b}", (unsigned int)data.notice);
     SPDLOG_WARN("vx : {}, vy : {}, wz : {}", vx, vy, wz);
     SPDLOG_WARN("pit : {}, yaw : {}, rol : {}", pitch, yaw, roll);
     std::this_thread::sleep_for(std::chrono::milliseconds(100));

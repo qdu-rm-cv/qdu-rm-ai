@@ -26,6 +26,7 @@ const std::string kPARAM = "../../../runtime/RMUT2021_Buff.json";
 }  // namespace
 
 TEST(TestVision, TestKalman) {
+  RMlogger::SetLogger(spdlog::level::debug);
   Kalman filter(4, 2);
   cv::Mat predict_mat;
   cv::Mat img(300, 1200, CV_8UC3, cv::Scalar(0, 0, 0));
@@ -42,9 +43,11 @@ TEST(TestVision, TestKalman) {
     cv::imshow("img", img);
     // cv::waitKey(0);
   }
+  cv::destroyWindow("img");
 }
 
 TEST(TestVision, TestKalmanBuffPredictor) {
+  RMlogger::SetLogger(spdlog::level::debug);
   Kalman filter(4, 2);
   cv::VideoCapture cap(kVIDEO);
   cv::Mat frame;
@@ -71,6 +74,6 @@ TEST(TestVision, TestKalmanBuffPredictor) {
         break;
     }
   }
-
+  cv::destroyAllWindows();
   cap.release();
 }

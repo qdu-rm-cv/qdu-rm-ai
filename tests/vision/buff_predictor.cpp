@@ -15,6 +15,7 @@ const std::string kPARAM_PREDICT("../../../runtime/RMUT2022_Buff_Pre.json");
 }  // namespace
 
 TEST(TestVision, TestKalmanPredictor) {
+  RMlogger::SetLogger();
   cv::Mat frame;
   BuffDetector detector(kPARAM_DETECT, game::Team::kBLUE);
   BuffPredictor predictor(kPARAM_PREDICT);
@@ -27,7 +28,7 @@ TEST(TestVision, TestKalmanPredictor) {
     return;
   }
 
-  SPDLOG_WARN("[TestKalmanPredictor][Start Test]");
+  SPDLOG_WARN("[Start Test]");
   cap >> frame;
   while (!frame.empty()) {
     cap >> frame;
@@ -47,5 +48,6 @@ TEST(TestVision, TestKalmanPredictor) {
     } else if (key == ' ')
       cv::waitKey(0);
   }
+  cv::destroyAllWindows();
   cap.release();
 }

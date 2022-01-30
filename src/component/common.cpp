@@ -189,3 +189,12 @@ double RelativeDifference(double a, double b) {
 }
 
 }  // namespace algo
+
+namespace RMlogger {
+
+void SetLogger(spdlog::level::level_enum level, const std::string& fmt) {
+  spdlog::set_pattern(fmt);
+  spdlog::set_level(level);
+}
+
+}  // namespace RMlogger
