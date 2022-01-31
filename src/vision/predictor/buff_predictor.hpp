@@ -57,18 +57,6 @@ class BuffPredictor : public Predictor<Armor, BuffPredictorParam, Kalman> {
    */
   Armor RotateArmor(double theta);
 
-  /**
-   * @brief 大符预测
-   *
-   */
-  void BigBuffPredict();
-
-  /**
-   * @brief 小符预测
-   *
-   */
-  void SmallBuffPredict();
-
  public:
   /**
    * @brief Construct a new BuffPredictor object

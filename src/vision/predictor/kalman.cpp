@@ -7,6 +7,12 @@
 namespace {
 
 const unsigned int kSCALIONGFACTOR = 10;
+const unsigned int kWIDTH = 640;
+const unsigned int kHEIGHT = 480;
+
+const cv::Point2d kSIZE2(kWIDTH / kSCALIONGFACTOR, kHEIGHT / kSCALIONGFACTOR);
+const cv::Point3d kSIZE3(kWIDTH / kSCALIONGFACTOR, kHEIGHT / kSCALIONGFACTOR,
+                         std::sqrt(kWIDTH* kHEIGHT) / kSCALIONGFACTOR);
 
 }  // namespace
 
@@ -79,15 +85,15 @@ void Kalman::Init(const std::vector<double>& vec) {
   InnerInit(static_cast<int>(vec[0]), static_cast<int>(vec[1]));
 }
 
-const cv::Point2d Kalman::Predict(const cv::Point2d& measurements_point,
-                                  const cv::Mat& frame) {
+const cv::Point2d Kalman::Predict(const cv::Point2d& measurements_point) {
   last_predict_matx_ = cur_predict_matx_;
   last_measure_matx_ = cur_measure_matx_;
 
-  if (abs(measurements_point.x - last_measure_matx_.at<double>(0, 0)) >
-          frame.size().width / kSCALIONGFACTOR ||
-      abs(measurements_point.y - last_measure_matx_.at<double>(0, 1)) >
-          frame.size().height / kSCALIONGFACTOR)
+  cv::Point2d diff = cv::Point2d(last_measure_matx_.at<double>(0, 0),
+                                 last_measure_matx_.at<double>(0, 1)) -
+                     measurements_point;
+
+  if (abs(diff.x) > kSIZE2.x || abs(diff.y) > kSIZE2.y)
     error_frame_ += 1;
   else if (measurements_point == cv::Point2d(0., 0.))
     error_frame_ += 1;
@@ -109,18 +115,17 @@ const cv::Point2d Kalman::Predict(const cv::Point2d& measurements_point,
                      cur_predict_matx_.at<double>(0, 1));
 }
 
-const cv::Point3d Kalman::Predict(const cv::Point3d& measurements_point,
-                                  const cv::Mat& frame) {
+const cv::Point3d Kalman::Predict(const cv::Point3d& measurements_point) {
   last_predict_matx_ = cur_predict_matx_;
   last_measure_matx_ = cur_measure_matx_;
-  cv::Size size = frame.size();
 
-  if (abs(measurements_point.x - last_measure_matx_.at<double>(0, 0)) >
-          size.width / kSCALIONGFACTOR ||
-      abs(measurements_point.y - last_measure_matx_.at<double>(0, 1)) >
-          size.height / kSCALIONGFACTOR ||
-      abs(measurements_point.y - last_measure_matx_.at<double>(0, 2)) >
-          std::sqrt(size.area()) / kSCALIONGFACTOR)
+  cv::Point3d diff = cv::Point3d(last_measure_matx_.at<double>(0, 0),
+                                 last_measure_matx_.at<double>(0, 1),
+                                 last_measure_matx_.at<double>(0, 2)) -
+                     measurements_point;
+
+  if (abs(diff.x) > kSIZE3.x || abs(diff.y) > kSIZE3.y ||
+      abs(diff.z) > kSIZE3.z)
     error_frame_ += 1;
   else if (measurements_point == cv::Point3d(0., 0., 0.))
     error_frame_ += 1;
@@ -144,16 +149,14 @@ const cv::Point3d Kalman::Predict(const cv::Point3d& measurements_point,
                      cur_predict_matx_.at<double>(0, 2));
 }
 
-const cv::Mat& Kalman::Predict(const cv::Mat& measurements,
-                               const cv::Mat& frame) {
+const cv::Mat& Kalman::Predict(const cv::Mat& measurements) {
   last_predict_matx_ = cur_predict_matx_;
   last_measure_matx_ = cur_measure_matx_;
 
   std::vector<double> measure_value(measurements_);
   std::vector<double> last_measure_value(measurements_);
   double product = measure_value.size() > 1 ? 1 : measure_value.back();
-  const unsigned int edge =
-      std::min(frame.size().width, frame.size().height) / kSCALIONGFACTOR;
+  const unsigned int edge = std::min(kSIZE2.x, kSIZE2.y);
 
   for (std::size_t i = 0; i < measure_value.size(); i++) {
     measure_value[i] = measurements.at<double>(0, i);

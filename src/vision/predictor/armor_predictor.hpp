@@ -18,6 +18,7 @@ struct ArmorPredictParam {
 class ArmorPredictor : public Predictor<Armor, ArmorPredictParam, Kalman> {
  private:
   Armor armor_;
+  tbb::concurrent_vector<Armor> armors_;
   std::chrono::milliseconds duration_direction_, duration_predict_;
 
   void MatchArmor();
@@ -31,6 +32,7 @@ class ArmorPredictor : public Predictor<Armor, ArmorPredictParam, Kalman> {
   ~ArmorPredictor();
 
   void SetArmor(const Armor &armor);
+  void SetArmors(const tbb::concurrent_vector<Armor> &armors);
 
   const tbb::concurrent_vector<Armor> &Predict();
 

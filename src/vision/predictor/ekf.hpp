@@ -30,5 +30,5 @@ class EKF : public Filter {
 
   void Init(const std::vector<double>& vec);
 
-  const cv::Mat& Predict(const cv::Mat& measurements, const cv::Mat& frame);
+  const cv::Mat& Predict(const cv::Mat& measurements);
 };

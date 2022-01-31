@@ -21,8 +21,7 @@ void EKF::Init(const std::vector<double>& vec) {
   InnerInit(Vec5d(vec[0], vec[1], vec[2], vec[3], vec[4]));
 }
 
-const cv::Mat& EKF::Predict(const cv::Mat& measurements, const cv::Mat& frame) {
-  (void)frame;
+const cv::Mat& EKF::Predict(const cv::Mat& measurements) {
   return measurements;
 }
 

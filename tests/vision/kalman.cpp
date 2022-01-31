@@ -33,7 +33,7 @@ TEST(TestVision, TestKalman) {
 
   for (auto& pt : points) {
     cv::Mat point_mat(pt);
-    predict_mat = filter.Predict(point_mat, img);
+    predict_mat = filter.Predict(point_mat);
     cv::Point2d predict_pt(predict_mat.at<double>(0, 0),
                            predict_mat.at<double>(0, 1));
 
@@ -58,7 +58,7 @@ TEST(TestVision, TestKalmanBuffPredictor) {
     cap >> frame;
     auto buffs = detecter.Detect(frame);
     cv::Point2d target_center = buffs.back().GetTarget().ImageCenter();
-    cv::Point2d pt = filter.Predict(target_center, frame);
+    cv::Point2d pt = filter.Predict(target_center);
     cv::circle(frame, target_center, 3, kGREEN, -1);
     cv::circle(frame, pt, 3, kBLUE, -1);
     cv::imshow("WINDOW", frame);

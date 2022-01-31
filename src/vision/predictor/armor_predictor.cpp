@@ -12,8 +12,7 @@ const cv::Scalar kYELLOW(0., 255., 255.);
 void ArmorPredictor::MatchArmor() {
   cv::Point2d center = armor_.ImageCenter();
   cv::Size2d size = armor_.GetRect().size;
-  cv::Point2d predict_pt =
-      filter_.Predict(center, cv::Mat(cv::Size2i(640, 480), CV_8UC3));
+  cv::Point2d predict_pt = filter_.Predict(center);
   cv::RotatedRect rect(predict_pt, size, armor_.GetRect().angle);
   predicts_.emplace_back(Armor(rect));
 }
@@ -50,6 +49,10 @@ ArmorPredictor::ArmorPredictor(const std::string &param) {
 ArmorPredictor::~ArmorPredictor() { SPDLOG_TRACE("Destructed."); }
 
 void ArmorPredictor::SetArmor(const Armor &armor) { armor_ = armor; }
+
+void ArmorPredictor::SetArmors(const tbb::concurrent_vector<Armor> &armors) {
+  armors_ = armors;
+}
 
 const tbb::concurrent_vector<Armor> &ArmorPredictor::Predict() {
   predicts_.clear();

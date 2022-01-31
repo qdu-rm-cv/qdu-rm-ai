@@ -188,45 +188,23 @@ void BuffPredictor::MatchPredict() {
   }
   if (component::Direction::kUNKNOWN == direction_) return;
   component::BuffState state = GetState();
+  double theta = 0;
   if (state == component::BuffState::kSMALL) {
-    SmallBuffPredict();
+    theta = PredictIntegralRotatedAngle(GetTime());
+    if (direction_ == component::Direction::kCW) theta = -theta;
   } else if (state == component::BuffState::kBIG) {
-    BigBuffPredict();
+    theta = CalRotatedAngle(filter_.Predict(buff_.GetTarget().ImageCenter()),
+                            buff_.GetCenter());
   }
+  theta = theta / 180 * CV_PI;
+  Armor armor = RotateArmor(theta);
+  /* 没有Buff对应的模型，并且在当时情况下不可能有哨兵，故用kSENTRY代替 */
+  armor.SetModel(game::Model::kSENTRY);
+  predicts_.emplace_back(armor);
+  SPDLOG_WARN("Buff has been predicted.");
 
   const auto stop = std::chrono::system_clock::now();
   duration_predict_ = duration_cast<std::chrono::milliseconds>(stop - start);
-}
-
-/**
- * @brief 大符预测
- *
- */
-void BuffPredictor::BigBuffPredict() {
-  cv::Mat frame(cv::Size(640, 480), CV_8UC3);
-  cv::Point2d target_center = buff_.GetTarget().ImageCenter();
-  cv::Point2d predicts_pt = filter_.Predict(target_center, frame);
-  double theta = CalRotatedAngle(predicts_pt, buff_.GetCenter());
-  theta = theta / 180 * CV_PI;
-  Armor armor = RotateArmor(theta);
-  predicts_.emplace_back(armor);
-  SPDLOG_WARN("BigBuff has been predicted.");
-}
-
-/**
- * @brief 小符预测
- *
- */
-void BuffPredictor::SmallBuffPredict() {
-  SPDLOG_DEBUG("center is {},{}", buff_.GetCenter().x, buff_.GetCenter().y);
-
-  double theta = PredictIntegralRotatedAngle(GetTime());
-  if (direction_ == component::Direction::kCW) theta = -theta;
-  theta = theta / 180 * CV_PI;
-  SPDLOG_WARN("Delta theta : {}", theta);
-  Armor armor = RotateArmor(theta);
-  predicts_.emplace_back(armor);
-  SPDLOG_WARN("SmallBuff has been predicted.");
 }
 
 /**
