@@ -1,5 +1,7 @@
 #include "snipe_detector.hpp"
 
+#include <execution>
+
 using std::chrono::duration_cast;
 using std::chrono::high_resolution_clock;
 
@@ -34,12 +36,33 @@ bool SnipeDetector::PrepareParams(const std::string &params_path) {
   }
 }
 
-void SnipeDetector::FindArmor(const cv::Mat &frame) { (void)frame; }
+void SnipeDetector::FindArmor(const cv::Mat &frame) {
+  (void)frame;
+  // TODO :Realize
+  // Formed an armor then please use method `SetModel(game::Model::kOUTPOST);`
+  targets_.emplace_back(Armor());
+}
 
 void SnipeDetector::VisualizeArmor(const cv::Mat &output, bool add_lable) {
-  (void)output;
-  (void)add_lable;
-  // TODO : Realize
+  auto draw_armor = [&](const auto &armor) {
+    auto vertices = armor.ImageVertices();
+    auto num_vertices = vertices.size();
+    for (std::size_t i = 0; i < num_vertices; ++i) {
+      cv::line(output, vertices[i], vertices[(i + 1) % num_vertices], kGREEN);
+    }
+    cv::drawMarker(output, armor.ImageCenter(), kGREEN, cv::MARKER_DIAMOND);
+
+    if (add_lable) {
+      cv::putText(output,
+                  cv::format("%.2f, %.2f", armor.ImageCenter().x,
+                             armor.ImageCenter().y),
+                  vertices[1], kCV_FONT, 1.0, kGREEN);
+    }
+  };
+  if (!targets_.empty()) {
+    std::for_each(std::execution::par_unseq, targets_.begin(), targets_.end(),
+                  draw_armor);
+  }
 }
 
 SnipeDetector::SnipeDetector() { SPDLOG_TRACE("Constructed."); }
@@ -60,10 +83,8 @@ void SnipeDetector::SetEnemyTeam(game::Team enemy_team) {
 
 const tbb::concurrent_vector<Armor> &SnipeDetector::Detect(
     const cv::Mat &frame) {
-  (void)frame;
   targets_.clear();
-  // TODO : Realize
-  targets_.emplace_back(Armor());
+  FindArmor(frame);
   return targets_;
 }
 

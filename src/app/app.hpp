@@ -19,10 +19,10 @@ class App {
 
 #if (SPDLOG_ACTIVE_LEVEL == SPDLOG_LEVEL_DEBUG)
     spdlog::flush_on(spdlog::level::debug);
-    RMlogger::SetLogger(spdlog::level::debug, RMlogger::fmt1);
+    RMlogger::SetLogger(spdlog::level::debug, RMlogger::fmt0);
 #elif (SPDLOG_ACTIVE_LEVEL == SPDLOG_LEVEL_INFO)
     spdlog::flush_on(spdlog::level::info);
-    RMlogger::SetLogger(spdlog::level::info, RMlogger::fmt1);
+    RMlogger::SetLogger(spdlog::level::info, RMlogger::fmt0);
 #endif
     SPDLOG_DEBUG("Logging setted.");
   }

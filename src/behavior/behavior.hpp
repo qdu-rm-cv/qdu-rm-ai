@@ -3,11 +3,11 @@
 #include "common.hpp"
 #include "protocol.h"
 
-typedef struct {
+struct NodeStatus {
   bool low_hp;
   bool under_attack;
   bool bullet_empty;
-} NodeStatus;
+};
 
 class Behavior {
  private:

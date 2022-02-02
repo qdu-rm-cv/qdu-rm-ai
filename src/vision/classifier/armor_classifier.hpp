@@ -9,7 +9,6 @@
 class ArmorClassifier {
  private:
   double conf_;
-  int class_id_;
   std::vector<game::Model> classes_;
   cv::dnn::Net net_;
   cv::Size net_input_size_;
