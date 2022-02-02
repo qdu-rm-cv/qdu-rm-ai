@@ -25,5 +25,5 @@ class Behavior {
   void Aim(component::Euler aiming_eulr);
   void Move(float v);
 
-  const Protocol_DownData_t GetData() const;
+  Protocol_DownData_t &GetData();
 };

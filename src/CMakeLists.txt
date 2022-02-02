@@ -14,6 +14,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/vision)
 #---------------------------------------------------------------------------------------
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/demo/armor)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/demo/aim_assistant)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/demo/camera)
 
 #---------------------------------------------------------------------------------------

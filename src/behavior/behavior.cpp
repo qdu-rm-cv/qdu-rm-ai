@@ -61,4 +61,4 @@ void Behavior::Move(float v) {
     data_.chassis_move_vec.wz = M_PI / 3;
 }
 
-const Protocol_DownData_t Behavior::GetData() const { return data_; }
+Protocol_DownData_t &Behavior::GetData() { return data_; }
