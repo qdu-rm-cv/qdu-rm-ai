@@ -21,7 +21,7 @@ class Behavior {
            const bool &bullet_empty);
   ~Behavior();
 
-  void Init(int base_hp, int sentry_hp, int bullet_num);
+  void Update(int base_hp, int sentry_hp, int bullet_num);
   void Aim(component::Euler aiming_eulr);
   void Move(float v);
 

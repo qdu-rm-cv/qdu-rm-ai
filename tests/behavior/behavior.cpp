@@ -40,23 +40,23 @@ TEST(TestBehavior, TestSimpleTree) {
 }
 
 TEST(TestBehavior, TestWithoutTree) {
-  RMlogger::SetLogger(spdlog::level::level_enum::warn);
+  RMlogger::SetLogger(spdlog::level::level_enum::debug);
   Behavior manager(false, false, false);
-  manager.Init(300, 400, 200);
+  manager.Update(300, 400, 200);
   component::Euler elur = {1, 1, 1};
   for (int i = 0; i < 5; i++) {
     manager.Aim(elur);
-    manager.Move(3);
+    manager.Move(i);
     Protocol_DownData_t data = manager.GetData();
-    float vx = data.chassis_move_vec.vx;
-    float vy = data.chassis_move_vec.vy;
-    float wz = data.chassis_move_vec.wz;
-    float pitch = data.gimbal.pit;
-    float yaw = data.gimbal.yaw;
-    float roll = data.gimbal.rol;
-    SPDLOG_WARN("{0:b}", (unsigned int)data.notice);
-    SPDLOG_WARN("vx : {}, vy : {}, wz : {}", vx, vy, wz);
-    SPDLOG_WARN("pit : {}, yaw : {}, rol : {}", pitch, yaw, roll);
+    SPDLOG_WARN("{0:b}", static_cast<unsigned int>(data.notice));
+    SPDLOG_WARN("vx : {}, vy : {}, wz : {}",
+                static_cast<float>(data.chassis_move_vec.vx),
+                static_cast<float>(data.chassis_move_vec.vy),
+                static_cast<float>(data.chassis_move_vec.wz));
+    SPDLOG_WARN("pit : {}, yaw : {}, rol : {}",
+                static_cast<float>(data.gimbal.pit),
+                static_cast<float>(data.gimbal.yaw),
+                static_cast<float>(data.gimbal.rol));
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
 }

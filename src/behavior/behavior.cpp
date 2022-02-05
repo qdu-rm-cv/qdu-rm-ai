@@ -4,7 +4,13 @@
 
 #include "spdlog/spdlog.h"
 
-Behavior::Behavior() { SPDLOG_TRACE("Constructed."); }
+Behavior::Behavior() {
+  status_.low_hp = false;
+  status_.bullet_empty = false;
+  status_.under_attack = false;
+  last_base_hp_ = 3000;
+  SPDLOG_TRACE("Constructed.");
+}
 
 Behavior::Behavior(const bool &low_hp, const bool &under_attack,
                    const bool &bullet_empty) {
@@ -17,7 +23,7 @@ Behavior::Behavior(const bool &low_hp, const bool &under_attack,
 
 Behavior::~Behavior() { SPDLOG_TRACE("Destructed."); }
 
-void Behavior::Init(int base_hp, int sentry_hp, int bullet_num) {
+void Behavior::Update(int base_hp, int sentry_hp, int bullet_num) {
   if (sentry_hp < 100)
     status_.low_hp = true;
   else
@@ -48,10 +54,11 @@ void Behavior::Aim(component::Euler aiming_eulr) {
 }
 
 void Behavior::Move(float v) {
-  std::default_random_engine e(time(NULL));
-  std::uniform_real_distribution<float> u(3.0f, 5.0f);
-  // TODO : random 修改毫秒级播种函数
-  data_.chassis_move_vec.vy = u(e) * v / std::abs(v);
+  static std::default_random_engine engine(time(NULL));
+  static std::uniform_real_distribution<float> distributer(3.0f, 5.0f);
+
+  data_.chassis_move_vec.vy =
+      (v == 0 ? 1 : v / std::abs(v)) * distributer(engine);
   if (status_.low_hp || status_.bullet_empty) {
     data_.chassis_move_vec.vy *= 2;
   }

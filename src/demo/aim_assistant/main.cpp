@@ -17,9 +17,6 @@ class AutomaticAim : public App {
  public:
   AutomaticAim(const std::string& log_path) : App(log_path) {
     SPDLOG_WARN("***** Setting Up Auto Aiming System. *****");
-
-    /* 初始化设备 */
-    robot_.Init("/dev/ttyTHS2");
     cam_.Open(0);
     cam_.Setup(480, 640);
 
@@ -32,6 +29,11 @@ class AutomaticAim : public App {
                                 cv::Size(28, 28));
 
     compensator_.LoadCameraMat("runtime/MV-CA016-10UC-6mm.json");
+  }
+
+  void Init() {
+    /* 初始化设备 */
+    robot_.Init("/dev/ttyTHS2");
 
     do {
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -41,8 +43,19 @@ class AutomaticAim : public App {
     assitant_.SetRace(robot_.GetRace());
     assitant_.SetArm(robot_.GetArm());
     assitant_.SetTime(robot_.GetTime());
-    manager_.Init(robot_.GetBaseHP(), robot_.GetSentryHP(),
-                  robot_.GetBalletRemain());
+    manager_.Update(robot_.GetBaseHP(), robot_.GetSentryHP(),
+                    robot_.GetBalletRemain());
+  }
+
+  void TestInit() {
+    robot_.Init("/dev/ttyUSB0");
+
+    assitant_.SetEnemyTeam(game::Team::kBLUE);
+    assitant_.SetRace(game::Race::kRMUC);
+    assitant_.SetArm(game::Arm::kSENTRY);
+    assitant_.SetTime(10);
+    manager_.Update(robot_.GetBaseHP(), robot_.GetSentryHP(),
+                    robot_.GetBalletRemain());
   }
 
   ~AutomaticAim() {
@@ -56,17 +69,20 @@ class AutomaticAim : public App {
     SPDLOG_WARN("***** Running Auto Aiming System. *****");
 
     while (1) {
-      assitant_.SetRFID(robot_.GetRFID());
       cv::Mat frame = cam_.GetFrame();
       if (frame.empty()) continue;
+
+      assitant_.SetRFID(robot_.GetRFID());
       auto armors = assitant_.Aim(frame);
       compensator_.Apply(armors, frame, robot_.GetRotMat());
       Armor armor = armors.front();
-      manager_.Aim(armor.GetAimEuler());
-      robot_.Pack(manager_.GetData(), armor.GetTransVec().at<double>(0, 2));
-      // target = predictor.Predict(armors, frame);
-      // robot_.Aim(target.GetAimEuler(), false);
       assitant_.VisualizeResult(frame, 10);
+
+      manager_.Aim(armor.GetAimEuler());
+      if (robot_.GetArm() == game::Arm::kSENTRY)
+        manager_.Move(robot_.GetChassicSpeed());
+      robot_.Pack(manager_.GetData(), armor.GetTransVec().at<double>(0, 2));
+
       cv::imshow("show", frame);
       if (' ' == cv::waitKey(10)) {
         cv::waitKey(0);
@@ -80,6 +96,7 @@ int main(int argc, char const* argv[]) {
   (void)argv;
 
   AutomaticAim aim_assitant("logs/aim_assitant.log");
+  aim_assitant.TestInit();
   aim_assitant.Run();
 
   return EXIT_SUCCESS;
