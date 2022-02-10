@@ -27,17 +27,15 @@ class BuffDetector : public Detector<Buff, BuffDetectorParam> {
  private:
   Buff buff_;
   std::vector<std::vector<cv::Point>> contours_, contours_poly_;
-  std::vector<cv::RotatedRect> rects_;
   cv::RotatedRect hammer_;
   game::Team team_ = game::Team::kUNKNOWN;
 
-  std::chrono::milliseconds duration_armors_, duration_center_, duration_rects_;
+  std::chrono::milliseconds duration_armors_, duration_buff_;
 
   void InitDefaultParams(const std::string &path);
   bool PrepareParams(const std::string &path);
 
-  void FindRects(const cv::Mat &frame);
-  void MatchArmors();
+  void MatchBuff(const cv::Mat &frame);
 
   void VisualizeArmors(const cv::Mat &output, bool add_lable);
 

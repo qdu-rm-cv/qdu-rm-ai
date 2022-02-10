@@ -60,10 +60,10 @@ bool BuffDetector::PrepareParams(const std::string &params_path) {
   }
 }
 
-void BuffDetector::FindRects(const cv::Mat &frame) {
+void BuffDetector::MatchBuff(const cv::Mat &frame) {
   const auto start = high_resolution_clock::now();
   float center_rect_area = params_.contour_center_area_low_th * 1.5;
-  rects_.clear();
+  tbb::concurrent_vector<Armor> armors;
   hammer_ = cv::RotatedRect();
 
   frame_size_ = cv::Size(frame.cols, frame.rows);
@@ -79,9 +79,9 @@ void BuffDetector::FindRects(const cv::Mat &frame) {
   }
 #else
   if (team_ == game::Team::kBLUE) {
-    result = channels[0] - channels[2];
+    result = channels[0];
   } else if (team_ == game::Team::kRED) {
-    result = channels[2] - channels[0];
+    result = channels[2];
   }
 #endif
 
@@ -117,9 +117,9 @@ void BuffDetector::FindRects(const cv::Mat &frame) {
 
     SPDLOG_DEBUG("contour_area is {}", contour_area);
     SPDLOG_DEBUG("rect_area is {}", rect_area);
-    if (contour_area > params_.contour_center_area_low_th &&  // 200 - 500
+    if (contour_area > params_.contour_center_area_low_th &&
         contour_area < params_.contour_center_area_high_th) {
-      if (rect_ratio < params_.rect_center_ratio_high_th &&  // 0.6 - 1.67
+      if (rect_ratio < params_.rect_center_ratio_high_th &&
           rect_ratio > params_.rect_center_ratio_low_th) {
         buff_.SetCenter(rect.center);
         center_rect_area = rect_area;
@@ -128,23 +128,24 @@ void BuffDetector::FindRects(const cv::Mat &frame) {
       }
     }
 
-    if (rect_area > 1.2 * contour_area &&  // 它矩形的面积大于1.5倍的轮廓面积
-        rect_area > 20 * center_rect_area &&  // 20倍的圆心矩形面积 10000+
-        rect_area < 80 * center_rect_area) {  // 80倍的圆心矩形面积 后续拿到json
+    /* 筛选锤子 : [max(1.2 * 轮廓, 20 * R标)]  <  [锤子]  <  [80 * R标] */
+    if (rect_area > std::max(1.2 * contour_area, 20 * center_rect_area) &&
+        rect_area < 80 * center_rect_area) {
       hammer_ = rect;
       SPDLOG_DEBUG("hammer_contour's area is {}", contour_area);
       return;
     }
-    if (0 < hammer_.size.area()) {  //宝剑
+    /* 筛选宝剑 */
+    if (0 < hammer_.size.area()) {
       if (contour_area > 1.5 * hammer_.size.area()) return;
       if (rect_area > 0.7 * hammer_.size.area()) return;
     }
 
-    SPDLOG_DEBUG("rect_ratio is {}", rect_ratio);  // 0.4 - 2.5
+    SPDLOG_DEBUG("rect_ratio is {}", rect_ratio);
     if (rect_ratio < params_.rect_ratio_low_th) return;
     if (rect_ratio > params_.rect_ratio_high_th) return;
 
-    if (rect_area < 3 * center_rect_area) return;  // 3倍的
+    if (rect_area < 3 * center_rect_area) return;
     if (rect_area > 15 * center_rect_area) return;
 
     if (contour_area > rect_area * 1.2) return;
@@ -152,78 +153,61 @@ void BuffDetector::FindRects(const cv::Mat &frame) {
 
     SPDLOG_DEBUG("armor's area is {}", rect_area);
 
-    rects_.emplace_back(rect);
+    armors.emplace_back(Armor(rect));
   };
 
   std::for_each(std::execution::par_unseq, contours_.begin(), contours_.end(),
                 check_armor);
 
-  const auto stop = high_resolution_clock::now();
-  duration_rects_ = duration_cast<std::chrono::milliseconds>(stop - start);
-}
-
-void BuffDetector::MatchArmors() {
-  const auto start = high_resolution_clock::now();
-  tbb::concurrent_vector<Armor> armors;
-
-  for (auto &rect : rects_) {
-    armors.emplace_back(Armor(rect));
-  }
+  auto stop = high_resolution_clock::now();
+  duration_armors_ = duration_cast<std::chrono::milliseconds>(stop - start);
 
   SPDLOG_DEBUG("armors.size is {}", armors.size());
   SPDLOG_DEBUG("the buff's hammer area is {}", hammer_.size.area());
 
   if (armors.size() > 0 && hammer_.size.area() > 0) {
     buff_.SetTarget(armors[0]);
-    for (auto armor : armors) {
-      if (cv::norm(hammer_.center - armor.ImageCenter()) <
-          cv::norm(hammer_.center - buff_.GetTarget().ImageCenter())) {
-        buff_.SetTarget(armor);
-      }
-    }
+    if (armors.size() > 1)
+      for (auto armor : armors)
+        if (cv::norm(hammer_.center - armor.ImageCenter()) <
+            cv::norm(hammer_.center - buff_.GetTarget().ImageCenter()))
+          buff_.SetTarget(armor);
     buff_.SetArmors(armors);
   } else {
     SPDLOG_WARN("can't find buff_armor");
   }
-  const auto stop = high_resolution_clock::now();
-  duration_armors_ = duration_cast<std::chrono::milliseconds>(stop - start);
+
+  stop = high_resolution_clock::now();
+  duration_buff_ = duration_cast<std::chrono::milliseconds>(stop - start);
 }
 
 void BuffDetector::VisualizeArmors(const cv::Mat &output, bool add_lable) {
-  tbb::concurrent_vector<Armor> armors = buff_.GetArmors();
   auto draw_armor = [&](const auto &armor) {
+    cv::Scalar color;
     auto vertices = armor.ImageVertices();
-    if (vertices == buff_.GetTarget().ImageVertices()) return;
+    if (vertices == buff_.GetTarget().ImageVertices())
+      color = kRED;
+    else
+      color = kGREEN;
 
     auto num_vertices = vertices.size();
     for (std::size_t i = 0; i < num_vertices; ++i) {
-      cv::line(output, vertices[i], vertices[(i + 1) % num_vertices], kGREEN);
+      cv::line(output, vertices[i], vertices[(i + 1) % num_vertices], color);
     }
-    cv::drawMarker(output, armor.ImageCenter(), kGREEN, cv::MARKER_DIAMOND);
+    cv::drawMarker(output, armor.ImageCenter(), color, cv::MARKER_DIAMOND);
 
     if (add_lable) {
       cv::putText(output,
                   cv::format("%.2f, %.2f", armor.ImageCenter().x,
                              armor.ImageCenter().y),
-                  vertices[1], kCV_FONT, 1.0, kGREEN);
+                  vertices[1], kCV_FONT, 1.0, color);
     }
   };
+
+  tbb::concurrent_vector<Armor> armors = buff_.GetArmors();
   if (!armors.empty()) {
     std::for_each(std::execution::par_unseq, armors.begin(), armors.end(),
                   draw_armor);
-  }
-
-  Armor target = buff_.GetTarget();
-  if (cv::Point2f(0, 0) != target.ImageCenter()) {
-    auto vertices = target.ImageVertices();
-    for (std::size_t i = 0; i < vertices.size(); ++i)
-      cv::line(output, vertices[i], vertices[(i + 1) % 4], kRED);
-    cv::drawMarker(output, target.ImageCenter(), kRED, cv::MARKER_DIAMOND);
-    if (add_lable) {
-      std::ostringstream buf;
-      buf << target.ImageCenter().x << ", " << target.ImageCenter().y;
-      cv::putText(output, buf.str(), vertices[1], kCV_FONT, 1.0, kRED);
-    }
   }
 }
 
@@ -250,8 +234,7 @@ void BuffDetector::SetTeam(game::Team enemy_team) {
 const tbb::concurrent_vector<Buff> &BuffDetector::Detect(const cv::Mat &frame) {
   targets_.clear();
   SPDLOG_DEBUG("Detecting");
-  FindRects(frame);
-  MatchArmors();
+  MatchBuff(frame);
   SPDLOG_DEBUG("Detected.");
   targets_.emplace_back(buff_);
   return targets_;
@@ -265,28 +248,27 @@ void BuffDetector::VisualizeResult(const cv::Mat &output, int verbose) {
   }
 
   if (verbose > 1) {
-    int baseLine, v_pos = 0;
+    int baseLine;
 
     std::string label =
         cv::format("%ld armors in %ld ms.", buff_.GetArmors().size(),
                    duration_armors_.count());
-    cv::Size text_size = cv::getTextSize(label, kCV_FONT, 1.0, 2, &baseLine);
-    v_pos += static_cast<int>(1.3 * text_size.height);
-    cv::putText(output, label, cv::Point(0, v_pos), kCV_FONT, 1.0, kGREEN);
+    int text_height =
+        1.3 * cv::getTextSize(label, kCV_FONT, 1.0, 2, &baseLine).height;
+    cv::putText(output, label, cv::Point(0, text_height), kCV_FONT, 1.0,
+                kGREEN);
 
-    label = cv::format("%ld rects in %ld ms.", rects_.size(),
-                       duration_rects_.count());
-    text_size = cv::getTextSize(label, kCV_FONT, 1.0, 2, &baseLine);
-    v_pos += static_cast<int>(1.3 * text_size.height);
-    cv::putText(output, label, cv::Point(0, v_pos), kCV_FONT, 1.0, kGREEN);
+    label = cv::format("Match buff in %ld ms.", duration_buff_.count());
+    cv::putText(output, label, cv::Point(0, text_height * 2), kCV_FONT, 1.0,
+                kGREEN);
   }
   if (verbose > 3) {
     cv::Point2f vertices[4];
     hammer_.points(vertices);
     for (std::size_t i = 0; i < 4; ++i)
-      cv::line(output, vertices[i], vertices[(i + 1) % 4], kRED);
+      cv::line(output, vertices[i], vertices[(i + 1) % 4], kYELLOW);
 
-    cv::drawMarker(output, buff_.GetCenter(), kRED, cv::MARKER_DIAMOND);
+    cv::drawMarker(output, buff_.GetCenter(), kYELLOW, cv::MARKER_DIAMOND);
   }
   VisualizeArmors(output, verbose > 2);
   SPDLOG_DEBUG("Visualized.");
