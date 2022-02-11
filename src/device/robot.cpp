@@ -133,7 +133,7 @@ game::Arm Robot::GetArm() {
     return game::Arm::kUNKNOWN;
   else
     switch (mcu_.notice & 0x7F) {
-      case AI_NOTICE_INFENCY:
+      case AI_NOTICE_INFANTRY:
         return game::Arm::kINFANTRY;
       case AI_NOTICE_HERO:
         return game::Arm::kHERO;
