@@ -129,7 +129,7 @@ void BuffDetector::MatchBuff(const cv::Mat &frame) {
     }
 
     /* 筛选锤子 : [max(1.2 * 轮廓, 20 * R标)]  <  [锤子]  <  [80 * R标] */
-    if (rect_area > std::max(1.2 * contour_area, 20 * center_rect_area) &&
+    if (rect_area > 1.2 * contour_area && rect_area > 20 * center_rect_area &&
         rect_area < 80 * center_rect_area) {
       hammer_ = rect;
       SPDLOG_DEBUG("hammer_contour's area is {}", contour_area);
@@ -183,12 +183,9 @@ void BuffDetector::MatchBuff(const cv::Mat &frame) {
 
 void BuffDetector::VisualizeArmors(const cv::Mat &output, bool add_lable) {
   auto draw_armor = [&](const auto &armor) {
-    cv::Scalar color;
     auto vertices = armor.ImageVertices();
-    if (vertices == buff_.GetTarget().ImageVertices())
-      color = kRED;
-    else
-      color = kGREEN;
+    cv::Scalar color =
+        vertices == buff_.GetTarget().ImageVertices() ? kRED : kGREEN;
 
     auto num_vertices = vertices.size();
     for (std::size_t i = 0; i < num_vertices; ++i) {
@@ -262,7 +259,7 @@ void BuffDetector::VisualizeResult(const cv::Mat &output, int verbose) {
     cv::putText(output, label, cv::Point(0, text_height * 2), kCV_FONT, 1.0,
                 kGREEN);
   }
-  if (verbose > 3) {
+  if (verbose > 2) {
     cv::Point2f vertices[4];
     hammer_.points(vertices);
     for (std::size_t i = 0; i < 4; ++i)
