@@ -127,25 +127,25 @@ int Robot::GetBalletRemain() { return ref_.ballet_remain; }
 game::Arm Robot::GetArm() {
   int num = 0;
   for (int i = 0; i < 6; i++) {
-    num += ((mcu_.notice >> (i)) & 0x01);
+    num += ((ref_.arm >> (i)) & 0x01);
   }
   if (num != 1)
     return game::Arm::kUNKNOWN;
   else
-    switch (mcu_.notice & 0x7F) {
-      case AI_NOTICE_INFANTRY:
+    switch (ref_.arm & 0xFF) {
+      case AI_ARM_INFANTRY:
         return game::Arm::kINFANTRY;
-      case AI_NOTICE_HERO:
+      case AI_ARM_HERO:
         return game::Arm::kHERO;
-      case AI_NOTICE_ENGINEER:
+      case AI_ARM_ENGINEER:
         return game::Arm::kENGINEER;
-      case AI_NOTICE_DRONE:
+      case AI_ARM_DRONE:
         return game::Arm::kDRONE;
-      case AI_NOTICE_SENTRY:
+      case AI_ARM_SENTRY:
         return game::Arm::kSENTRY;
-      case AI_NOTICE_DART:
+      case AI_ARM_DART:
         return game::Arm::kDART;
-      case AI_NOTICE_RADAR:
+      case AI_ARM_RADAR:
         return game::Arm::kRADAR;
       default:
         return game::Arm::kUNKNOWN;

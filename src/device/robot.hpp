@@ -39,8 +39,8 @@ class Robot {
   int GetBaseHP();
   int GetSentryHP();
   int GetBalletRemain();
-
   game::Arm GetArm();
+
   cv::Mat GetRotMat();
   float GetBalletSpeed();
   float GetChassicSpeed();
