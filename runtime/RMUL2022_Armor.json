@@ -1,0 +1,17 @@
+{
+    "binary_th": 88,
+    "contour_size_low_th": 10,
+    "contour_area_low_th": 0,
+    "contour_area_high_th": 1e-2,
+    "bar_area_low_th": 0,
+    "bar_area_high_th": 1.164e-2,
+    "angle_high_th": 66,
+    "aspect_ratio_low_th": 3.3,
+    "aspect_ratio_high_th": 10.0,
+    "angle_diff_th": 4.492,
+    "length_diff_th":4.55e-1,
+    "height_diff_th": 4.033,
+    "area_diff_th": 4.036e-1,
+    "center_dist_low_th": 0,
+    "center_dist_high_th": 7.433
+}
