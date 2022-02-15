@@ -30,7 +30,7 @@ void OreCube::Init(const cv::RotatedRect& rect) {
   image_ratio_ = rect.size.aspectRatio();
   image_vertices_.resize(4);
   rect.points(image_vertices_.data());
-  trans_ = cv::getPerspectiveTransform(ImageVertices(), k3D_ORECUBE);
+  trans_ = cv::getPerspectiveTransform(ImageVertices(), k2D_ORECUBE);
   face_size_ = cv::Size(kSIDE, kSIDE);
 }
 
@@ -45,11 +45,16 @@ OreCube::OreCube(const cv::Point2f& center, float radius) {
 }
 
 OreCube::OreCube(const cv::RotatedRect& rect) {
-  radius_ =
-      std::min(std::min(rect.size.height, rect.size.width) / M_SQRT2,
-               std::max(rect.size.height, rect.size.width) / std::sqrt(3));
+  radius_ = 0.5 * std::sqrt(rect.size.area() +
+                            std::pow(cv::norm(cv::Point2f(rect.size)), 2));
   Init(rect);
   SPDLOG_TRACE("Constructed.");
 }
 
 OreCube::~OreCube() { SPDLOG_TRACE("Destructed."); }
+
+component::Euler OreCube::GetSelfEuler() { return self_euler_; }
+
+const cv::Point3f& OreCube::GetPhysicCenter() { return center_; }
+
+const float& OreCube::GetRadius() { return radius_; }
