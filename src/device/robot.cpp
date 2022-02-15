@@ -1,6 +1,5 @@
 #include "robot.hpp"
 
-#include "opencv2/core/quaternion.hpp"
 #include "spdlog/spdlog.h"
 
 namespace {
@@ -46,15 +45,20 @@ void Robot::ThreadTrans() {
   Protocol_DownPackage_t command;
 
   while (thread_continue) {
-    mutex_commandq_.lock();
-    if (!commandq_.empty()) {
-      command.data = commandq_.front();
+    bool is_empty = true;
+    mutex_command_.lock();
+    if (commandq_.size() > 0) {
+      command.data = commandq_.back();
+      is_empty = false;
+      commandq_.clear();
+    }
+    mutex_command_.unlock();
+    if (!is_empty){
       command.crc16 = crc16::CRC16_Calc((uint8_t *)&command.data,
                                         sizeof(command.data), UINT16_MAX);
       serial_.Trans((char *)&command, sizeof(command));
-      commandq_.pop();
+    std::this_thread::sleep_for(std::chrono::milliseconds(2));
     }
-    mutex_commandq_.unlock();
   }
   SPDLOG_DEBUG("[ThreadTrans] Stoped.");
 }
@@ -152,6 +156,17 @@ game::Arm Robot::GetArm() {
     }
 }
 
+component::Euler Robot::GetEuler() {
+  cv::Quatf q(mcu_.quat.q0, mcu_.quat.q1, mcu_.quat.q2, mcu_.quat.q3);
+  cv::Vec3d vec = q.toEulerAngles(cv::QuatEnum::EulerAnglesType::INT_XYZ);
+  component::Euler euler;
+  euler.pitch = vec[0];
+  euler.roll = vec[1];
+  euler.yaw = vec[2];
+  SPDLOG_DEBUG("P : {}, R : {}, Y : {}", euler.pitch, euler.roll, euler.yaw);
+  return euler;
+}
+
 cv::Mat Robot::GetRotMat() {
   cv::Quatf q(mcu_.quat.q0, mcu_.quat.q1, mcu_.quat.q2, mcu_.quat.q3);
   return cv::Mat(q.toRotMat3x3(), true);
@@ -190,5 +205,7 @@ void Robot::Pack(Protocol_DownData_t &data, double distance) {
   else
     data.notice |= AI_NOTICE_FIRE;
 
-  commandq_.push(data);
+  mutex_command_.lock();
+  commandq_.emplace_back(data);
+  mutex_command_.unlock();
 }
