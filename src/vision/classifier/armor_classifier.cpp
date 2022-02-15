@@ -5,15 +5,6 @@
 #include "opencv2/opencv.hpp"
 #include "spdlog/spdlog.h"
 
-namespace {
-
-const auto kCV_FONT = cv::FONT_HERSHEY_SIMPLEX;
-const cv::Scalar kGREEN(0., 255., 0.);
-const cv::Scalar kRED(0., 0., 255.);
-const cv::Scalar kYELLOW(0., 255., 255.);
-
-}  // namespace
-
 ArmorClassifier::ArmorClassifier(const std::string model_path,
                                  const std::string lable_path,
                                  const cv::Size &input_size) {

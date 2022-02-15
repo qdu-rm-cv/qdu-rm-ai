@@ -5,15 +5,6 @@
 using std::chrono::duration_cast;
 using std::chrono::high_resolution_clock;
 
-namespace {
-
-const auto kCV_FONT = cv::FONT_HERSHEY_SIMPLEX;
-const cv::Scalar kGREEN(0., 255., 0.);
-const cv::Scalar kRED(0., 0., 255.);
-const cv::Scalar kYELLOW(0., 255., 255.);
-
-}  // namespace
-
 void SnipeDetector::InitDefaultParams(const std::string &params_path) {
   cv::FileStorage fs(params_path,
                      cv::FileStorage::WRITE | cv::FileStorage::FORMAT_JSON);
@@ -43,28 +34,6 @@ void SnipeDetector::FindArmor(const cv::Mat &frame) {
   targets_.emplace_back(Armor());
 }
 
-void SnipeDetector::VisualizeArmor(const cv::Mat &output, bool add_lable) {
-  auto draw_armor = [&](const auto &armor) {
-    auto vertices = armor.ImageVertices();
-    auto num_vertices = vertices.size();
-    for (std::size_t i = 0; i < num_vertices; ++i) {
-      cv::line(output, vertices[i], vertices[(i + 1) % num_vertices], kGREEN);
-    }
-    cv::drawMarker(output, armor.ImageCenter(), kGREEN, cv::MARKER_DIAMOND);
-
-    if (add_lable) {
-      cv::putText(output,
-                  cv::format("%.2f, %.2f", armor.ImageCenter().x,
-                             armor.ImageCenter().y),
-                  vertices[1], kCV_FONT, 1.0, kGREEN);
-    }
-  };
-  if (!targets_.empty()) {
-    std::for_each(std::execution::par_unseq, targets_.begin(), targets_.end(),
-                  draw_armor);
-  }
-}
-
 SnipeDetector::SnipeDetector() { SPDLOG_TRACE("Constructed."); }
 
 SnipeDetector::SnipeDetector(const std::string &params_path,
@@ -89,5 +58,12 @@ const tbb::concurrent_vector<Armor> &SnipeDetector::Detect(
 }
 
 void SnipeDetector::VisualizeResult(const cv::Mat &output, int verbose) {
-  VisualizeArmor(output, verbose > 2);
+  auto draw_armor = [&](Armor &armor) {
+    armor.VisualizeObject(output, verbose > 2);
+  };
+
+  if (!targets_.empty()) {
+    std::for_each(std::execution::par_unseq, targets_.begin(), targets_.end(),
+                  draw_armor);
+  }
 }

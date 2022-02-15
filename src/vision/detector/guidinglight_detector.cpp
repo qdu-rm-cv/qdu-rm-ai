@@ -5,15 +5,6 @@
 using std::chrono::duration_cast;
 using std::chrono::high_resolution_clock;
 
-namespace {
-
-const auto kCV_FONT = cv::FONT_HERSHEY_SIMPLEX;
-const cv::Scalar kGREEN(0., 255., 0.);
-const cv::Scalar kRED(0., 0., 255.);
-const cv::Scalar kYELLOW(0., 255., 255.);
-
-}  // namespace
-
 void GuidingLightDetector::InitDefaultParams(const std::string &params_path) {
   cv::FileStorage fs(params_path,
                      cv::FileStorage::WRITE | cv::FileStorage::FORMAT_JSON);

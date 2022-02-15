@@ -8,15 +8,6 @@
 using std::chrono::duration_cast;
 using std::chrono::high_resolution_clock;
 
-namespace {
-
-const auto kCV_FONT = cv::FONT_HERSHEY_SIMPLEX;
-const cv::Scalar kGREEN(0., 255., 0.);
-const cv::Scalar kRED(0., 0., 255.);
-const cv::Scalar kYELLOW(0., 255., 255.);
-
-}  // namespace
-
 void ArmorDetector::InitDefaultParams(const std::string &params_path) {
   cv::FileStorage fs(params_path,
                      cv::FileStorage::WRITE | cv::FileStorage::FORMAT_JSON);
@@ -230,50 +221,6 @@ void ArmorDetector::MatchLightBars() {
                duration_armors_.count());
 }
 
-void ArmorDetector::VisualizeLightBar(const cv::Mat &output, bool add_lable) {
-  auto draw_lightbar = [&](const auto &bar) {
-    auto vertices = bar.ImageVertices();
-    auto num_vertices = vertices.size();
-    for (std::size_t i = 0; i < num_vertices; ++i)
-      cv::line(output, vertices[i], vertices[(i + 1) % num_vertices], kGREEN);
-
-    cv::drawMarker(output, bar.ImageCenter(), kGREEN, cv::MARKER_CROSS);
-
-    if (add_lable) {
-      cv::putText(
-          output,
-          cv::format("%.2f, %.2f", bar.ImageCenter().x, bar.ImageCenter().y),
-          vertices[1], kCV_FONT, 1.0, kGREEN);
-    }
-  };
-  if (!lightbars_.empty()) {
-    std::for_each(std::execution::par_unseq, lightbars_.begin(),
-                  lightbars_.end(), draw_lightbar);
-  }
-}
-
-void ArmorDetector::VisualizeArmor(const cv::Mat &output, bool add_lable) {
-  auto draw_armor = [&](const auto &armor) {
-    auto vertices = armor.ImageVertices();
-    auto num_vertices = vertices.size();
-    for (std::size_t i = 0; i < num_vertices; ++i) {
-      cv::line(output, vertices[i], vertices[(i + 1) % num_vertices], kGREEN);
-    }
-    cv::drawMarker(output, armor.ImageCenter(), kGREEN, cv::MARKER_DIAMOND);
-
-    if (add_lable) {
-      cv::putText(output,
-                  cv::format("%.2f, %.2f", armor.ImageCenter().x,
-                             armor.ImageCenter().y),
-                  vertices[1], kCV_FONT, 1.0, kGREEN);
-    }
-  };
-  if (!targets_.empty()) {
-    std::for_each(std::execution::par_unseq, targets_.begin(), targets_.end(),
-                  draw_armor);
-  }
-}
-
 ArmorDetector::ArmorDetector() { SPDLOG_TRACE("Constructed."); }
 
 ArmorDetector::ArmorDetector(const std::string &params_path,
@@ -299,6 +246,13 @@ const tbb::concurrent_vector<Armor> &ArmorDetector::Detect(
 }
 
 void ArmorDetector::VisualizeResult(const cv::Mat &output, int verbose) {
+  auto draw_lightbar = [&](LightBar &bar) {
+    bar.VisualizeObject(output, verbose > 2, kGREEN, cv::MARKER_CROSS);
+  };
+  auto draw_armor = [&](Armor &armor) {
+    armor.VisualizeObject(output, verbose > 2);
+  };
+
   if (verbose > 0) {
     cv::drawContours(output, contours_, -1, kRED);
     cv::drawContours(output, contours_poly_, -1, kYELLOW);
@@ -317,6 +271,13 @@ void ArmorDetector::VisualizeResult(const cv::Mat &output, int verbose) {
     v_pos += static_cast<int>(1.3 * text_size.height);
     cv::putText(output, label, cv::Point(0, v_pos), kCV_FONT, 1.0, kGREEN);
   }
-  VisualizeLightBar(output, verbose > 2);
-  VisualizeArmor(output, verbose > 2);
+
+  if (!lightbars_.empty()) {
+    std::for_each(std::execution::par_unseq, lightbars_.begin(),
+                  lightbars_.end(), draw_lightbar);
+  }
+  if (!targets_.empty()) {
+    std::for_each(std::execution::par_unseq, targets_.begin(), targets_.end(),
+                  draw_armor);
+  }
 }

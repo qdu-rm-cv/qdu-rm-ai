@@ -5,17 +5,6 @@
 using std::chrono::duration_cast;
 using std::chrono::high_resolution_clock;
 
-namespace {
-
-const auto kCV_FONT = cv::FONT_HERSHEY_SIMPLEX;
-const cv::Scalar kBLUE(255., 0., 0.);
-const cv::Scalar kGREEN(0., 255., 0.);
-const cv::Scalar kRED(0., 0., 255.);
-const cv::Scalar kYELLOW(0., 255., 255.);
-const cv::Scalar kBLACK(0., 0., 0.);
-
-}  // namespace
-
 void OreCubeDetector::InitDefaultParams(const std::string &params_path) {
   cv::FileStorage fs(params_path,
                      cv::FileStorage::WRITE | cv::FileStorage::FORMAT_JSON);
@@ -72,7 +61,8 @@ void OreCubeDetector::FindOreCube(const cv::Mat &frame) {
   cv::morphologyEx(result, result, cv::MorphTypes::MORPH_CLOSE, kernel);
 #endif
 
-  cv::findContours(result, contours_, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+  cv::findContours(result, contours_, cv::RETR_EXTERNAL,
+                   cv::CHAIN_APPROX_SIMPLE);
 
 #if 1 /* 平滑轮廓应该有用，但是这里简化轮廓没用 */
   contours_poly_.resize(contours_.size());
@@ -103,28 +93,6 @@ void OreCubeDetector::FindOreCube(const cv::Mat &frame) {
   SPDLOG_DEBUG("Find {} ore cube.", targets_.size());
 }
 
-void OreCubeDetector::VisualizeOreCube(const cv::Mat &output, bool add_lable) {
-  auto draw_orecube = [&](OreCube cube) {
-    auto vertices = cube.ImageVertices();
-    auto num_vertices = vertices.size();
-    for (std::size_t i = 0; i < num_vertices; ++i)
-      cv::line(output, vertices[i], vertices[(i + 1) % num_vertices], kGREEN);
-
-    cv::drawMarker(output, cube.ImageCenter(), kGREEN, cv::MARKER_CROSS);
-
-    if (add_lable) {
-      cv::putText(
-          output,
-          cv::format("%.2f, %.2f", cube.ImageCenter().x, cube.ImageCenter().y),
-          vertices[1], kCV_FONT, 1.0, kGREEN);
-    }
-  };
-  if (!targets_.empty()) {
-    std::for_each(std::execution::par_unseq, targets_.begin(), targets_.end(),
-                  draw_orecube);
-  }
-}
-
 OreCubeDetector::OreCubeDetector() { SPDLOG_TRACE("Constructed."); }
 
 OreCubeDetector::OreCubeDetector(const std::string &params_path) {
@@ -143,6 +111,10 @@ const tbb::concurrent_vector<OreCube> &OreCubeDetector::Detect(
 }
 
 void OreCubeDetector::VisualizeResult(const cv::Mat &output, int verbose) {
+  auto draw_orecube = [&](OreCube cube) {
+    cube.VisualizeObject(output, verbose > 2, kBLUE);
+  };
+
   if (verbose > 1) {
     cv::drawContours(output, contours_, -1, kBLUE, 3);
     cv::drawContours(output, contours_poly_, -1, kRED);
@@ -156,5 +128,8 @@ void OreCubeDetector::VisualizeResult(const cv::Mat &output, int verbose) {
     v_pos += static_cast<int>(1.3 * text_size.height);
     cv::putText(output, label, cv::Point(0, v_pos), kCV_FONT, 1.0, kBLACK);
   }
-  VisualizeOreCube(output, verbose > 2);
+  if (!targets_.empty()) {
+    std::for_each(std::execution::par_unseq, targets_.begin(), targets_.end(),
+                  draw_orecube);
+  }
 }

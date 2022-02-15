@@ -22,8 +22,6 @@ class SnipeDetector : public Detector<Armor, SnipeDetectorParam> {
 
   void FindArmor(const cv::Mat &frame);
 
-  void VisualizeArmor(const cv::Mat &output, bool add_lable);
-
  public:
   SnipeDetector();
   SnipeDetector(const std::string &params_path, game::Team enemy_team);

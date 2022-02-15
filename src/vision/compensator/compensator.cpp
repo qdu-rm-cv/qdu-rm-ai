@@ -6,10 +6,6 @@
 namespace {
 
 const double kG = 9.80665;
-const cv::Scalar kGREEN(0., 255., 0.);
-const cv::Scalar kRED(0., 0., 255.);
-const cv::Scalar kYELLOW(0., 255., 255.);
-const auto kCV_FONT = cv::FONT_HERSHEY_SIMPLEX;
 
 }  // namespace
 

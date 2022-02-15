@@ -17,6 +17,12 @@ TEST(TestVision, TestOreCubeDetector) {
     detector.Detect(frame);
     detector.VisualizeResult(frame, 3);
     cv::imshow("show", frame);
-    cv::waitKey(30);
+    auto key = cv::waitKey(10);
+    if (key == 'q') {
+      cv::waitKey(0);
+      cap.release();
+      return;
+    } else if (key == ' ')
+      cv::waitKey(0);
   }
 }

@@ -28,8 +28,6 @@ class OreCubeDetector : public Detector<OreCube, OreCubeDetectorParam> {
 
   void FindOreCube(const cv::Mat &frame);
 
-  void VisualizeOreCube(const cv::Mat &output, bool add_lable);
-
  public:
   OreCubeDetector();
   OreCubeDetector(const std::string &params_path);

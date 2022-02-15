@@ -1,14 +1,5 @@
 #include "armor_predictor.hpp"
 
-namespace {
-
-const auto kCV_FONT = cv::FONT_HERSHEY_SIMPLEX;
-const cv::Scalar kGREEN(0., 255., 0.);
-const cv::Scalar kRED(0., 0., 255.);
-const cv::Scalar kYELLOW(0., 255., 255.);
-
-}  // namespace
-
 void ArmorPredictor::MatchArmor() {
   cv::Point2d center = armor_.ImageCenter();
   cv::Size2d size = armor_.GetRect().size;

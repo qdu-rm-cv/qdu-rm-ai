@@ -11,11 +11,6 @@ using std::chrono::high_resolution_clock;
 
 namespace {
 
-const auto kCV_FONT = cv::FONT_HERSHEY_SIMPLEX;
-const cv::Scalar kGREEN(0., 255., 0.);
-const cv::Scalar kRED(0., 0., 255.);
-const cv::Scalar kYELLOW(0., 255., 255.);
-
 const double kRMUT_TIME = 90.;
 const double kRMUC_TIME = 420.;
 const double kDELTA = 3;  //总延迟时间
@@ -34,7 +29,7 @@ static double CalRotatedAngle(const cv::Point2f &p, const cv::Point2f &ctr) {
   return std::atan2(rel.x, rel.y);
 }
 
-#ifdef RMU2021
+#ifdef RM2021
 /**
  * @brief 辅助函数：积分运算预测旋转角
  *

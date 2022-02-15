@@ -9,15 +9,6 @@
 using std::chrono::duration_cast;
 using std::chrono::high_resolution_clock;
 
-namespace {
-
-const auto kCV_FONT = cv::FONT_HERSHEY_SIMPLEX;
-const cv::Scalar kGREEN(0., 255., 0.);
-const cv::Scalar kRED(0., 0., 255.);
-const cv::Scalar kYELLOW(0., 255., 255.);
-
-}  // namespace
-
 void BuffDetector::InitDefaultParams(const std::string &params_path) {
   cv::FileStorage fs(params_path,
                      cv::FileStorage::WRITE | cv::FileStorage::FORMAT_JSON);
@@ -182,23 +173,12 @@ void BuffDetector::MatchBuff(const cv::Mat &frame) {
 }
 
 void BuffDetector::VisualizeArmors(const cv::Mat &output, bool add_lable) {
-  auto draw_armor = [&](const auto &armor) {
+  auto draw_armor = [&](Armor &armor) {
     auto vertices = armor.ImageVertices();
     cv::Scalar color =
         vertices == buff_.GetTarget().ImageVertices() ? kRED : kGREEN;
 
-    auto num_vertices = vertices.size();
-    for (std::size_t i = 0; i < num_vertices; ++i) {
-      cv::line(output, vertices[i], vertices[(i + 1) % num_vertices], color);
-    }
-    cv::drawMarker(output, armor.ImageCenter(), color, cv::MARKER_DIAMOND);
-
-    if (add_lable) {
-      cv::putText(output,
-                  cv::format("%.2f, %.2f", armor.ImageCenter().x,
-                             armor.ImageCenter().y),
-                  vertices[1], kCV_FONT, 1.0, color);
-    }
+    armor.VisualizeObject(output, add_lable);
   };
 
   tbb::concurrent_vector<Armor> armors = buff_.GetArmors();

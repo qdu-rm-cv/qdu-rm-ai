@@ -5,6 +5,18 @@
 #include "opencv2/opencv.hpp"
 #include "spdlog/spdlog.h"
 
+namespace {
+
+const auto kCV_FONT = cv::FONT_HERSHEY_SIMPLEX;
+
+const cv::Scalar kBLUE(255., 0., 0.);
+const cv::Scalar kGREEN(0., 255., 0.);
+const cv::Scalar kRED(0., 0., 255.);
+const cv::Scalar kYELLOW(0., 255., 255.);
+const cv::Scalar kBLACK(0., 0., 0.);
+
+}  // namespace
+
 class ImageObject {
  public:
   std::vector<cv::Point2f> image_vertices_;
@@ -39,6 +51,23 @@ class ImageObject {
     const int offset_h = (face.rows - min_edge) / 2;
     face = face(cv::Rect(offset_w, offset_h, min_edge, min_edge));
     return face;
+  }
+
+  void VisualizeObject(const cv::Mat &output, bool add_lable,
+                       const cv::Scalar color = kGREEN,
+                       cv::MarkerTypes type = cv::MarkerTypes::MARKER_DIAMOND) {
+    auto vertices = ImageVertices();
+    auto num_vertices = vertices.size();
+    for (std::size_t i = 0; i < num_vertices; ++i)
+      cv::line(output, vertices[i], vertices[(i + 1) % num_vertices], color);
+
+    cv::drawMarker(output, ImageCenter(), color, type);
+
+    if (add_lable) {
+      cv::putText(output,
+                  cv::format("%.2f, %.2f", ImageCenter().x, ImageCenter().y),
+                  vertices[1], kCV_FONT, 1.0, color);
+    }
   }
 };
 
