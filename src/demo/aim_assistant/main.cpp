@@ -74,7 +74,7 @@ class AutomaticAim : public App {
 
       assitant_.SetRFID(robot_.GetRFID());
       auto armors = assitant_.Aim(frame);
-      compensator_.Apply(armors, frame, robot_.GetRotMat());
+      compensator_.Apply(armors, frame, robot_.GetEuler());
       Armor armor = armors.front();
       assitant_.VisualizeResult(frame, 10);
 

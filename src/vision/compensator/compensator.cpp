@@ -13,7 +13,6 @@ const auto kCV_FONT = cv::FONT_HERSHEY_SIMPLEX;
 
 }  // namespace
 
-
 void Compensator::VisualizePnp(Armor& armor, const cv::Mat& output,
                                bool add_lable) {
   std::vector<cv::Point2f> out_points;
@@ -57,6 +56,7 @@ void Compensator::LoadCameraMat(const std::string& path) {
 }
 
 void Compensator::SolveAngles(Armor& armor, component::Euler euler) {
+  (void)euler;
   component::Euler aiming_eulr;
   cv::Mat rot_vec, trans_vec;
 
@@ -124,7 +124,6 @@ void Compensator::CompensateGravity(Armor& armor, component::Euler euler) {
   armor.SetAimEuler(aiming_eulr);
 }
 
-
 #ifdef RM2021
 /**
  * @brief Angle θ required to hit coordinate (x, y)
@@ -152,8 +151,7 @@ double Compensator::SolveSurfaceLanchAngle(cv::Point2f target) {
 cv::Vec3f Compensator::EstimateWorldCoord(Armor& armor) {
   cv::Mat rot_vec, trans_vec;
   cv::solvePnP(armor.PhysicVertices(), armor.ImageVertices(), cam_mat_,
-               distor_coff_, rot_vec, trans_vec, false,
-               cv::SOLVEPNP_ITERATIVE);
+               distor_coff_, rot_vec, trans_vec, false, cv::SOLVEPNP_ITERATIVE);
   armor.SetRotVec(rot_vec), armor.SetTransVec(trans_vec);
   cv::Mat world_coord =
       ((cv::Vec2f(armor.ImageCenter()) * cam_mat_.inv() - trans_vec) *

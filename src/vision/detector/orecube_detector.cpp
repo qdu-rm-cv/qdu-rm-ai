@@ -72,7 +72,7 @@ void OreCubeDetector::FindOreCube(const cv::Mat &frame) {
   cv::morphologyEx(result, result, cv::MorphTypes::MORPH_CLOSE, kernel);
 #endif
 
-  cv::findContours(result, contours_, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
+  cv::findContours(result, contours_, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
 
 #if 1 /* 平滑轮廓应该有用，但是这里简化轮廓没用 */
   contours_poly_.resize(contours_.size());
@@ -90,8 +90,6 @@ void OreCubeDetector::FindOreCube(const cv::Mat &frame) {
     if (c_area < params_.area_low_th) return;
     if (c_area > params_.area_high_th) return;
     OreCube cube(cv::minAreaRect(contour));
-    // cv::drawContours(frame, contour, -1, kGREEN, 5);
-    // cv::imshow("contours", frame);
 
     targets_.emplace_back(cube);
   };
@@ -147,7 +145,7 @@ const tbb::concurrent_vector<OreCube> &OreCubeDetector::Detect(
 void OreCubeDetector::VisualizeResult(const cv::Mat &output, int verbose) {
   if (verbose > 1) {
     cv::drawContours(output, contours_, -1, kBLUE, 3);
-    cv::drawContours(output, contours_poly_, -1, kBLUE);
+    cv::drawContours(output, contours_poly_, -1, kRED);
   }
   if (verbose > 2) {
     int baseLine, v_pos = 0;
