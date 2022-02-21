@@ -53,11 +53,11 @@ void Kalman::InnerInit(int states = 4, int measurements = 2) {
   //* P 后验错误估计协方差矩阵
   /* cv::setIdentity(kalman_filter_.errorCovPost, cv::Scalar::all(1)); */
 
-  std::cout << "A:\n" << kalman_filter_.transitionMatrix << "\n";
-  std::cout << "B:\n" << kalman_filter_.controlMatrix << "\n";
-  std::cout << "H:\n" << kalman_filter_.measurementMatrix << "\n";
-  std::cout << "Q:\n" << kalman_filter_.processNoiseCov << "\n";
-  std::cout << "R:\n" << kalman_filter_.measurementNoiseCov << "\n";
+  // std::cout << "A:\n" << kalman_filter_.transitionMatrix << "\n";
+  // std::cout << "B:\n" << kalman_filter_.controlMatrix << "\n";
+  // std::cout << "H:\n" << kalman_filter_.measurementMatrix << "\n";
+  // std::cout << "Q:\n" << kalman_filter_.processNoiseCov << "\n";
+  // std::cout << "R:\n" << kalman_filter_.measurementNoiseCov << "\n";
 
   SPDLOG_WARN("A:{}, B:{}, H:{}, Q:{}, R:{}",
               kalman_filter_.transitionMatrix.type(),

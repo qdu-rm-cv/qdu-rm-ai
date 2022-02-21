@@ -92,13 +92,9 @@ const tbb::concurrent_vector<GuidingLight> &GuidingLightDetector::Detect(
 
 void GuidingLightDetector::VisualizeResult(const cv::Mat &output, int verbose) {
   if (verbose > 1) {
-    int baseLine, v_pos = 0;
-
     std::string label = cv::format("%ld lights in %ld ms.", targets_.size(),
                                    duration_lights_.count());
-    cv::Size text_size = cv::getTextSize(label, kCV_FONT, 1.0, 2, &baseLine);
-    v_pos += static_cast<int>(1.3 * text_size.height);
-    cv::putText(output, label, cv::Point(0, v_pos), kCV_FONT, 1.0, kGREEN);
+    draw::VisualizeLabel(output, label);
   }
-  cv::drawKeypoints(output, key_points_, output, kGREEN);
+  cv::drawKeypoints(output, key_points_, output, draw::kGREEN);
 }

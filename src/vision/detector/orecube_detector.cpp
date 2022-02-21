@@ -9,11 +9,11 @@ void OreCubeDetector::InitDefaultParams(const std::string &params_path) {
   cv::FileStorage fs(params_path,
                      cv::FileStorage::WRITE | cv::FileStorage::FORMAT_JSON);
 
-  fs << "hue_low_th" << 12;
-  fs << "hue_high_th" << 26;
-  fs << "saturation_low_th" << 110;
+  fs << "hue_low_th" << 26;
+  fs << "hue_high_th" << 34;
+  fs << "saturation_low_th" << 43;
   fs << "saturation_high_th" << 255;
-  fs << "value_low_th" << 144;
+  fs << "value_low_th" << 46;
   fs << "value_high_th" << 255;
   fs << "binary_th" << 120;
   fs << "area_low_th" << 5000;
@@ -56,7 +56,7 @@ void OreCubeDetector::FindOreCube(const cv::Mat &frame) {
               result);
   cv::threshold(result, result, params_.binary_th, 255, cv::THRESH_BINARY);
 
-#if 1 /* 是否进行形态学运算区别不大 */
+#if 0 /* 是否进行形态学运算区别不大 */
   cv::Mat kernel = cv::getStructuringElement(0, cv::Size(3, 3));
   cv::morphologyEx(result, result, cv::MorphTypes::MORPH_CLOSE, kernel);
 #endif
@@ -64,7 +64,7 @@ void OreCubeDetector::FindOreCube(const cv::Mat &frame) {
   cv::findContours(result, contours_, cv::RETR_EXTERNAL,
                    cv::CHAIN_APPROX_SIMPLE);
 
-#if 1 /* 平滑轮廓应该有用，但是这里简化轮廓没用 */
+#if 1
   contours_poly_.resize(contours_.size());
   for (size_t k = 0; k < contours_.size(); ++k) {
     cv::approxPolyDP(cv::Mat(contours_[k]), contours_poly_[k], 1, true);
@@ -112,21 +112,17 @@ const tbb::concurrent_vector<OreCube> &OreCubeDetector::Detect(
 
 void OreCubeDetector::VisualizeResult(const cv::Mat &output, int verbose) {
   auto draw_orecube = [&](OreCube cube) {
-    cube.VisualizeObject(output, verbose > 2, kBLUE);
+    cube.VisualizeObject(output, verbose > 2, draw::kBLUE);
   };
 
   if (verbose > 1) {
-    cv::drawContours(output, contours_, -1, kBLUE, 3);
-    cv::drawContours(output, contours_poly_, -1, kRED);
+    cv::drawContours(output, contours_, -1, draw::kBLUE, 3);
+    cv::drawContours(output, contours_poly_, -1, draw::kRED, 3);
   }
   if (verbose > 2) {
-    int baseLine, v_pos = 0;
-
     std::string label = cv::format("%ld cubes in %ld ms.", targets_.size(),
                                    duration_cube_.count());
-    cv::Size text_size = cv::getTextSize(label, kCV_FONT, 1.0, 2, &baseLine);
-    v_pos += static_cast<int>(1.3 * text_size.height);
-    cv::putText(output, label, cv::Point(0, v_pos), kCV_FONT, 1.0, kBLACK);
+    draw::VisualizeLabel(output, label, 1, draw::kBLACK);
   }
   if (!targets_.empty()) {
     std::for_each(std::execution::par_unseq, targets_.begin(), targets_.end(),

@@ -16,10 +16,11 @@ void Compensator::VisualizePnp(Armor& armor, const cv::Mat& output,
                     armor.GetTransVec(), cam_mat_, distor_coff_, out_points);
   for (std::size_t i = 0; i < out_points.size(); ++i) {
     cv::line(output, out_points[i], out_points[(i + 1) % out_points.size()],
-             kYELLOW);
+             draw::kBLACK);
   }
   if (add_lable) {
-    cv::putText(output, "PNP", out_points[0], kCV_FONT, 1.0, kYELLOW);
+    cv::putText(output, "PNP", out_points[0], draw::kCV_FONT, 1.0,
+                draw::kYELLOW);
   }
 }
 

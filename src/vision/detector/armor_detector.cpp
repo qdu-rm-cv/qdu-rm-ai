@@ -247,29 +247,24 @@ const tbb::concurrent_vector<Armor> &ArmorDetector::Detect(
 
 void ArmorDetector::VisualizeResult(const cv::Mat &output, int verbose) {
   auto draw_lightbar = [&](LightBar &bar) {
-    bar.VisualizeObject(output, verbose > 2, kGREEN, cv::MARKER_CROSS);
+    bar.VisualizeObject(output, verbose > 2, draw::kGREEN, cv::MARKER_CROSS);
   };
   auto draw_armor = [&](Armor &armor) {
     armor.VisualizeObject(output, verbose > 2);
   };
 
   if (verbose > 0) {
-    cv::drawContours(output, contours_, -1, kRED);
-    cv::drawContours(output, contours_poly_, -1, kYELLOW);
+    cv::drawContours(output, contours_, -1, draw::kRED);
+    cv::drawContours(output, contours_poly_, -1, draw::kYELLOW);
   }
   if (verbose > 1) {
-    int baseLine, v_pos = 0;
-
     std::string label = cv::format("%ld bars in %ld ms.", lightbars_.size(),
                                    duration_bars_.count());
-    cv::Size text_size = cv::getTextSize(label, kCV_FONT, 1.0, 2, &baseLine);
-    v_pos += static_cast<int>(1.3 * text_size.height);
-    cv::putText(output, label, cv::Point(0, v_pos), kCV_FONT, 1.0, kGREEN);
+    draw::VisualizeLabel(output, label, 1);
 
     label = cv::format("%ld armors in %ld ms.", targets_.size(),
                        duration_armors_.count());
-    v_pos += static_cast<int>(1.3 * text_size.height);
-    cv::putText(output, label, cv::Point(0, v_pos), kCV_FONT, 1.0, kGREEN);
+    draw::VisualizeLabel(output, label, 2);
   }
 
   if (!lightbars_.empty()) {

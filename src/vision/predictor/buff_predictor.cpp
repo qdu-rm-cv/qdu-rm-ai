@@ -405,29 +405,25 @@ void BuffPredictor::VisualizePrediction(const cv::Mat &output, int add_lable) {
     if (add_lable > 0) {
       auto vertices = predict.ImageVertices();
       for (std::size_t i = 0; i < vertices.size(); ++i)
-        cv::line(output, vertices[i], vertices[(i + 1) % 4], kYELLOW, 8);
-      std::ostringstream buf;
-      buf << predict.ImageCenter().x << ", " << predict.ImageCenter().y;
-      cv::putText(output, buf.str(), vertices[1], kCV_FONT, 1.0, kRED);
+        cv::line(output, vertices[i], vertices[(i + 1) % 4], draw::kYELLOW, 8);
+      std::string buf = cv::format("%.3f, %.3f", predict.ImageCenter().x,
+                                   predict.ImageCenter().y);
+      cv::putText(output, buf, vertices[1], draw::kCV_FONT, 1.0, draw::kRED);
     }
     if (add_lable > 1) {
       if (cv::Point2f(0, 0) != predict.ImageCenter())
-        cv::line(output, buff_.GetCenter(), predict.ImageCenter(), kRED, 3);
+        cv::line(output, buff_.GetCenter(), predict.ImageCenter(), draw::kRED,
+                 3);
     }
     if (add_lable > 2) {
-      std::string label;
-      int baseLine, v_pos = 0;
-
-      label = cv::format("Direction %s in %ld ms.",
-                         component::DirectionToString(direction_).c_str(),
-                         duration_direction_.count());
-      cv::Size text_size = cv::getTextSize(label, kCV_FONT, 1.0, 2, &baseLine);
-      v_pos += 3 * static_cast<int>(1.3 * text_size.height);
-      cv::putText(output, label, cv::Point(0, v_pos), kCV_FONT, 1.0, kGREEN);
+      std::string label =
+          cv::format("Direction :  %s in %ld ms.",
+                     component::DirectionToString(direction_).c_str(),
+                     duration_direction_.count());
+      draw::VisualizeLabel(output, label, 3);
 
       label = cv::format("Find predict in %ld ms.", duration_predict_.count());
-      v_pos += static_cast<int>(1.3 * text_size.height);
-      cv::putText(output, label, cv::Point(0, v_pos), kCV_FONT, 1.0, kGREEN);
+      draw::VisualizeLabel(output, label, 4);
     }
   }
 }

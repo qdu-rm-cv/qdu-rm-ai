@@ -173,12 +173,12 @@ void BuffDetector::MatchBuff(const cv::Mat &frame) {
 }
 
 void BuffDetector::VisualizeArmors(const cv::Mat &output, bool add_lable) {
+  auto target_vertices = buff_.GetTarget().ImageVertices();
   auto draw_armor = [&](Armor &armor) {
-    auto vertices = armor.ImageVertices();
     cv::Scalar color =
-        vertices == buff_.GetTarget().ImageVertices() ? kRED : kGREEN;
+        (armor.ImageVertices() == target_vertices) ? draw::kRED : draw::kGREEN;
 
-    armor.VisualizeObject(output, add_lable);
+    armor.VisualizeObject(output, add_lable, color);
   };
 
   tbb::concurrent_vector<Armor> armors = buff_.GetArmors();
@@ -220,32 +220,27 @@ const tbb::concurrent_vector<Buff> &BuffDetector::Detect(const cv::Mat &frame) {
 void BuffDetector::VisualizeResult(const cv::Mat &output, int verbose) {
   SPDLOG_DEBUG("Visualizeing Result.");
   if (verbose > 10) {
-    cv::drawContours(output, contours_, -1, kRED);
-    cv::drawContours(output, contours_poly_, -1, kYELLOW);
+    cv::drawContours(output, contours_, -1, draw::kRED);
+    cv::drawContours(output, contours_poly_, -1, draw::kYELLOW);
   }
 
   if (verbose > 1) {
-    int baseLine;
-
     std::string label =
         cv::format("%ld armors in %ld ms.", buff_.GetArmors().size(),
                    duration_armors_.count());
-    int text_height =
-        1.3 * cv::getTextSize(label, kCV_FONT, 1.0, 2, &baseLine).height;
-    cv::putText(output, label, cv::Point(0, text_height), kCV_FONT, 1.0,
-                kGREEN);
+    draw::VisualizeLabel(output, label, 1);
 
     label = cv::format("Match buff in %ld ms.", duration_buff_.count());
-    cv::putText(output, label, cv::Point(0, text_height * 2), kCV_FONT, 1.0,
-                kGREEN);
+    draw::VisualizeLabel(output, label, 2);
   }
   if (verbose > 2) {
     cv::Point2f vertices[4];
     hammer_.points(vertices);
     for (std::size_t i = 0; i < 4; ++i)
-      cv::line(output, vertices[i], vertices[(i + 1) % 4], kYELLOW);
+      cv::line(output, vertices[i], vertices[(i + 1) % 4], draw::kYELLOW);
 
-    cv::drawMarker(output, buff_.GetCenter(), kYELLOW, cv::MARKER_DIAMOND);
+    cv::drawMarker(output, buff_.GetCenter(), draw::kYELLOW,
+                   cv::MARKER_DIAMOND);
   }
   VisualizeArmors(output, verbose > 2);
   SPDLOG_DEBUG("Visualized.");

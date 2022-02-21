@@ -7,10 +7,6 @@
 
 namespace {
 
-const cv::Scalar kBLUE(255., 0., 0.);
-const cv::Scalar kGREEN(0., 255., 0.);
-const cv::Scalar kRED(0., 0., 255.);
-
 const std::vector<cv::Point2d> points = {
     cv::Point2d(50., 50.),  cv::Point2d(100., 50.),  cv::Point2d(150., 50.),
     cv::Point2d(200., 50.), cv::Point2d(250., 50.),  cv::Point2d(300., 50.),
@@ -37,8 +33,8 @@ TEST(TestVision, TestKalman) {
     cv::Point2d predict_pt(predict_mat.at<double>(0, 0),
                            predict_mat.at<double>(0, 1));
 
-    cv::circle(img, pt, 3, kBLUE, 2);
-    cv::circle(img, predict_pt, 3, kGREEN, 2);
+    cv::circle(img, pt, 3, draw::kBLUE, 2);
+    cv::circle(img, predict_pt, 3, draw::kGREEN, 2);
 
     cv::imshow("img", img);
     // cv::waitKey(0);
@@ -59,8 +55,8 @@ TEST(TestVision, TestKalmanBuffPredictor) {
     auto buffs = detecter.Detect(frame);
     cv::Point2d target_center = buffs.back().GetTarget().ImageCenter();
     cv::Point2d pt = filter.Predict(target_center);
-    cv::circle(frame, target_center, 3, kGREEN, -1);
-    cv::circle(frame, pt, 3, kBLUE, -1);
+    cv::circle(frame, target_center, 3, draw::kGREEN, -1);
+    cv::circle(frame, pt, 3, draw::kBLUE, -1);
     cv::imshow("WINDOW", frame);
     int key = cv::waitKey(10);
     switch (key) {
