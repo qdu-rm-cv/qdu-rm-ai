@@ -32,9 +32,9 @@ class GuidingLightParam : public Param {
  public:
   GuidingLightDetectorParam param_int;
 
-  cv::SimpleBlobDetector::Params transform2Double();
+  cv::SimpleBlobDetector::Params Transform2Double();
 
   bool Read(const std::string &params_path) override;
 
-  void Write(const std::string &params_path) const override;
+  void Write(const std::string &params_path) override;
 };

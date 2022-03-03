@@ -40,7 +40,7 @@ bool GuidingLightParam::Read(const std::string &params_path) {
   }
 }
 
-cv::SimpleBlobDetector::Params GuidingLightParam::transform2Double() {
+cv::SimpleBlobDetector::Params GuidingLightParam::Transform2Double() {
   cv::SimpleBlobDetector::Params param;
   param.thresholdStep = param_int.thresholdStep / 1.;
   param.minThreshold = param_int.minThreshold / 1.;
@@ -70,7 +70,7 @@ cv::SimpleBlobDetector::Params GuidingLightParam::transform2Double() {
   return param;
 }
 
-void GuidingLightParam::Write(const std::string &params_path) const {
+void GuidingLightParam::Write(const std::string &params_path) {
   cv::FileStorage fs(params_path,
                      cv::FileStorage::WRITE | cv::FileStorage::FORMAT_JSON);
 

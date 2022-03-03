@@ -70,7 +70,7 @@ class UIParam : private App {
 
       SPDLOG_INFO("frame size {},{}", frame.size().width, frame.size().height);
 
-      detector_.ResetByParam(guidinglight_param_.transform2Double());
+      detector_.ResetByParam(guidinglight_param_.Transform2Double());
       detector_.Detect(frame);
       detector_.VisualizeResult(frame, 3);
 

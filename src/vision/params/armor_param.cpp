@@ -1,6 +1,6 @@
 #include "armor_param.hpp"
 
-ArmorDetectorParam<double> ArmorParam::transform2Double() {
+ArmorDetectorParam<double> ArmorParam::Transform2Double() {
   ArmorDetectorParam<double> param;
   param.binary_th = param_int.binary_th;
   param.contour_size_low_th = param_int.contour_size_low_th;
@@ -51,7 +51,7 @@ bool ArmorParam::Read(const std::string &params_path) {
   }
 }
 
-void ArmorParam::Write(const std::string &params_path) const {
+void ArmorParam::Write(const std::string &params_path) {
   cv::FileStorage fs(params_path,
                      cv::FileStorage::WRITE | cv::FileStorage::FORMAT_JSON);
 

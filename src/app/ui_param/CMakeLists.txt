@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.12)
 project(ui-param)
 
-add_executable(${PROJECT_NAME} guiding_light.cpp)
+add_executable(${PROJECT_NAME} buff.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
     device

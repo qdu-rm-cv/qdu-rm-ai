@@ -11,7 +11,7 @@ class Param {
   */
 
   virtual bool Read(const std::string &params_path) = 0;
-  virtual void Write(const std::string &params_path) const = 0;
+  virtual void Write(const std::string &params_path) = 0;
 };
 
 // TODO : BuffDetetcorParam
