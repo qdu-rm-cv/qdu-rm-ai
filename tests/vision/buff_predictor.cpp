@@ -5,6 +5,7 @@
 #include "buff_detector.hpp"
 #include "buff_predictor.hpp"
 #include "gtest/gtest.h"
+#include "log.hpp"
 #include "opencv2/opencv.hpp"
 
 namespace {
@@ -15,7 +16,7 @@ const std::string kPARAM_PREDICT("../../../runtime/RMUT2022_Buff_Pre.json");
 }  // namespace
 
 TEST(TestVision, TestKalmanPredictor) {
-  RMlogger::SetLogger();
+  Logger::SetLogger();
   cv::Mat frame;
   BuffDetector detector(kPARAM_DETECT, game::Team::kBLUE);
   BuffPredictor predictor(kPARAM_PREDICT);

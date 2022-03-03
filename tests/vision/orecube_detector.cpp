@@ -2,10 +2,11 @@
 
 #include "common.hpp"
 #include "gtest/gtest.h"
+#include "log.hpp"
 #include "opencv2/opencv.hpp"
 
 TEST(TestVision, TestOreCubeDetector) {
-  RMlogger::SetLogger(spdlog::level::trace);
+  Logger::SetLogger();
   OreCubeDetector detector("../../../runtime/RMUT2022_OreCube.json");
   cv::VideoCapture cap("../../../../cube01.avi");
   cv::Mat frame;
