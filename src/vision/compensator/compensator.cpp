@@ -79,13 +79,14 @@ void Compensator::SolveAngles(Armor& armor, component::Euler euler) {
     std::vector<cv::Point2f> out;
     cv::undistortPoints(std::vector<cv::Point2f>{armor.image_center_}, out,
                         cam_mat_, distor_coff_, cv::noArray(), cam_mat_);
-    aiming_eulr.pitch = atan((out.front().y - v0) / ay);
-    aiming_eulr.yaw = -atan((out.front().x - u0) / ax);
+    aiming_eulr.pitch = -atan((out.front().y - v0) / ay);
+    aiming_eulr.yaw = atan((out.front().x - u0) / ax);
   } else {
     // P4PSolver
     aiming_eulr.pitch = -atan(y_pos / sqrt(x_pos * x_pos + z_pos * z_pos));
     aiming_eulr.yaw = atan(x_pos / z_pos);
   }
+  // aiming_eulr.pitch += 3.2 / 180.0 * CV_PI;
   armor.SetAimEuler(aiming_eulr);
 }
 
@@ -116,8 +117,7 @@ void Compensator::CompensateGravity(Armor& armor, component::Euler euler) {
   float compensate_pitch = atan(
       (sin(aiming_eulr.pitch) - 0.5 * kG * distance_ / pow(ballet_speed_, 2)) /
       cos(aiming_eulr.pitch));
-  aiming_eulr.pitch = aiming_eulr.pitch + compensate_pitch;
-  aiming_eulr.yaw = armor.GetAimEuler().yaw + euler.yaw;
+  aiming_eulr.pitch = (armor.GetAimEuler().pitch + compensate_pitch) * (-0.01);
   armor.SetAimEuler(aiming_eulr);
 }
 

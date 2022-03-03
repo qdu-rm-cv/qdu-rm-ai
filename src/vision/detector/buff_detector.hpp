@@ -7,23 +7,9 @@
 #include "buff.hpp"
 #include "detector.hpp"
 #include "opencv2/opencv.hpp"
+#include "buff_param.hpp"
 
-struct BuffDetectorParam {
-  double binary_th;
-  int se_erosion;    /* erosion in getStructuringElement */
-  double ap_erosion; /* erosion in approxPolyDP */
-
-  std::size_t contour_size_low_th;
-  double rect_ratio_low_th;
-  double rect_ratio_high_th;
-
-  double contour_center_area_low_th;
-  double contour_center_area_high_th;
-  double rect_center_ratio_low_th;
-  double rect_center_ratio_high_th;
-};
-
-class BuffDetector : public Detector<Buff, BuffDetectorParam> {
+class BuffDetector : public Detector<Buff, BuffDetectorParam<double>> {
  private:
   Buff buff_;
   std::vector<std::vector<cv::Point>> contours_, contours_poly_;

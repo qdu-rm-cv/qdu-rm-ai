@@ -14,8 +14,6 @@ void BuffDetector::InitDefaultParams(const std::string &params_path) {
                      cv::FileStorage::WRITE | cv::FileStorage::FORMAT_JSON);
 
   fs << "binary_th" << 220;
-  fs << "se_erosion" << 2;
-  fs << "ap_erosion" << 1.;
 
   fs << "contour_size_low_th" << 2;
   fs << "rect_ratio_low_th" << 0.4;
@@ -33,8 +31,6 @@ bool BuffDetector::PrepareParams(const std::string &params_path) {
                      cv::FileStorage::READ | cv::FileStorage::FORMAT_JSON);
   if (fs.isOpened()) {
     params_.binary_th = fs["binary_th"];
-    params_.se_erosion = fs["se_erosion"];
-    params_.ap_erosion = fs["ap_erosion"];
 
     params_.contour_size_low_th = static_cast<int>(fs["contour_size_low_th"]);
     params_.rect_ratio_low_th = fs["rect_ratio_low_th"];
@@ -78,16 +74,19 @@ void BuffDetector::MatchBuff(const cv::Mat &frame) {
 
   cv::threshold(img, img, params_.binary_th, 255., cv::THRESH_BINARY);
 
-  cv::Mat kernel = cv::getStructuringElement(
-      cv::MORPH_RECT,
-      cv::Size2i(2 * params_.se_erosion + 1, 2 * params_.se_erosion + 1),
-      cv::Point(params_.se_erosion, params_.se_erosion));
+  /*
+    cv::Mat kernel = cv::getStructuringElement(
+        cv::MORPH_RECT,
+        cv::Size2i(2 * params_.se_erosion + 1, 2 * params_.se_erosion + 1),
+        cv::Point(params_.se_erosion, params_.se_erosion));
 
-  cv::dilate(img, img, kernel);
-  cv::morphologyEx(img, img, cv::MORPH_CLOSE, kernel);
+    cv::dilate(img, img, kernel);
+    cv::morphologyEx(img, img, cv::MORPH_CLOSE, kernel);
+
+  */
   cv::findContours(img, contours_, cv::RETR_TREE, cv::CHAIN_APPROX_NONE);
 
-#if 1
+#if 0
   contours_poly_.resize(contours_.size());
   for (size_t i = 0; i < contours_.size(); ++i) {
     cv::approxPolyDP(cv::Mat(contours_[i]), contours_poly_[i],
@@ -120,7 +119,7 @@ void BuffDetector::MatchBuff(const cv::Mat &frame) {
     }
 
     /* 筛选锤子 : [max(1.2 * 轮廓, 20 * R标)]  <  [锤子]  <  [80 * R标] */
-    if (rect_area > 1.2 * contour_area && rect_area > 20 * center_rect_area &&
+    if (rect_area > 1.2 * contour_area && rect_area > 12 * center_rect_area &&
         rect_area < 80 * center_rect_area) {
       hammer_ = rect;
       SPDLOG_DEBUG("hammer_contour's area is {}", contour_area);
@@ -136,15 +135,16 @@ void BuffDetector::MatchBuff(const cv::Mat &frame) {
     if (rect_ratio < params_.rect_ratio_low_th) return;
     if (rect_ratio > params_.rect_ratio_high_th) return;
 
-    if (rect_area < 3 * center_rect_area) return;
-    if (rect_area > 15 * center_rect_area) return;
+    if (rect_area < 2 * center_rect_area) return;
+    if (rect_area > 10 * center_rect_area) return;
 
-    if (contour_area > rect_area * 1.2) return;
-    if (contour_area < rect_area * 0.8) return;
+    if (contour_area > rect_area * 1.6) return;
+    if (contour_area < rect_area * 0.5) return;
 
     SPDLOG_DEBUG("armor's area is {}", rect_area);
-
-    armors.emplace_back(Armor(rect));
+    Armor armor = Armor(rect);
+    armor.SetModel(game::Model::kHERO);
+    armors.emplace_back(armor);
   };
 
   std::for_each(std::execution::par_unseq, contours_.begin(), contours_.end(),
@@ -164,6 +164,9 @@ void BuffDetector::MatchBuff(const cv::Mat &frame) {
             cv::norm(hammer_.center - buff_.GetTarget().ImageCenter()))
           buff_.SetTarget(armor);
     buff_.SetArmors(armors);
+
+    targets_.emplace_back(buff_);
+
   } else {
     SPDLOG_WARN("can't find buff_armor");
   }
@@ -210,6 +213,7 @@ void BuffDetector::SetTeam(game::Team enemy_team) {
 
 const tbb::concurrent_vector<Buff> &BuffDetector::Detect(const cv::Mat &frame) {
   targets_.clear();
+  buff_ = Buff();
   SPDLOG_DEBUG("Detecting");
   MatchBuff(frame);
   SPDLOG_DEBUG("Detected.");

@@ -10,6 +10,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     predictor
     compensator
     spdlog::spdlog
+    behavior
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
