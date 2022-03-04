@@ -13,7 +13,7 @@ const std::string ToFormatString(FMT fmt) {
       return fmt_default;
     case FMT::kFMT_FILE:
       return fmt_filelogger;
-    case FMT::kFMT_FUNC:
+    case FMT::kFMT_TEST:
       return fmt_funcname;
     default:
       return fmt_default;
@@ -49,10 +49,8 @@ void SetLogger(spdlog::level::level_enum level, FMT fmt,
 }
 
 void SetLogger(const std::string& path, FMT fmt) {
-  std::string fmt_str = ToFormatString(fmt);
-
   auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-  console_sink->set_pattern(fmt_str);
+  console_sink->set_pattern(ToFormatString(fmt));
   auto file_sink =
       std::make_shared<spdlog::sinks::basic_file_sink_mt>(path, true);
   file_sink->set_pattern(fmt_default);
