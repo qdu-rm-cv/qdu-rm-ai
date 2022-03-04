@@ -28,13 +28,11 @@ struct GuidingLightDetectorParam {
   int minConvexity, maxConvexity; /*凸度*/
 };
 
-class GuidingLightParam : public Param {
+class GuidingLightParam
+    : public Param<GuidingLightDetectorParam, cv::SimpleBlobDetector::Params> {
  public:
-  GuidingLightDetectorParam param_int;
-
-  cv::SimpleBlobDetector::Params Transform2Double();
+  cv::SimpleBlobDetector::Params TransformToDouble();
 
   bool Read(const std::string &params_path) override;
-
   void Write(const std::string &params_path) override;
 };

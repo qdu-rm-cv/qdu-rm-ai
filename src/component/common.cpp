@@ -46,9 +46,37 @@ std::string AimMethodToString(AimMethod method) {
       return std::string("Use OreCube Detector");
     case AimMethod::kSNIPE:
       return std::string("Use Snipe Detector");
+    case AimMethod::kLIGHT:
+      return std::string("Use GuidingLight Detector");
     default:
       return std::string("Unknown");
   }
+}
+
+AimMethod StringToAimMethod(std::string name) {
+  std::transform(name.begin(), name.end(), name.begin(),
+                 [](unsigned char c) { return std::tolower(c); });
+  if (!name.compare("armor") || !name.compare("autoaim") ||
+      !name.compare("auto_aim") || !name.compare("auto-aim") ||
+      !name.compare("1")) {
+    return AimMethod::kARMOR;
+  }
+  if (!name.compare("buff") || !name.compare("2")) {
+    return AimMethod::kBUFF;
+  }
+  if (!name.compare("orecube") || !name.compare("cube") ||
+      !name.compare("ore") || !name.compare("3")) {
+    return AimMethod::kORECUBE;
+  }
+  if (!name.compare("snipe") || !name.compare("4")) {
+    return AimMethod::kSNIPE;
+  }
+  if (!name.compare("light") || !name.compare("guidinglight") ||
+      !name.compare("guiding-light") || !name.compare("guiding_light") ||
+      !name.compare("5")) {
+    return AimMethod::kLIGHT;
+  }
+  return AimMethod::kUNKNOWN;
 }
 
 }  // namespace component

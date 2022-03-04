@@ -27,11 +27,13 @@ enum class AimMethod {
   kBUFF,
   kORECUBE,
   kSNIPE,
+  kLIGHT,
 };
 
 std::string DirectionToString(Direction direction);
 std::string BuffStateToString(BuffState state);
 std::string AimMethodToString(AimMethod method);
+AimMethod StringToAimMethod(std::string name);
 
 }  // namespace component
 

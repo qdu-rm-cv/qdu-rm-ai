@@ -24,13 +24,11 @@ struct ArmorDetectorParam {
   Type center_dist_high_th;
 };
 
-class ArmorParam : public Param {
+class ArmorParam
+    : public Param<ArmorDetectorParam<int>, ArmorDetectorParam<double>> {
  public:
-  ArmorDetectorParam<int> param_int;
-
-  ArmorDetectorParam<double> Transform2Double();
+  ArmorDetectorParam<double> TransformToDouble();
 
   bool Read(const std::string &params_path) override;
-
   void Write(const std::string &params_path) override;
 };

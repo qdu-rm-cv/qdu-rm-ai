@@ -1,34 +1,37 @@
 #include "buff_param.hpp"
 
-BuffDetectorParam<double> BuffParam::Transform2Double() {
-  BuffDetectorParam<double> param;
-  param.binary_th = param_int.binary_th;
-  param.contour_size_low_th = param_int.contour_size_low_th;
+BuffDetectorParam<double> BuffParam::TransformToDouble() {
+  paramd_.binary_th = parami_.binary_th;
+  paramd_.contour_size_low_th = parami_.contour_size_low_th;
 
-  param.rect_ratio_low_th = param_int.rect_ratio_low_th / 1000.;
-  param.rect_ratio_high_th = param_int.rect_ratio_high_th / 1000.;
+  paramd_.rect_ratio_low_th = parami_.rect_ratio_low_th / 1000.;
+  paramd_.rect_ratio_high_th = parami_.rect_ratio_high_th / 1000.;
 
-  param.contour_center_area_low_th = param_int.contour_center_area_low_th;
-  param.contour_center_area_high_th = param_int.contour_center_area_high_th;
-  param.rect_center_ratio_low_th = param_int.rect_center_ratio_low_th / 1000.;
-  param.rect_center_ratio_high_th = param_int.rect_center_ratio_high_th / 1000.;
-  return param;
+  paramd_.contour_center_area_low_th = parami_.contour_center_area_low_th;
+  paramd_.contour_center_area_high_th = parami_.contour_center_area_high_th;
+  paramd_.rect_center_ratio_low_th = parami_.rect_center_ratio_low_th / 1000.;
+  paramd_.rect_center_ratio_high_th = parami_.rect_center_ratio_high_th / 1000.;
+  return paramd_;
 }
 
 bool BuffParam::Read(const std::string &params_path) {
   cv::FileStorage fs(params_path,
                      cv::FileStorage::READ | cv::FileStorage::FORMAT_JSON);
   if (fs.isOpened()) {
-    param_int.binary_th = fs["binary_th"];
-    param_int.contour_size_low_th = static_cast<int>(fs["contour_size_low_th"]);
+    parami_.binary_th = fs["binary_th"];
+    parami_.contour_size_low_th = static_cast<int>(fs["contour_size_low_th"]);
 
-    param_int.rect_ratio_low_th = double(fs["rect_ratio_low_th"]) * 1000.;
-    param_int.rect_ratio_high_th = double(fs["rect_ratio_high_th"]) * 1000.;
+    parami_.rect_ratio_low_th = double(fs["rect_ratio_low_th"]) * 1000.;
+    parami_.rect_ratio_high_th = double(fs["rect_ratio_high_th"]) * 1000.;
 
-    param_int.contour_center_area_low_th = double(fs["contour_center_area_low_th"]);
-    param_int.contour_center_area_high_th = double(fs["contour_center_area_high_th"]);
-    param_int.rect_center_ratio_low_th = double(fs["rect_center_ratio_low_th"]) * 1000.;
-    param_int.rect_center_ratio_high_th = double(fs["rect_center_ratio_high_th"]) * 1000.;
+    parami_.contour_center_area_low_th =
+        double(fs["contour_center_area_low_th"]);
+    parami_.contour_center_area_high_th =
+        double(fs["contour_center_area_high_th"]);
+    parami_.rect_center_ratio_low_th =
+        double(fs["rect_center_ratio_low_th"]) * 1000.;
+    parami_.rect_center_ratio_high_th =
+        double(fs["rect_center_ratio_high_th"]) * 1000.;
     return true;
   } else {
     SPDLOG_ERROR("Can not load params.");
@@ -39,17 +42,16 @@ bool BuffParam::Read(const std::string &params_path) {
 void BuffParam::Write(const std::string &params_path) {
   cv::FileStorage fs(params_path,
                      cv::FileStorage::WRITE | cv::FileStorage::FORMAT_JSON);
-  BuffDetectorParam<double> param_double = Transform2Double();
+  TransformToDouble();
 
-  fs << "binary_th" << param_double.binary_th;
-  fs << "contour_size_low_th"
-     << static_cast<int>(param_double.contour_size_low_th);
+  fs << "binary_th" << paramd_.binary_th;
+  fs << "contour_size_low_th" << static_cast<int>(paramd_.contour_size_low_th);
 
-  fs << "rect_ratio_low_th" << param_double.rect_ratio_low_th;
-  fs << "rect_ratio_high_th" << param_double.rect_ratio_high_th;
-  fs << "contour_center_area_low_th" << param_double.contour_center_area_low_th;
-  fs << "contour_center_area_high_th" << param_double.contour_center_area_high_th;
-  fs << "rect_center_ratio_low_th" << param_double.rect_center_ratio_low_th;
-  fs << "rect_center_ratio_high_th" << param_double.rect_center_ratio_high_th;
+  fs << "rect_ratio_low_th" << paramd_.rect_ratio_low_th;
+  fs << "rect_ratio_high_th" << paramd_.rect_ratio_high_th;
+  fs << "contour_center_area_low_th" << paramd_.contour_center_area_low_th;
+  fs << "contour_center_area_high_th" << paramd_.contour_center_area_high_th;
+  fs << "rect_center_ratio_low_th" << paramd_.rect_center_ratio_low_th;
+  fs << "rect_center_ratio_high_th" << paramd_.rect_center_ratio_high_th;
   SPDLOG_WARN("Wrote params.");
 }

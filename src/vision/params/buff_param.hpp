@@ -19,13 +19,11 @@ struct BuffDetectorParam {
   Type rect_center_ratio_high_th;
 };
 
-class BuffParam : public Param {
+class BuffParam
+    : public Param<BuffDetectorParam<int>, BuffDetectorParam<double>> {
  public:
-  BuffDetectorParam<int> param_int;
-
-  BuffDetectorParam<double> Transform2Double();
+  BuffDetectorParam<double> TransformToDouble();
 
   bool Read(const std::string &params_path) override;
-
   void Write(const std::string &params_path) override;
 };

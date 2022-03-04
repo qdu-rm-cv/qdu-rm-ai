@@ -1,11 +1,12 @@
 cmake_minimum_required(VERSION 3.12)
 project(ui-param)
 
-add_executable(${PROJECT_NAME} buff.cpp)
+add_executable(${PROJECT_NAME} main.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
     device
     param
+    component
     detector
     spdlog::spdlog
 )

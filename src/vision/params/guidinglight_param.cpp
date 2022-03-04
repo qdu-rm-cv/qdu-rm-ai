@@ -7,32 +7,32 @@ bool GuidingLightParam::Read(const std::string &params_path) {
   cv::FileStorage fs(params_path,
                      cv::FileStorage::READ | cv::FileStorage::FORMAT_JSON);
   if (fs.isOpened()) {
-    param_int.thresholdStep = fs["thresholdStep"];
-    param_int.minThreshold = fs["minThreshold"];
-    param_int.maxThreshold = fs["maxThreshold"];
+    parami_.thresholdStep = fs["thresholdStep"];
+    parami_.minThreshold = fs["minThreshold"];
+    parami_.maxThreshold = fs["maxThreshold"];
 
-    param_int.minRepeatability = int(fs["minRepeatability"]);
-    param_int.minDistBetweenBlobs = fs["minDistBetweenBlobs"];
+    parami_.minRepeatability = int(fs["minRepeatability"]);
+    parami_.minDistBetweenBlobs = fs["minDistBetweenBlobs"];
 
-    param_int.filterByColor = int(fs["filterByColor"]) != 0 ? true : false;
-    param_int.blobColor = int(fs["blobColor"]);
-    param_int.filterByArea = int(fs["filterByArea"]) != 0 ? true : false;
-    param_int.minArea = fs["minArea"];
-    param_int.maxArea = fs["maxArea"];
+    parami_.filterByColor = int(fs["filterByColor"]) != 0 ? true : false;
+    parami_.blobColor = int(fs["blobColor"]);
+    parami_.filterByArea = int(fs["filterByArea"]) != 0 ? true : false;
+    parami_.minArea = fs["minArea"];
+    parami_.maxArea = fs["maxArea"];
 
-    param_int.filterByCircularity =
+    parami_.filterByCircularity =
         int(fs["filterByCircularity"]) != 0 ? true : false;
-    param_int.minCircularity = fs["minCircularity"];
-    param_int.maxCircularity = fs["maxCircularity"];
+    parami_.minCircularity = fs["minCircularity"];
+    parami_.maxCircularity = fs["maxCircularity"];
 
-    param_int.filterByInertia = int(fs["filterByInertia"]) != 0 ? true : false;
-    param_int.minInertiaRatio = fs["minInertiaRatio"];
-    param_int.maxInertiaRatio = fs["maxInertiaRatio"];
+    parami_.filterByInertia = int(fs["filterByInertia"]) != 0 ? true : false;
+    parami_.minInertiaRatio = fs["minInertiaRatio"];
+    parami_.maxInertiaRatio = fs["maxInertiaRatio"];
 
-    param_int.filterByConvexity =
+    parami_.filterByConvexity =
         int(fs["filterByConvexity"]) != 0 ? true : false;
-    param_int.minConvexity = fs["minConvexity"];
-    param_int.maxConvexity = fs["maxConvexity"];
+    parami_.minConvexity = fs["minConvexity"];
+    parami_.maxConvexity = fs["maxConvexity"];
     return true;
   } else {
     SPDLOG_ERROR("Can not load params.");
@@ -40,65 +40,63 @@ bool GuidingLightParam::Read(const std::string &params_path) {
   }
 }
 
-cv::SimpleBlobDetector::Params GuidingLightParam::Transform2Double() {
-  cv::SimpleBlobDetector::Params param;
-  param.thresholdStep = param_int.thresholdStep / 1.;
-  param.minThreshold = param_int.minThreshold / 1.;
-  param.maxThreshold = param_int.maxThreshold / 1.;
+cv::SimpleBlobDetector::Params GuidingLightParam::TransformToDouble() {
+  paramd_.thresholdStep = parami_.thresholdStep / 1.;
+  paramd_.minThreshold = parami_.minThreshold / 1.;
+  paramd_.maxThreshold = parami_.maxThreshold / 1.;
 
-  param.minRepeatability = param_int.minRepeatability;
-  param.minDistBetweenBlobs = param_int.minDistBetweenBlobs / 1.;
+  paramd_.minRepeatability = parami_.minRepeatability;
+  paramd_.minDistBetweenBlobs = parami_.minDistBetweenBlobs / 1.;
 
-  param.filterByColor = param_int.filterByColor;
-  param.blobColor = param_int.blobColor;
+  paramd_.filterByColor = parami_.filterByColor;
+  paramd_.blobColor = parami_.blobColor;
 
-  param.filterByArea = param_int.filterByArea;
-  param.minArea = param_int.minArea / 1.;
-  param.maxArea = param_int.maxArea / 1.;
+  paramd_.filterByArea = parami_.filterByArea;
+  paramd_.minArea = parami_.minArea / 1.;
+  paramd_.maxArea = parami_.maxArea / 1.;
 
-  param.filterByCircularity = param_int.filterByCircularity;
-  param.minCircularity = param_int.minCircularity / 20.;
-  param.maxCircularity = param_int.maxCircularity / 20.;
+  paramd_.filterByCircularity = parami_.filterByCircularity;
+  paramd_.minCircularity = parami_.minCircularity / 20.;
+  paramd_.maxCircularity = parami_.maxCircularity / 20.;
 
-  param.filterByInertia = param_int.filterByInertia;
-  param.minInertiaRatio = param_int.minInertiaRatio / 20.;
-  param.maxInertiaRatio = param_int.maxInertiaRatio / 20.;
+  paramd_.filterByInertia = parami_.filterByInertia;
+  paramd_.minInertiaRatio = parami_.minInertiaRatio / 20.;
+  paramd_.maxInertiaRatio = parami_.maxInertiaRatio / 20.;
 
-  param.filterByConvexity = param_int.filterByConvexity;
-  param.minConvexity = param_int.minConvexity / 20.;
-  param.maxConvexity = param_int.maxConvexity / 20.;
-  return param;
+  paramd_.filterByConvexity = parami_.filterByConvexity;
+  paramd_.minConvexity = parami_.minConvexity / 20.;
+  paramd_.maxConvexity = parami_.maxConvexity / 20.;
+  return paramd_;
 }
 
 void GuidingLightParam::Write(const std::string &params_path) {
   cv::FileStorage fs(params_path,
                      cv::FileStorage::WRITE | cv::FileStorage::FORMAT_JSON);
 
-  fs << "thresholdStep" << param_int.thresholdStep;
-  fs << "minThreshold" << param_int.minThreshold;
-  fs << "maxThreshold" << param_int.maxThreshold;
+  fs << "thresholdStep" << paramd_.thresholdStep;
+  fs << "minThreshold" << paramd_.minThreshold;
+  fs << "maxThreshold" << paramd_.maxThreshold;
 
-  fs << "minRepeatability" << static_cast<int>(param_int.minRepeatability);
-  fs << "minDistBetweenBlobs" << param_int.minDistBetweenBlobs;
+  fs << "minRepeatability" << static_cast<int>(paramd_.minRepeatability);
+  fs << "minDistBetweenBlobs" << paramd_.minDistBetweenBlobs;
 
-  fs << "filterByColor" << static_cast<int>(param_int.filterByColor);
-  fs << "blobColor" << static_cast<int>(param_int.blobColor);
+  fs << "filterByColor" << static_cast<int>(paramd_.filterByColor);
+  fs << "blobColor" << static_cast<int>(paramd_.blobColor);
 
-  fs << "filterByArea" << static_cast<int>(param_int.filterByArea);
-  fs << "minArea" << param_int.minArea;
-  fs << "maxArea" << param_int.maxArea;
+  fs << "filterByArea" << static_cast<int>(paramd_.filterByArea);
+  fs << "minArea" << paramd_.minArea;
+  fs << "maxArea" << paramd_.maxArea;
 
-  fs << "filterByCircularity"
-     << static_cast<int>(param_int.filterByCircularity);
-  fs << "minCircularity" << param_int.minCircularity / 5.;
-  fs << "maxCircularity" << param_int.maxCircularity / 1.;
+  fs << "filterByCircularity" << static_cast<int>(paramd_.filterByCircularity);
+  fs << "minCircularity" << paramd_.minCircularity / 5.;
+  fs << "maxCircularity" << paramd_.maxCircularity / 1.;
 
-  fs << "filterByInertia" << static_cast<int>(param_int.filterByInertia);
-  fs << "minInertiaRatio" << param_int.minInertiaRatio / 10.;
-  fs << "maxInertiaRatio" << param_int.maxInertiaRatio / 1.;
+  fs << "filterByInertia" << static_cast<int>(paramd_.filterByInertia);
+  fs << "minInertiaRatio" << paramd_.minInertiaRatio / 10.;
+  fs << "maxInertiaRatio" << paramd_.maxInertiaRatio / 1.;
 
-  fs << "filterByConvexity" << static_cast<int>(param_int.filterByConvexity);
-  fs << "minConvexity" << param_int.minConvexity / 5.;
-  fs << "maxConvexity" << param_int.maxConvexity / 1.;
+  fs << "filterByConvexity" << static_cast<int>(paramd_.filterByConvexity);
+  fs << "minConvexity" << paramd_.minConvexity / 5.;
+  fs << "maxConvexity" << paramd_.maxConvexity / 1.;
   SPDLOG_WARN("Wrote params.");
 }
