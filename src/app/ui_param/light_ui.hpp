@@ -1,3 +1,5 @@
+#pragma once
+
 #include "app.hpp"
 #include "guidinglight_detector.hpp"
 #include "guidinglight_param.hpp"

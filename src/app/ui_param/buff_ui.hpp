@@ -1,3 +1,5 @@
+#pragma once
+
 #include "app.hpp"
 #include "buff_detector.hpp"
 #include "buff_param.hpp"

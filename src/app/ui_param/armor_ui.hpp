@@ -1,3 +1,5 @@
+#pragma once
+
 #include "app.hpp"
 #include "armor_detector.hpp"
 #include "armor_param.hpp"
