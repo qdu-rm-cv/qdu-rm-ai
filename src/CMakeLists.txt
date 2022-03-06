@@ -14,7 +14,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/vision)
 #---------------------------------------------------------------------------------------
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/demo/armor)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/demo/aim_assistant)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/demo/buff)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/demo/camera)
 
 #---------------------------------------------------------------------------------------
@@ -27,3 +27,4 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/app/dart)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/app/radar)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/app/sentry)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/app/ui_param)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/app/aim_assistant)

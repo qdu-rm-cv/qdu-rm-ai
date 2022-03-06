@@ -1,0 +1,10 @@
+{
+    "binary_th": 131.0,
+    "contour_size_low_th": 0,
+    "rect_ratio_low_th": 5.7100000000000006e-01,
+    "rect_ratio_high_th": 1.8380000000000001e+00,
+    "contour_center_area_low_th": 170.0,
+    "contour_center_area_high_th": 391.0,
+    "rect_center_ratio_low_th": 9.8299999999999998e-01,
+    "rect_center_ratio_high_th": 1.2530000000000001e+00
+}
