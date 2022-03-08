@@ -19,6 +19,15 @@ void BuffDetector::InitDefaultParams(const std::string &params_path) {
   fs << "rect_ratio_low_th" << 0.4;
   fs << "rect_ratio_high_th" << 2.5;
 
+  fs << "hammar_rect_contour_ratio_th" << 1.2;
+  fs << "hammar_rect_center_div_low_th" << 12;
+  fs << "hammar_rect_center_div_high_th" << 18;
+
+  fs << "armor_rect_center_div_low_th" << 2;
+  fs << "armor_rect_center_div_high_th" << 10;
+  fs << "armor_contour_rect_div_low_th" << 0.5;
+  fs << "armor_contour_rect_div_high_th" << 1.6;
+
   fs << "contour_center_area_low_th" << 100;
   fs << "contour_center_area_high_th" << 1000;
   fs << "rect_center_ratio_low_th" << 0.6;
@@ -35,6 +44,17 @@ bool BuffDetector::PrepareParams(const std::string &params_path) {
     params_.contour_size_low_th = static_cast<int>(fs["contour_size_low_th"]);
     params_.rect_ratio_low_th = fs["rect_ratio_low_th"];
     params_.rect_ratio_high_th = fs["rect_ratio_high_th"];
+
+    params_.hammar_rect_contour_ratio_th = fs["hammar_rect_contour_ratio_th"];
+    params_.hammar_rect_center_div_low_th = fs["hammar_rect_center_div_low_th"];
+    params_.hammar_rect_center_div_high_th =
+        fs["hammar_rect_center_div_high_th"];
+
+    params_.armor_rect_center_div_low_th = fs["armor_rect_center_div_low_th"];
+    params_.armor_rect_center_div_high_th = fs["armor_rect_center_div_high_th"];
+    params_.armor_contour_rect_div_low_th = fs["armor_contour_rect_div_low_th"];
+    params_.armor_contour_rect_div_high_th =
+        fs["armor_contour_rect_div_high_th"];
 
     params_.contour_center_area_low_th = fs["contour_center_area_low_th"];
     params_.contour_center_area_high_th = fs["contour_center_area_high_th"];
@@ -119,8 +139,9 @@ void BuffDetector::MatchBuff(const cv::Mat &frame) {
     }
 
     /* 筛选锤子 : [max(1.2 * 轮廓, 20 * R标)]  <  [锤子]  <  [80 * R标] */
-    if (rect_area > 1.2 * contour_area && rect_area > 12 * center_rect_area &&
-        rect_area < 80 * center_rect_area) {
+    if (rect_area > params_.hammar_rect_contour_ratio_th * contour_area &&
+        rect_area > params_.hammar_rect_center_div_low_th * center_rect_area &&
+        rect_area < params_.hammar_rect_center_div_high_th * center_rect_area) {
       hammer_ = rect;
       SPDLOG_DEBUG("hammer_contour's area is {}", contour_area);
       return;
@@ -135,11 +156,15 @@ void BuffDetector::MatchBuff(const cv::Mat &frame) {
     if (rect_ratio < params_.rect_ratio_low_th) return;
     if (rect_ratio > params_.rect_ratio_high_th) return;
 
-    if (rect_area < 2 * center_rect_area) return;
-    if (rect_area > 10 * center_rect_area) return;
+    if (rect_area < center_rect_area * params_.armor_rect_center_div_low_th)
+      return;
+    if (rect_area > center_rect_area * params_.armor_rect_center_div_high_th)
+      return;
 
-    if (contour_area > rect_area * 1.6) return;
-    if (contour_area < rect_area * 0.5) return;
+    if (contour_area < rect_area * params_.armor_contour_rect_div_low_th)
+      return;
+    if (contour_area > rect_area * params_.armor_contour_rect_div_high_th)
+      return;
 
     SPDLOG_DEBUG("armor's area is {}", rect_area);
     Armor armor = Armor(rect);
