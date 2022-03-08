@@ -1,5 +1,7 @@
 #pragma once
 
+#include <semaphore.h>
+
 #include <deque>
 #include <mutex>
 #include <thread>
@@ -15,6 +17,7 @@ class Camera {
 
   void GrabThread() {
     SPDLOG_DEBUG("[GrabThread] Started.");
+    sem_init(&this->frame_signal_, 0, 0);
     GrabPrepare();
     while (grabing) GrabLoop();
 
@@ -25,6 +28,7 @@ class Camera {
 
  public:
   unsigned int frame_h_, frame_w_;
+  sem_t frame_signal_;
 
   bool grabing = false;
   std::thread grab_thread_;
@@ -67,6 +71,7 @@ class Camera {
    */
   virtual cv::Mat GetFrame() {
     cv::Mat frame;
+    sem_wait(&frame_signal_);
 
     std::lock_guard<std::mutex> lock(frame_stack_mutex_);
     if (!frame_stack_.empty()) {
