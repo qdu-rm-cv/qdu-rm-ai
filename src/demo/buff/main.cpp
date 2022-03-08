@@ -1,9 +1,7 @@
-// #include "app/app.hpp"
 #include "buff_detector.hpp"
 #include "buff_predictor.hpp"
 #include "demo.hpp"
 #include "opencv2/opencv.hpp"
-#include "raspi_camera.hpp"
 
 namespace {
 
@@ -37,6 +35,7 @@ class BuffDemo : public Demo {
     SPDLOG_WARN("***** Shuted Down Buff Aiming System. *****");
   }
 
+  /* Demo Running */
   void Run() {
     SPDLOG_WARN("***** Running Buff Aiming System. *****");
 
@@ -52,14 +51,15 @@ class BuffDemo : public Demo {
       if (buffs.size() > 0) {
         predictor_.SetBuff(buffs.back());
         auto armors = predictor_.Predict();
-        if (armors.size() != 0) predictor_.VisualizePrediction(frame, 10);
+        if (armors.size() != 0) {
+          predictor_.VisualizePrediction(frame, 10);
+        }
         detector_.VisualizeResult(frame, 10);
       }
 
       cv::imshow("RESULT", frame);
-      cv::waitKey(1);
-      if (' ' == cv::waitKey(10)) {
-        cv::waitKey(0);
+      if ('q' == cv::waitKey(10)) {
+        break;
       }
     }
   }
@@ -69,9 +69,9 @@ int main(int argc, char const* argv[]) {
   (void)argc;
   (void)argv;
 
-  BuffDemo buff_aim("logs/buff_aim.log");
-  buff_aim.Open(kSOURCE, kOUTPUT);
-  buff_aim.Run();
+  BuffDemo buff_demo("logs/buff_demo.log");
+  buff_demo.Open(kSOURCE, kOUTPUT);
+  buff_demo.Run();
 
   return EXIT_SUCCESS;
 }

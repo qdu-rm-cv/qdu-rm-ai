@@ -23,7 +23,7 @@ class Demo : private App {
     }
 
     const int codec = cam_.get(cv::CAP_PROP_FOURCC);
-    const double fps = cam_.get(cv::CAP_PROP_FPS);
+    double fps = cam_.get(cv::CAP_PROP_FPS);
     cv::Size f_size(cam_.get(cv::CAP_PROP_FRAME_WIDTH),
                     cam_.get(cv::CAP_PROP_FRAME_HEIGHT));
 
