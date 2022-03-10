@@ -50,7 +50,7 @@ void HikCamera::GrabLoop() {
 
   std::lock_guard<std::mutex> lock(frame_stack_mutex_);
   frame_stack_.push_front(raw_mat.clone());
-  sem_post(&frame_signal_);
+  frame_signal_.Signal();
   if (nullptr != raw_frame.pBufAddr) {
     if ((err = MV_CC_FreeImageBuffer(camera_handle_, &raw_frame)) != MV_OK) {
       SPDLOG_ERROR("[GrabThread] FreeImageBuffer fail! err: {0:x}.", err);
