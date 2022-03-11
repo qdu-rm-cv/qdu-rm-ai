@@ -1,7 +1,5 @@
 #pragma once
 
-#include <chrono>
-
 #include "armor.hpp"
 #include "common.hpp"
 #include "detector.hpp"
@@ -15,7 +13,7 @@ class SnipeDetector : public Detector<Armor, SnipeDetectorParam> {
  private:
   game::Team enemy_team_;
   std::vector<std::vector<cv::Point>> contours_, contours_poly_;
-  std::chrono::milliseconds duration_bars_, duration_armors_;
+  component::Timer duration_armors_;
 
   void InitDefaultParams(const std::string &path);
   bool PrepareParams(const std::string &path);

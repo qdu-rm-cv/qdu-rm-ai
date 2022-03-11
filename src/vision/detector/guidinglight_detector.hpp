@@ -1,7 +1,5 @@
 #pragma once
 
-#include <chrono>
-
 #include "common.hpp"
 #include "detector.hpp"
 #include "guiding_light.hpp"
@@ -12,7 +10,8 @@ class GuidingLightDetector
   cv::Ptr<cv::SimpleBlobDetector> detector_;
 
   std::vector<cv::KeyPoint> key_points_;
-  std::chrono::milliseconds duration_lights_;
+  // std::chrono::milliseconds duration_lights_;
+  component::Timer duration_lights_;
 
   void InitDefaultParams(const std::string &path);
   bool PrepareParams(const std::string &path);

@@ -13,12 +13,14 @@ class AutoAim : private App {
   Compensator compensator_;
   Behavior manager_;
 
+  component::Recorder recorder_;
+
  public:
   AutoAim(const std::string& log_path) : App(log_path) {
     SPDLOG_WARN("***** Setting Up Auto Aiming System. *****");
 
     /* 初始化设备 */
-    robot_.Init("/dev/ttyTHS1");
+    robot_.Init("/dev/ttyACM0");
     cam_.Open(0);
     cam_.Setup(640, 480);
     detector_.LoadParams("../../../../runtime/RMUL2022_Armor.json");
@@ -58,6 +60,7 @@ class AutoAim : private App {
       if (' ' == cv::waitKey(10)) {
         cv::waitKey(0);
       }
+      recorder_.Record();
     }
   }
 };

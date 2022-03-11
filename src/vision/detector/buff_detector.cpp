@@ -3,11 +3,7 @@
 #include <cmath>
 #include <execution>
 
-#include "opencv2/opencv.hpp"
 #include "spdlog/spdlog.h"
-
-using std::chrono::duration_cast;
-using std::chrono::high_resolution_clock;
 
 void BuffDetector::InitDefaultParams(const std::string &params_path) {
   cv::FileStorage fs(params_path,
@@ -68,7 +64,7 @@ bool BuffDetector::PrepareParams(const std::string &params_path) {
 }
 
 void BuffDetector::MatchBuff(const cv::Mat &frame) {
-  const auto start = high_resolution_clock::now();
+  duration_armors_.Start();
   float center_rect_area = params_.contour_center_area_low_th * 1.5;
   tbb::concurrent_vector<Armor> armors;
   hammer_ = cv::RotatedRect();
@@ -175,8 +171,7 @@ void BuffDetector::MatchBuff(const cv::Mat &frame) {
   std::for_each(std::execution::par_unseq, contours_.begin(), contours_.end(),
                 check_armor);
 
-  auto stop = high_resolution_clock::now();
-  duration_armors_ = duration_cast<std::chrono::milliseconds>(stop - start);
+  duration_armors_.Calc("Find Armors");
 
   SPDLOG_DEBUG("armors.size is {}", armors.size());
   SPDLOG_DEBUG("the buff's hammer area is {}", hammer_.size.area());
@@ -196,8 +191,7 @@ void BuffDetector::MatchBuff(const cv::Mat &frame) {
     SPDLOG_WARN("can't find buff_armor");
   }
 
-  stop = high_resolution_clock::now();
-  duration_buff_ = duration_cast<std::chrono::milliseconds>(stop - start);
+  duration_buff_.Calc("Find Buff");
 }
 
 void BuffDetector::VisualizeArmors(const cv::Mat &output, bool add_lable) {
@@ -256,10 +250,10 @@ void BuffDetector::VisualizeResult(const cv::Mat &output, int verbose) {
   if (verbose > 1) {
     std::string label =
         cv::format("%ld armors in %ld ms.", buff_.GetArmors().size(),
-                   duration_armors_.count());
+                   duration_armors_.Count());
     draw::VisualizeLabel(output, label, 1);
 
-    label = cv::format("Match buff in %ld ms.", duration_buff_.count());
+    label = cv::format("Match buff in %ld ms.", duration_buff_.Count());
     draw::VisualizeLabel(output, label, 2);
   }
   if (verbose > 2) {

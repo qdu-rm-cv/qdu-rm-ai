@@ -1,11 +1,11 @@
 #pragma once
 
-#include <chrono>
 #include <vector>
 
 #include "opencv2/opencv.hpp"
 #include "spdlog/spdlog.h"
 #include "tbb/concurrent_vector.h"
+#include "timer.hpp"
 
 template <typename Target, typename Param>
 class Detector {

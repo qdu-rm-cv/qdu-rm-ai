@@ -32,7 +32,7 @@ class BuffPredictor : public Predictor<Armor, BuffPredictorParam, Kalman> {
   Buff buff_;
   std::chrono::system_clock::time_point end_time_;
   std::vector<cv::Point2f> circumference_;
-  std::chrono::milliseconds duration_direction_, duration_predict_;
+  component::Timer duration_direction_, duration_predict_;
 
   void InitDefaultParams(const std::string &path);
   bool PrepareParams(const std::string &path);

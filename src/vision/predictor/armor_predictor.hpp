@@ -3,12 +3,12 @@
 #include <chrono>
 #include <vector>
 
-// #include "buff_predictor.hpp"
 #include "armor.hpp"
 #include "armor_detector.hpp"
 #include "common.hpp"
 #include "kalman.hpp"
 #include "predictor.hpp"
+#include "timer.hpp"
 
 struct ArmorPredictParam {
   double a;
@@ -19,7 +19,7 @@ class ArmorPredictor : public Predictor<Armor, ArmorPredictParam, Kalman> {
  private:
   Armor armor_;
   tbb::concurrent_vector<Armor> armors_;
-  std::chrono::milliseconds duration_direction_, duration_predict_;
+  component::Timer duration_direction_, duration_predict_;
 
   void MatchArmor();
 

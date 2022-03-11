@@ -1,13 +1,10 @@
 #pragma once
 
-#include <chrono>
-#include <vector>
-
 #include "armor_detector.hpp"
 #include "buff.hpp"
+#include "buff_param.hpp"
 #include "detector.hpp"
 #include "opencv2/opencv.hpp"
-#include "buff_param.hpp"
 
 class BuffDetector : public Detector<Buff, BuffDetectorParam<double>> {
  private:
@@ -16,7 +13,7 @@ class BuffDetector : public Detector<Buff, BuffDetectorParam<double>> {
   cv::RotatedRect hammer_;
   game::Team team_ = game::Team::kUNKNOWN;
 
-  std::chrono::milliseconds duration_armors_, duration_buff_;
+  component::Timer duration_armors_, duration_buff_;
 
   void InitDefaultParams(const std::string &path);
   bool PrepareParams(const std::string &path);

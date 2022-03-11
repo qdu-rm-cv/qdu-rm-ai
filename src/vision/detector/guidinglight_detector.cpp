@@ -2,9 +2,6 @@
 
 #include "spdlog/spdlog.h"
 
-using std::chrono::duration_cast;
-using std::chrono::high_resolution_clock;
-
 void GuidingLightDetector::InitDefaultParams(const std::string &params_path) {
   cv::FileStorage fs(params_path,
                      cv::FileStorage::WRITE | cv::FileStorage::FORMAT_JSON);
@@ -44,13 +41,13 @@ bool GuidingLightDetector::PrepareParams(const std::string &params_path) {
     params_.read(fs.root());
     return true;
   } else {
-    SPDLOG_ERROR("Can not load params.");
+    SPDLOG_ERROR("Cannot load params.");
     return false;
   }
 }
 
 void GuidingLightDetector::FindGuidingLight(const cv::Mat &frame) {
-  const auto start = std::chrono::system_clock::now();
+  duration_lights_.Start();
   targets_.clear();
 
   detector_->detect(frame, key_points_);
@@ -59,12 +56,11 @@ void GuidingLightDetector::FindGuidingLight(const cv::Mat &frame) {
       GuidingLight light(kpt);
       targets_.emplace_back(light);
     }
-    SPDLOG_DEBUG("Found Key_points");
+    SPDLOG_DEBUG("Found keypoints");
   } else
-    SPDLOG_ERROR("None key points");
+    SPDLOG_ERROR("None keypoints");
 
-  const auto stop = std::chrono::system_clock::now();
-  duration_lights_ = duration_cast<std::chrono::milliseconds>(stop - start);
+  duration_lights_.Calc("Find Lights");
 }
 
 GuidingLightDetector::GuidingLightDetector() { SPDLOG_TRACE("Constructed."); }
@@ -93,7 +89,7 @@ const tbb::concurrent_vector<GuidingLight> &GuidingLightDetector::Detect(
 void GuidingLightDetector::VisualizeResult(const cv::Mat &output, int verbose) {
   if (verbose > 1) {
     std::string label = cv::format("%ld lights in %ld ms.", targets_.size(),
-                                   duration_lights_.count());
+                                   duration_lights_.Count());
     draw::VisualizeLabel(output, label);
   }
   cv::drawKeypoints(output, key_points_, output, draw::kGREEN);

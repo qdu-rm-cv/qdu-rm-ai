@@ -1,11 +1,20 @@
 #include "armor_predictor.hpp"
 
+#include <execution>
+
 void ArmorPredictor::MatchArmor() {
+  duration_predict_.Start();
+
   cv::Point2d center = armor_.ImageCenter();
   cv::Size2d size = armor_.GetRect().size;
   cv::Point2d predict_pt = filter_.Predict(center);
   cv::RotatedRect rect(predict_pt, size, armor_.GetRect().angle);
-  predicts_.emplace_back(Armor(rect));
+
+  Armor armor(rect);
+  armor.SetModel(armor_.GetModel());
+  predicts_.emplace_back(armor);
+
+  duration_predict_.Calc("Predict Armor");
 }
 
 void ArmorPredictor::InitDefaultParams(const std::string &params_path) {
@@ -51,35 +60,18 @@ const tbb::concurrent_vector<Armor> &ArmorPredictor::Predict() {
   return predicts_;
 }
 
-void ArmorPredictor::VisualizePrediction(const cv::Mat &output, int add_lable) {
-  for (auto predict : predicts_) {
-    SPDLOG_DEBUG("{}, {}", predict.ImageCenter().x, predict.ImageCenter().y);
+void ArmorPredictor::VisualizePrediction(const cv::Mat &output, int verbose) {
+  auto draw_armor = [&](Armor &armor) {
+    armor.VisualizeObject(output, verbose > 0);
+  };
 
-    if (add_lable > 0) {
-      auto vertices = predict.ImageVertices();
-      for (std::size_t i = 0; i < vertices.size(); ++i)
-        cv::line(output, vertices[i], vertices[(i + 1) % 4], draw::kYELLOW, 8);
-      std::string buf = cv::format("%.3f, %.3f", predict.ImageCenter().x,
-                                   predict.ImageCenter().y);
-      cv::putText(output, buf, vertices[1], draw::kCV_FONT, 1.0, draw::kRED);
-    }
-    if (add_lable > 2) {
-      std::string label;
-      int baseLine, v_pos = 0;
-
-      label = cv::format("Direction %s in %ld ms.",
-                         component::DirectionToString(direction_).c_str(),
-                         duration_direction_.count());
-      cv::Size text_size =
-          cv::getTextSize(label, draw::kCV_FONT, 1.0, 2, &baseLine);
-      v_pos += 3 * static_cast<int>(1.3 * text_size.height);
-      cv::putText(output, label, cv::Point(0, v_pos), draw::kCV_FONT, 1.0,
-                  draw::kGREEN);
-
-      label = cv::format("Find predict in %ld ms.", duration_predict_.count());
-      v_pos += static_cast<int>(1.3 * text_size.height);
-      cv::putText(output, label, cv::Point(0, v_pos), draw::kCV_FONT, 1.0,
-                  draw::kGREEN);
-    }
+  if (!predicts_.empty()) {
+    std::for_each(std::execution::par_unseq, predicts_.begin(), predicts_.end(),
+                  draw_armor);
+  }
+  if (verbose > 1) {
+    std::string label =
+        cv::format("Find predict in %ld ms.", duration_predict_.Count());
+    draw::VisualizeLabel(output, label, 3);
   }
 }

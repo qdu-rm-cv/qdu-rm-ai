@@ -1,5 +1,6 @@
 #include "buff_predictor.hpp"
 
+#include <chrono>
 #include <ctime>
 
 #include "common.hpp"
@@ -29,7 +30,7 @@ static double CalRotatedAngle(const cv::Point2f &p, const cv::Point2f &ctr) {
   return std::atan2(rel.x, rel.y);
 }
 
-#ifdef RM2021
+#ifdef RMU2021
 /**
  * @brief 辅助函数：积分运算预测旋转角
  *
@@ -106,7 +107,7 @@ bool BuffPredictor::PrepareParams(const std::string &params_path) {
  *
  */
 void BuffPredictor::MatchDirection() {
-  const auto start = std::chrono::system_clock::now();
+  duration_direction_.Start();
   SPDLOG_WARN("start MatchDirection");
 
   if (direction_ == component::Direction::kUNKNOWN) {
@@ -140,9 +141,7 @@ void BuffPredictor::MatchDirection() {
 
     SPDLOG_WARN("Buff's Direction is {}", /* TODO */
                 component::DirectionToString(direction_));
-    const auto stop = std::chrono::system_clock::now();
-    duration_direction_ =
-        duration_cast<std::chrono::milliseconds>(stop - start);
+    duration_direction_.Calc("Predict Direction");
   }
 }
 
@@ -172,7 +171,7 @@ Armor BuffPredictor::RotateArmor(double theta) {
  *
  */
 void BuffPredictor::MatchPredict() {
-  const auto start = std::chrono::system_clock::now();
+  duration_predict_.Start();
   if (cv::Point2f(0, 0) == buff_.GetCenter()) {
     SPDLOG_ERROR("Center is empty.");
     return;
@@ -198,8 +197,7 @@ void BuffPredictor::MatchPredict() {
   predicts_.emplace_back(armor);
   SPDLOG_WARN("Buff has been predicted.");
 
-  const auto stop = std::chrono::system_clock::now();
-  duration_predict_ = duration_cast<std::chrono::milliseconds>(stop - start);
+  duration_predict_.Calc("Match Predict");
 }
 
 /**
@@ -415,15 +413,15 @@ void BuffPredictor::VisualizePrediction(const cv::Mat &output, int add_lable) {
         cv::line(output, buff_.GetCenter(), predict.ImageCenter(), draw::kRED,
                  3);
     }
-    if (add_lable > 2) {
-      std::string label =
-          cv::format("Direction :  %s in %ld ms.",
-                     component::DirectionToString(direction_).c_str(),
-                     duration_direction_.count());
-      draw::VisualizeLabel(output, label, 3);
+  }
+  if (add_lable > 2) {
+    std::string label =
+        cv::format("Direction : %s in %ld ms.",
+                   component::DirectionToString(direction_).c_str(),
+                   duration_direction_.Count());
+    draw::VisualizeLabel(output, label, 3);
 
-      label = cv::format("Find predict in %ld ms.", duration_predict_.count());
-      draw::VisualizeLabel(output, label, 4);
-    }
+    label = cv::format("Find predict in %ld ms.", duration_predict_.Count());
+    draw::VisualizeLabel(output, label, 4);
   }
 }

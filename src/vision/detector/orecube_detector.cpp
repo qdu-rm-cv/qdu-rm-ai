@@ -2,9 +2,6 @@
 
 #include <execution>
 
-using std::chrono::duration_cast;
-using std::chrono::high_resolution_clock;
-
 void OreCubeDetector::InitDefaultParams(const std::string &params_path) {
   cv::FileStorage fs(params_path,
                      cv::FileStorage::WRITE | cv::FileStorage::FORMAT_JSON);
@@ -44,7 +41,7 @@ bool OreCubeDetector::PrepareParams(const std::string &params_path) {
 
 void OreCubeDetector::FindOreCube(const cv::Mat &frame) {
   targets_.clear();
-  const auto start = std::chrono::system_clock::now();
+  duration_cube_.Start();
 
   cv::Mat result;
   cv::cvtColor(frame, result, cv::COLOR_BGR2HSV);
@@ -87,8 +84,7 @@ void OreCubeDetector::FindOreCube(const cv::Mat &frame) {
   std::for_each(std::execution::par_unseq, contours_.begin(), contours_.end(),
                 check_orecube);
 
-  const auto stop = high_resolution_clock::now();
-  duration_cube_ = duration_cast<std::chrono::milliseconds>(stop - start);
+  duration_cube_.Calc("Find Ore Cubes.");
 
   SPDLOG_DEBUG("Find {} ore cube.", targets_.size());
 }
@@ -121,7 +117,7 @@ void OreCubeDetector::VisualizeResult(const cv::Mat &output, int verbose) {
   }
   if (verbose > 2) {
     std::string label = cv::format("%ld cubes in %ld ms.", targets_.size(),
-                                   duration_cube_.count());
+                                   duration_cube_.Count());
     draw::VisualizeLabel(output, label, 1, draw::kBLACK);
   }
   if (!targets_.empty()) {

@@ -1,13 +1,11 @@
 #pragma once
 
-#include <chrono>
-
 #include "armor.hpp"
-#include "armor_classifier.hpp"
 #include "armor_param.hpp"
 #include "common.hpp"
 #include "detector.hpp"
 #include "light_bar.hpp"
+#include "timer.hpp"
 
 class ArmorDetector : public Detector<Armor, ArmorDetectorParam<double>> {
  private:
@@ -15,7 +13,7 @@ class ArmorDetector : public Detector<Armor, ArmorDetectorParam<double>> {
   std::vector<std::vector<cv::Point>> contours_, contours_poly_;
   tbb::concurrent_vector<LightBar> lightbars_;
 
-  std::chrono::milliseconds duration_bars_, duration_armors_;
+  component::Timer duration_bars_, duration_armors_;
 
   void InitDefaultParams(const std::string &path);
   bool PrepareParams(const std::string &path);

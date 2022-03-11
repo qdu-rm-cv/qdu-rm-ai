@@ -2,11 +2,7 @@
 
 #include <execution>
 
-#include "opencv2/opencv.hpp"
 #include "spdlog/spdlog.h"
-
-using std::chrono::duration_cast;
-using std::chrono::high_resolution_clock;
 
 void ArmorDetector::InitDefaultParams(const std::string &params_path) {
   cv::FileStorage fs(params_path,
@@ -65,7 +61,7 @@ bool ArmorDetector::PrepareParams(const std::string &params_path) {
 }
 
 void ArmorDetector::FindLightBars(const cv::Mat &frame) {
-  const auto start = high_resolution_clock::now();
+  duration_bars_.Start();
   lightbars_.clear();
   targets_.clear();
 
@@ -161,15 +157,11 @@ void ArmorDetector::FindLightBars(const cv::Mat &frame) {
             });
 
   /* 记录运行时间 */
-  const auto stop = high_resolution_clock::now();
-  duration_bars_ = duration_cast<std::chrono::milliseconds>(stop - start);
-
-  SPDLOG_DEBUG("Found {} light bars in {} ms.", lightbars_.size(),
-               duration_bars_.count());
+  duration_bars_.Calc("Find Bars");
 }
 
 void ArmorDetector::MatchLightBars() {
-  const auto start = high_resolution_clock::now();
+  duration_armors_.Start();
   for (auto iti = lightbars_.begin(); iti != lightbars_.end(); ++iti) {
     for (auto itj = iti + 1; itj != lightbars_.end(); ++itj) {
       /* 两灯条角度差异 */
@@ -211,14 +203,13 @@ void ArmorDetector::MatchLightBars() {
       if (center_dist > l * params_.center_dist_high_th) continue;
 
       auto armor = Armor(*iti, *itj);
+      // armor.SetModel(game::Model::kINFANTRY);
       targets_.emplace_back(armor);
       break;
     }
   }
-  const auto stop = high_resolution_clock::now();
-  duration_armors_ = duration_cast<std::chrono::milliseconds>(stop - start);
-  SPDLOG_DEBUG("Matched {} armors in {} ms.", targets_.size(),
-               duration_armors_.count());
+
+  duration_armors_.Calc("Find Armors");
 }
 
 ArmorDetector::ArmorDetector() { SPDLOG_TRACE("Constructed."); }
@@ -259,11 +250,11 @@ void ArmorDetector::VisualizeResult(const cv::Mat &output, int verbose) {
   }
   if (verbose > 1) {
     std::string label = cv::format("%ld bars in %ld ms.", lightbars_.size(),
-                                   duration_bars_.count());
+                                   duration_bars_.Count());
     draw::VisualizeLabel(output, label, 1);
 
     label = cv::format("%ld armors in %ld ms.", targets_.size(),
-                       duration_armors_.count());
+                       duration_armors_.Count());
     draw::VisualizeLabel(output, label, 2);
   }
 
