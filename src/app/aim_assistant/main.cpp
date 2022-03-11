@@ -14,6 +14,8 @@ class AutomaticAim : public App {
   Compensator compensator_;
   Behavior manager_;
 
+  game::Arm arm_ = game::Arm::kUNKNOWN;
+
  public:
   AutomaticAim(const std::string& log_path) : App(log_path) {
     SPDLOG_WARN("***** Setting Up Auto Aiming System. *****");
@@ -39,9 +41,10 @@ class AutomaticAim : public App {
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
     } while (robot_.GetEnemyTeam() != game::Team::kUNKNOWN);
 
+    arm_ = robot_.GetArm();
     assitant_.SetEnemyTeam(robot_.GetEnemyTeam());
     assitant_.SetRace(robot_.GetRace());
-    assitant_.SetArm(robot_.GetArm());
+    assitant_.SetArm(arm_);
     assitant_.SetTime(robot_.GetTime());
     manager_.Update(robot_.GetBaseHP(), robot_.GetSentryHP(),
                     robot_.GetBalletRemain());
@@ -50,6 +53,7 @@ class AutomaticAim : public App {
   void TestInit() {
     robot_.Init("/dev/ttyUSB0");
 
+    arm_ = game::Arm::kSENTRY;
     assitant_.SetEnemyTeam(game::Team::kBLUE);
     assitant_.SetRace(game::Race::kRMUC);
     assitant_.SetArm(game::Arm::kSENTRY);
@@ -74,14 +78,21 @@ class AutomaticAim : public App {
 
       assitant_.SetRFID(robot_.GetRFID());
       auto armors = assitant_.Aim(frame);
-      compensator_.Apply(armors, frame, robot_.GetEuler());
-      Armor armor = armors.front();
-      assitant_.VisualizeResult(frame, 10);
 
-      manager_.Aim(armor.GetAimEuler());
-      if (robot_.GetArm() == game::Arm::kSENTRY)
-        manager_.Move(robot_.GetChassicSpeed());
-      robot_.Pack(manager_.GetData(), armor.GetTransVec().at<double>(0, 2));
+      if (armors.size() > 0) {
+        compensator_.Apply(armors, frame, robot_.GetEuler());
+        Armor armor = armors.front();
+
+        if (arm_ == game::Arm::kSENTRY) {
+          manager_.Update(robot_.GetBaseHP(), robot_.GetSentryHP(),
+                          robot_.GetBalletRemain());
+          manager_.Move(robot_.GetChassicSpeed());
+        }
+
+        manager_.Aim(armor.GetAimEuler());
+        assitant_.VisualizeResult(frame, 10);
+        robot_.Pack(manager_.GetData(), armor.GetTransVec().at<double>(0, 2));
+      }
 
       cv::imshow("show", frame);
       if (' ' == cv::waitKey(10)) {

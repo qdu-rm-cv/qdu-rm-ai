@@ -74,6 +74,8 @@ void AimAssitant::SetRFID(game::RFID rfid) {
     } else if (rfid == game::RFID::kUNKNOWN) {
       method_ = component::AimMethod::kARMOR;
     }
+  } else if (arm_ == game::Arm::kSENTRY) {
+    method_ = component::AimMethod::kARMOR;
   }
   SPDLOG_INFO("Now Arms : {}, AimMethod : {}", game::ArmToString(arm_),
               component::AimMethodToString(method_));
