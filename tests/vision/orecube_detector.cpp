@@ -6,7 +6,7 @@
 #include "opencv2/opencv.hpp"
 
 TEST(TestVision, TestOreCubeDetector) {
-  Logger::SetLogger();
+  component::Logger::SetLogger();
   OreCubeDetector detector("../../../runtime/RMUT2022_OreCube.json");
   cv::VideoCapture cap("../../../../cube01.avi");
   cv::Mat frame;

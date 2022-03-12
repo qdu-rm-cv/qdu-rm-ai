@@ -1,5 +1,7 @@
 #include "log.hpp"
 
+namespace component {
+
 namespace Logger {
 
 const std::string fmt_default("%+");
@@ -68,3 +70,5 @@ void SetLogger(const std::string& path, FMT fmt) {
 }
 
 }  // namespace Logger
+
+}  // namespace component

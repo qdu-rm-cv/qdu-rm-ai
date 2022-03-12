@@ -5,7 +5,7 @@
 class App {
  public:
   App(const std::string &log_path) {
-    Logger::SetLogger(log_path);
+    component::Logger::SetLogger(log_path);
     SPDLOG_DEBUG("Log path : {}", log_path);
     SPDLOG_TRACE("Constructed App.");
   }

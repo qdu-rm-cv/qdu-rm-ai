@@ -23,7 +23,7 @@ const std::string kPARAM = "../../../runtime/RMUT2021_Buff.json";
 }  // namespace
 
 TEST(TestVision, TestKalman) {
-  Logger::SetLogger();
+  component::Logger::SetLogger();
   Kalman filter(4, 2);
   cv::Mat predict_mat;
   cv::Mat img(300, 1200, CV_8UC3, cv::Scalar(0, 0, 0));
@@ -44,7 +44,7 @@ TEST(TestVision, TestKalman) {
 }
 
 TEST(TestVision, TestKalmanBuffPredictor) {
-  Logger::SetLogger();
+  component::Logger::SetLogger();
   Kalman filter(4, 2);
   cv::VideoCapture cap(kVIDEO);
   cv::Mat frame;

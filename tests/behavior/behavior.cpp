@@ -40,7 +40,7 @@ TEST(TestBehavior, TestSimpleTree) {
 }
 
 TEST(TestBehavior, TestWithoutTree) {
-  Logger::SetLogger();
+  component::Logger::SetLogger();
   Behavior manager(false, false, false);
   manager.Update(300, 400, 200);
   component::Euler elur = {1, 1, 1};
@@ -48,7 +48,7 @@ TEST(TestBehavior, TestWithoutTree) {
     manager.Aim(elur);
     manager.Move(i);
     Protocol_DownData_t data = manager.GetData();
-    // hex: {0:x};  oct: {0:o}; bin: {0:b}"
+    // hex: {0:x};  oct: {0:o};  bin: {0:b}
     SPDLOG_WARN("{0:b}", static_cast<unsigned int>(data.notice));
     SPDLOG_WARN("vx : {}, vy : {}, wz : {}",
                 static_cast<float>(data.chassis_move_vec.vx),

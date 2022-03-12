@@ -6,11 +6,11 @@
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/spdlog.h"
 
+namespace component {
+
 namespace Logger {
 
 enum class FMT { kFMT_DEFAULT, kFMT_FILE, kFMT_TEST };
-
-const std::string ToFormatString(FMT fmt);
 
 void SetLogger(
     spdlog::level::level_enum level = spdlog::level::level_enum::debug,
@@ -19,3 +19,5 @@ void SetLogger(
 void SetLogger(const std::string& path, FMT fmt = FMT::kFMT_TEST);
 
 }  // namespace Logger
+
+}  // namespace component
