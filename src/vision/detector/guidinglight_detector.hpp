@@ -10,7 +10,6 @@ class GuidingLightDetector
   cv::Ptr<cv::SimpleBlobDetector> detector_;
 
   std::vector<cv::KeyPoint> key_points_;
-  // std::chrono::milliseconds duration_lights_;
   component::Timer duration_lights_;
 
   void InitDefaultParams(const std::string &path);

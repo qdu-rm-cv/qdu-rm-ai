@@ -53,11 +53,11 @@ void Robot::ThreadTrans() {
       commandq_.clear();
     }
     mutex_command_.unlock();
-    if (!is_empty){
+    if (!is_empty) {
       command.crc16 = crc16::CRC16_Calc((uint8_t *)&command.data,
                                         sizeof(command.data), UINT16_MAX);
       serial_.Trans((char *)&command, sizeof(command));
-    std::this_thread::sleep_for(std::chrono::milliseconds(2));
+      std::this_thread::sleep_for(std::chrono::milliseconds(2));
     }
   }
   SPDLOG_DEBUG("[ThreadTrans] Stoped.");
