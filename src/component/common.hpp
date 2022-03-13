@@ -55,6 +55,7 @@ enum class Model {
   kSENTRY,
   kBASE,
   kOUTPOST,
+  kBUFF,
 };
 
 enum class Arm {

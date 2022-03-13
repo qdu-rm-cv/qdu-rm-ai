@@ -86,13 +86,16 @@ void Compensator::SolveAngles(Armor& armor, component::Euler euler) {
     aiming_eulr.pitch = -atan(y_pos / sqrt(x_pos * x_pos + z_pos * z_pos));
     aiming_eulr.yaw = atan(x_pos / z_pos);
   }
-  // aiming_eulr.pitch += 3.2 / 180.0 * CV_PI;
   armor.SetAimEuler(aiming_eulr);
 }
 
 void Compensator::Apply(tbb::concurrent_vector<Armor>& armors,
                         const cv::Mat& frame, const component::Euler& euler) {
   for (auto& armor : armors) {
+    if (armor.GetModel() == game::Model::kUNKNOWN) {
+      armor.SetModel(game::Model::kINFANTRY);
+      SPDLOG_ERROR("Hasn't set model.");
+    }
     SolveAngles(armor, euler);
     // CompensateGravity(armor, euler);
   }
@@ -119,9 +122,12 @@ void Compensator::CompensateGravity(Armor& armor, component::Euler euler) {
       cos(aiming_eulr.pitch));
   aiming_eulr.pitch = (armor.GetAimEuler().pitch + compensate_pitch) * (-0.01);
   armor.SetAimEuler(aiming_eulr);
+
+  // 人为补偿
+  // aiming_eulr.pitch += 3.2 / 180.0 * CV_PI;
 }
 
-#ifdef RM2021
+#ifdef RMU2021
 /**
  * @brief Angle θ required to hit coordinate (x, y)
  *

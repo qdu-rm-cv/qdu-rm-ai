@@ -38,6 +38,12 @@ const cv::Matx43d kCOORD_BIG_ARMOR(
     kARMOR_LENGTH_BIG / 2., -kARMOR_HEIGHT / 2, 0.,
     kARMOR_LENGTH_BIG / 2., kARMOR_HEIGHT / 2, 0.,
     -kARMOR_LENGTH_BIG / 2., kARMOR_HEIGHT / 2, kARMOR_DEPTH);
+
+const cv::Matx43d kCOORD_BUFF_ARMOR(
+    -kARMOR_LENGTH_BIG / 2., -kARMOR_WIDTH / 2, 0.,
+    kARMOR_LENGTH_BIG / 2., -kARMOR_WIDTH / 2, 0.,
+    kARMOR_LENGTH_BIG / 2., kARMOR_WIDTH / 2, 0.,
+    -kARMOR_LENGTH_BIG / 2., kARMOR_WIDTH / 2, 0.);
 /* clang-format on */
 
 const cv::Point3f kHIT_TARGET(0., 0., kHIT_DEPTH);
@@ -94,7 +100,9 @@ game::Model Armor::GetModel() const { return model_; }
 void Armor::SetModel(game::Model model) {
   model_ = model;
 
-  if (game::HasBigArmor(model_)) {
+  if (model_ == game::Model::kBUFF) {
+    physic_vertices_ = cv::Mat(kCOORD_BUFF_ARMOR);
+  } else if (game::HasBigArmor(model_)) {
     physic_vertices_ = cv::Mat(kCOORD_BIG_ARMOR);
   } else {
     physic_vertices_ = cv::Mat(kCOORD_SMALL_ARMOR);

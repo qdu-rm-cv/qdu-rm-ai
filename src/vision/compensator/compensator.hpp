@@ -29,7 +29,7 @@ class Compensator {
   void VisualizeResult(tbb::concurrent_vector<Armor>& armors,
                        const cv::Mat& output, int verbose = 1);
 
-#ifdef RM2021
+#ifdef RMU2021
   double SolveSurfaceLanchAngle(cv::Point2f target);
   cv::Vec3f EstimateWorldCoord(Armor& armor);
 #endif

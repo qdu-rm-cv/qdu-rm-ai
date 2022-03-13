@@ -116,6 +116,8 @@ std::string ModelToString(Model model) {
       return std::string("Base");
     case Model::kOUTPOST:
       return std::string("Outpost");
+    case Model::kBUFF:
+      return std::string("Buff");
     default:
       return std::string("Unknown");
   }
@@ -199,11 +201,14 @@ Model StringToModel(std::string name) {
   if (!name.compare("outpost")) {
     return Model::kOUTPOST;
   }
+  if (!name.compare("buff")) {
+    return Model::kBUFF;
+  }
   return Model::kUNKNOWN;
 }
 
 bool HasBigArmor(Model model) {
-  return (model == Model::kHERO || model == Model::kSENTRY);
+  return (model == Model::kHERO || model == Model::kSENTRY ||);
 }
 
 }  // namespace game

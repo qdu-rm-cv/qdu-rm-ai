@@ -164,7 +164,7 @@ void BuffDetector::MatchBuff(const cv::Mat &frame) {
 
     SPDLOG_DEBUG("armor's area is {}", rect_area);
     Armor armor = Armor(rect);
-    armor.SetModel(game::Model::kHERO);
+    armor.SetModel(game::Model::kBUFF);
     armors.emplace_back(armor);
   };
 
