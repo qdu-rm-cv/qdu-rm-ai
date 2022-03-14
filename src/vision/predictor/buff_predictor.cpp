@@ -5,7 +5,6 @@
 
 #include "common.hpp"
 
-using std::chrono::duration_cast;
 using std::chrono::high_resolution_clock;
 
 #define RMU2022
