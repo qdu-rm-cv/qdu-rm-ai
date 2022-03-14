@@ -90,7 +90,7 @@ void GuidingLightDetector::VisualizeResult(const cv::Mat &output, int verbose) {
   if (verbose > 1) {
     std::string label = cv::format("%ld lights in %ld ms.", targets_.size(),
                                    duration_lights_.Count());
-    draw::VisualizeLabel(output, label);
+    draw::VisualizeLabel(label);
   }
   cv::drawKeypoints(output, key_points_, output, draw::kGREEN);
 }

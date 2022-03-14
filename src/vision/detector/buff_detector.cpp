@@ -3,6 +3,9 @@
 #include <cmath>
 #include <execution>
 
+#include "opencv2/gapi/core.hpp"
+#include "opencv2/gapi/imgproc.hpp"
+#include "opencv2/gapi/render.hpp"
 #include "spdlog/spdlog.h"
 
 void BuffDetector::InitDefaultParams(const std::string &params_path) {
@@ -65,52 +68,67 @@ bool BuffDetector::PrepareParams(const std::string &params_path) {
 
 void BuffDetector::MatchBuff(const cv::Mat &frame) {
   duration_armors_.Start();
+
   float center_rect_area = params_.contour_center_area_low_th * 1.5;
   tbb::concurrent_vector<Armor> armors;
   hammer_ = cv::RotatedRect();
 
   frame_size_ = cv::Size(frame.cols, frame.rows);
 
-  cv::Mat channels[3], img;
-  cv::split(frame, channels);
+  if (team_ == game::Team::kUNKNOWN) {
+    SPDLOG_ERROR("team is {}", game::TeamToString(team_));
+    return;
+  }
 
+  auto graph_compute = [&]() {
+    cv::GMat in, b, g, r, result;
+    std::tie(b, g, r) = cv::gapi::split3(in);
 #if 1
-  if (team_ == game::Team::kBLUE) {
-    img = channels[0] - channels[2];
-  } else if (team_ == game::Team::kRED) {
-    img = channels[2] - channels[0];
-  }
+    if (team_ == game::Team::kBLUE) {
+      result = b;
+    } else if (team_ == game::Team::kRED) {
+      result = r;
+    }
 #else
-  if (team_ == game::Team::kBLUE) {
-    result = channels[0];
-  } else if (team_ == game::Team::kRED) {
-    result = channels[2];
-  }
+    if (team_ == game::Team::kBLUE) {
+      result = b - r;
+    } else if (team_ == game::Team::kRED) {
+      result = r - b;
+    }
 #endif
 
-  cv::threshold(img, img, params_.binary_th, 255., cv::THRESH_BINARY);
+    result =
+        cv::gapi::threshold(result, params_.binary_th, 255., cv::THRESH_BINARY);
 
-  /*
-    cv::Mat kernel = cv::getStructuringElement(
-        cv::MORPH_RECT,
-        cv::Size2i(2 * params_.se_erosion + 1, 2 * params_.se_erosion + 1),
-        cv::Point(params_.se_erosion, params_.se_erosion));
+    /*
+      cv::Mat kernel = cv::getStructuringElement(
+          cv::MORPH_RECT,
+          cv::Size2i(2 * params_.se_erosion + 1, 2 * params_.se_erosion + 1),
+          cv::Point(params_.se_erosion, params_.se_erosion));
 
-    cv::dilate(img, img, kernel);
-    cv::morphologyEx(img, img, cv::MORPH_CLOSE, kernel);
+        result = cv::gapi::dilate(result, kernel);
+        result = cv::gapi::morphologyEx(result, cv::MORPH_CLOSE, kernel);
 
-  */
-  cv::findContours(img, contours_, cv::RETR_TREE, cv::CHAIN_APPROX_NONE);
+      */
+
+    cv::GArray<cv::GArray<cv::Point>> contours =
+        cv::gapi::findContours(result, cv::RETR_TREE, cv::CHAIN_APPROX_NONE);
+
+    cv::detail::VectorRef vec;
+    contours.VCtor(vec);
+    contours_ = vec.wref<std::vector<cv::Point>>();
 
 #if 0
-  contours_poly_.resize(contours_.size());
-  for (size_t i = 0; i < contours_.size(); ++i) {
-    cv::approxPolyDP(cv::Mat(contours_[i]), contours_poly_[i],
-                     params_.ap_erosion, true);
-  }
+    contours_poly_.resize(contours_.size());
+    for (size_t i = 0; i < contours_.size(); ++i) {
+      cv::approxPolyDP(cv::Mat(contours_[i]), contours_poly_[i],
+                       params_.ap_erosion, true);
+    }
 #endif
 
-  SPDLOG_DEBUG("Found contours: {}", contours_.size());
+    contours_poly_.resize(contours_.size());
+    return cv::GComputation(in, result);
+  };
 
   auto check_armor = [&](const auto &contour) {
     if (contour.size() < static_cast<std::size_t>(params_.contour_size_low_th))
@@ -123,9 +141,9 @@ void BuffDetector::MatchBuff(const cv::Mat &frame) {
 
     SPDLOG_DEBUG("contour_area is {}", contour_area);
     SPDLOG_DEBUG("rect_area is {}", rect_area);
-    if (contour_area > params_.contour_center_area_low_th &&
+    if (contour_area > params_.contour_center_area_low_th &&  // 200 - 500
         contour_area < params_.contour_center_area_high_th) {
-      if (rect_ratio < params_.rect_center_ratio_high_th &&
+      if (rect_ratio < params_.rect_center_ratio_high_th &&  // 0.6 - 1.67
           rect_ratio > params_.rect_center_ratio_low_th) {
         buff_.SetCenter(rect.center);
         center_rect_area = rect_area;
@@ -163,10 +181,13 @@ void BuffDetector::MatchBuff(const cv::Mat &frame) {
       return;
 
     SPDLOG_DEBUG("armor's area is {}", rect_area);
-    Armor armor = Armor(rect);
-    armor.SetModel(game::Model::kBUFF);
-    armors.emplace_back(armor);
+
+    armors.emplace_back(Armor(rect));
   };
+
+  auto graph_computater = graph_compute();
+  cv::Mat out_frame;
+  graph_computater.apply(frame, out_frame);
 
   std::for_each(std::execution::par_unseq, contours_.begin(), contours_.end(),
                 check_armor);
@@ -194,13 +215,15 @@ void BuffDetector::MatchBuff(const cv::Mat &frame) {
   duration_buff_.Calc("Find Buff");
 }
 
-void BuffDetector::VisualizeArmors(const cv::Mat &output, bool add_lable) {
+void BuffDetector::VisualizeArmors(bool add_lable) {
   auto target_vertices = buff_.GetTarget().ImageVertices();
   auto draw_armor = [&](Armor &armor) {
     cv::Scalar color =
         (armor.ImageVertices() == target_vertices) ? draw::kRED : draw::kGREEN;
 
-    armor.VisualizeObject(output, add_lable, color);
+    auto prims = armor.VisualizeObject(add_lable, color);
+    
+    for (auto &prim : prims) prims_.emplace_back(prim);
   };
 
   tbb::concurrent_vector<Armor> armors = buff_.GetArmors();
@@ -241,30 +264,39 @@ const tbb::concurrent_vector<Buff> &BuffDetector::Detect(const cv::Mat &frame) {
 }
 
 void BuffDetector::VisualizeResult(const cv::Mat &output, int verbose) {
-  SPDLOG_DEBUG("Visualizeing Result.");
-  if (verbose > 10) {
-    cv::drawContours(output, contours_, -1, draw::kRED);
-    cv::drawContours(output, contours_poly_, -1, draw::kYELLOW);
-  }
-
+  prims_.clear();
   if (verbose > 1) {
     std::string label =
         cv::format("%ld armors in %ld ms.", buff_.GetArmors().size(),
                    duration_armors_.Count());
-    draw::VisualizeLabel(output, label, 1);
+    prims_.emplace_back(draw::VisualizeLabel(label, 1));
 
     label = cv::format("Match buff in %ld ms.", duration_buff_.Count());
-    draw::VisualizeLabel(output, label, 2);
+    prims_.emplace_back(draw::VisualizeLabel(label, 2));
   }
   if (verbose > 2) {
     cv::Point2f vertices[4];
     hammer_.points(vertices);
     for (std::size_t i = 0; i < 4; ++i)
-      cv::line(output, vertices[i], vertices[(i + 1) % 4], draw::kYELLOW);
+      prims_.emplace_back(cv::gapi::wip::draw::Line(
+          vertices[i], vertices[(i + 1) % 4], draw::kYELLOW));
 
-    cv::drawMarker(output, buff_.GetCenter(), draw::kYELLOW,
-                   cv::MARKER_DIAMOND);
+    cv::Point2f center = hammer_.center;
+    prims_.emplace_back(cv::gapi::wip::draw::Line(
+        cv::Point(center.x, center.y - draw::kMARKER),
+        cv::Point(center.x + draw::kMARKER, center.y), draw::kYELLOW));
+    prims_.emplace_back(cv::gapi::wip::draw::Line(
+        cv::Point(center.x + draw::kMARKER, center.y),
+        cv::Point(center.x, center.y + draw::kMARKER), draw::kYELLOW));
+    prims_.emplace_back(cv::gapi::wip::draw::Line(
+        cv::Point(center.x, center.y + draw::kMARKER),
+        cv::Point(center.x - draw::kMARKER, center.y), draw::kYELLOW));
+    prims_.emplace_back(cv::gapi::wip::draw::Line(
+        cv::Point(center.x - draw::kMARKER, center.y),
+        cv::Point(center.x, center.y - draw::kMARKER), draw::kYELLOW));
   }
-  VisualizeArmors(output, verbose > 2);
+  VisualizeArmors(verbose > 2);
+  cv::Mat frame = output.clone();
+  cv::gapi::wip::draw::render(frame, prims_);
   SPDLOG_DEBUG("Visualized.");
 }

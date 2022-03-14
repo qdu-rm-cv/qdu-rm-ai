@@ -1,11 +1,15 @@
 #include "object.hpp"
 
-void draw::VisualizeLabel(const cv::Mat &output, const std::string &label,
-                          int level, const cv::Scalar &color) {
+#include "opencv2/gapi.hpp"
+
+cv::gapi::wip::draw::Text draw::VisualizeLabel(const std::string &label,
+                                               int level,
+                                               const cv::Scalar &color) {
   int v_pos = 0;
   while (level < 0) level += 20;
   v_pos += 24 * level;
-  cv::putText(output, label, cv::Point(0, v_pos), kCV_FONT, 1.0, color);
+  return cv::gapi::wip::draw::Text(label, cv::Point2d(0, v_pos), draw::kCV_FONT,
+                                   1.0, color);
 }
 
 const cv::Point2f &ImageObject::ImageCenter() const { return image_center_; }
@@ -36,21 +40,46 @@ cv::Mat ImageObject::ImageFace(const cv::Mat &frame) const {
   return face;
 }
 
-void ImageObject::VisualizeObject(const cv::Mat &output, bool add_lable,
-                                  const cv::Scalar color,
-                                  cv::MarkerTypes type) {
+cv::gapi::wip::draw::Prims ImageObject::VisualizeObject(bool add_lable,
+                                                        const cv::Scalar color,
+                                                        cv::MarkerTypes type) {
+  cv::gapi::wip::draw::Prims prims;
   auto vertices = ImageVertices();
   auto num_vertices = vertices.size();
   for (std::size_t i = 0; i < num_vertices; ++i)
-    cv::line(output, vertices[i], vertices[(i + 1) % num_vertices], color);
+    prims.emplace_back(cv::gapi::wip::draw::Line(
+        vertices[i], vertices[(i + 1) % num_vertices], color));
 
-  cv::drawMarker(output, ImageCenter(), color, type);
+  auto center = ImageCenter();
+  if (type == cv::MarkerTypes::MARKER_CROSS) {
+    prims.emplace_back(cv::gapi::wip::draw::Line(
+        cv::Point(center.x - draw::kMARKER, center.y),
+        cv::Point(center.x + draw::kMARKER, center.y), color));
+    prims.emplace_back(cv::gapi::wip::draw::Line(
+        cv::Point(center.x, center.y - draw::kMARKER),
+        cv::Point(center.x, center.y + draw::kMARKER), color));
+  } else if (type == cv::MarkerTypes::MARKER_DIAMOND) {
+    prims.emplace_back(cv::gapi::wip::draw::Line(
+        cv::Point(center.x, center.y - draw::kMARKER),
+        cv::Point(center.x + draw::kMARKER, center.y), color));
+    prims.emplace_back(cv::gapi::wip::draw::Line(
+        cv::Point(center.x + draw::kMARKER, center.y),
+        cv::Point(center.x, center.y + draw::kMARKER), color));
+    prims.emplace_back(cv::gapi::wip::draw::Line(
+        cv::Point(center.x, center.y + draw::kMARKER),
+        cv::Point(center.x - draw::kMARKER, center.y), color));
+    prims.emplace_back(cv::gapi::wip::draw::Line(
+        cv::Point(center.x - draw::kMARKER, center.y),
+        cv::Point(center.x, center.y - draw::kMARKER), color));
+  }
 
   if (add_lable) {
-    cv::putText(output,
-                cv::format("%.2f, %.2f", ImageCenter().x, ImageCenter().y),
-                vertices[1], draw::kCV_FONT, 1.0, color);
+    prims.emplace_back(cv::gapi::wip::draw::Text(
+        cv::format("%.2f, %.2f", ImageCenter().x, ImageCenter().y), vertices[1],
+        draw::kCV_FONT, 1.0, color));
   }
+
+  return prims;
 }
 
 const cv::Mat &PhysicObject::GetRotVec() const { return rot_vec_; }

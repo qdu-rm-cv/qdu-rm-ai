@@ -4,6 +4,7 @@
 #include "buff.hpp"
 #include "buff_param.hpp"
 #include "detector.hpp"
+#include "opencv2/gapi.hpp"
 #include "opencv2/opencv.hpp"
 
 class BuffDetector : public Detector<Buff, BuffDetectorParam<double>> {
@@ -12,6 +13,7 @@ class BuffDetector : public Detector<Buff, BuffDetectorParam<double>> {
   std::vector<std::vector<cv::Point>> contours_, contours_poly_;
   cv::RotatedRect hammer_;
   game::Team team_ = game::Team::kUNKNOWN;
+  cv::gapi::wip::draw::Prims prims_;
 
   component::Timer duration_armors_, duration_buff_;
 
@@ -20,7 +22,7 @@ class BuffDetector : public Detector<Buff, BuffDetectorParam<double>> {
 
   void MatchBuff(const cv::Mat &frame);
 
-  void VisualizeArmors(const cv::Mat &output, bool add_lable);
+  void VisualizeArmors(bool add_lable);
 
  public:
   BuffDetector();

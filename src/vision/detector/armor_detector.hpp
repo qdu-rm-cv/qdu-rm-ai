@@ -5,6 +5,7 @@
 #include "common.hpp"
 #include "detector.hpp"
 #include "light_bar.hpp"
+#include "opencv2/gapi.hpp"
 #include "timer.hpp"
 
 class ArmorDetector : public Detector<Armor, ArmorDetectorParam<double>> {
@@ -12,6 +13,7 @@ class ArmorDetector : public Detector<Armor, ArmorDetectorParam<double>> {
   game::Team enemy_team_;
   std::vector<std::vector<cv::Point>> contours_, contours_poly_;
   tbb::concurrent_vector<LightBar> lightbars_;
+  cv::gapi::wip::draw::Prims prims_;
 
   component::Timer duration_bars_, duration_armors_;
 

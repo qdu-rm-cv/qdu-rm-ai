@@ -7,6 +7,7 @@
 #include "armor_detector.hpp"
 #include "common.hpp"
 #include "kalman.hpp"
+#include "opencv2/gapi.hpp"
 #include "predictor.hpp"
 #include "timer.hpp"
 
@@ -20,6 +21,7 @@ class ArmorPredictor : public Predictor<Armor, ArmorPredictParam, Kalman> {
   Armor armor_;
   tbb::concurrent_vector<Armor> armors_;
   component::Timer duration_direction_, duration_predict_;
+  cv::gapi::wip::draw::Prims prims_;
 
   void MatchArmor();
 

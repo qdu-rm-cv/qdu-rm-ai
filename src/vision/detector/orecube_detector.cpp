@@ -2,6 +2,8 @@
 
 #include <execution>
 
+#include "opencv2/gapi/render.hpp"
+
 void OreCubeDetector::InitDefaultParams(const std::string &params_path) {
   cv::FileStorage fs(params_path,
                      cv::FileStorage::WRITE | cv::FileStorage::FORMAT_JSON);
@@ -108,20 +110,19 @@ const tbb::concurrent_vector<OreCube> &OreCubeDetector::Detect(
 
 void OreCubeDetector::VisualizeResult(const cv::Mat &output, int verbose) {
   auto draw_orecube = [&](OreCube cube) {
-    cube.VisualizeObject(output, verbose > 2, draw::kBLUE);
+    auto prims = cube.VisualizeObject(verbose > 2, draw::kBLUE);
+    for (auto &prim : prims) prims_.emplace_back(prim);
   };
 
-  if (verbose > 1) {
-    cv::drawContours(output, contours_, -1, draw::kBLUE, 3);
-    cv::drawContours(output, contours_poly_, -1, draw::kRED, 3);
-  }
   if (verbose > 2) {
     std::string label = cv::format("%ld cubes in %ld ms.", targets_.size(),
                                    duration_cube_.Count());
-    draw::VisualizeLabel(output, label, 1, draw::kBLACK);
+    prims_.emplace_back(draw::VisualizeLabel(label, 1, draw::kBLACK));
   }
   if (!targets_.empty()) {
     std::for_each(std::execution::par_unseq, targets_.begin(), targets_.end(),
                   draw_orecube);
   }
+  cv::Mat frame = output.clone();
+  cv::gapi::wip::draw::render(frame, prims_);
 }

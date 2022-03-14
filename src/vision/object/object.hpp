@@ -2,6 +2,8 @@
 
 #include <vector>
 
+#include "opencv2/gapi.hpp"
+#include "opencv2/gapi/core.hpp"
 #include "opencv2/opencv.hpp"
 #include "spdlog/spdlog.h"
 
@@ -14,9 +16,11 @@ const cv::Scalar kGREEN(0., 255., 0.);
 const cv::Scalar kRED(0., 0., 255.);
 const cv::Scalar kYELLOW(0., 255., 255.);
 const cv::Scalar kBLACK(0., 0., 0.);
+const int kMARKER = 0;
 
-void VisualizeLabel(const cv::Mat &output, const std::string &label,
-                    int level = 1, const cv::Scalar &color = kGREEN);
+cv::gapi::wip::draw::Text VisualizeLabel(const std::string &label,
+                                         int level = 1,
+                                         const cv::Scalar &color = kGREEN);
 
 }  // namespace draw
 
@@ -39,9 +43,9 @@ class ImageObject {
 
   cv::Mat ImageFace(const cv::Mat &frame) const;
 
-  void VisualizeObject(const cv::Mat &output, bool add_lable,
-                       const cv::Scalar color = draw::kGREEN,
-                       cv::MarkerTypes type = cv::MarkerTypes::MARKER_DIAMOND);
+  cv::gapi::wip::draw::Prims VisualizeObject(
+      bool add_lable, const cv::Scalar color = draw::kGREEN,
+      cv::MarkerTypes type = cv::MarkerTypes::MARKER_DIAMOND);
 };
 
 class PhysicObject {

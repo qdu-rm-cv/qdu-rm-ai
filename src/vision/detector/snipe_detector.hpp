@@ -3,6 +3,7 @@
 #include "armor.hpp"
 #include "common.hpp"
 #include "detector.hpp"
+#include "opencv2/gapi.hpp"
 
 struct SnipeDetectorParam {
   int a;
@@ -14,6 +15,7 @@ class SnipeDetector : public Detector<Armor, SnipeDetectorParam> {
   game::Team enemy_team_;
   std::vector<std::vector<cv::Point>> contours_, contours_poly_;
   component::Timer duration_armors_;
+  cv::gapi::wip::draw::Prims prims_;
 
   void InitDefaultParams(const std::string &path);
   bool PrepareParams(const std::string &path);

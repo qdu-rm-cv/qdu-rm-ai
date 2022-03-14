@@ -208,7 +208,7 @@ Model StringToModel(std::string name) {
 }
 
 bool HasBigArmor(Model model) {
-  return (model == Model::kHERO || model == Model::kSENTRY ||);
+  return (model == Model::kHERO || model == Model::kSENTRY);
 }
 
 }  // namespace game

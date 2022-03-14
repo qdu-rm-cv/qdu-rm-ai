@@ -2,6 +2,7 @@
 
 #include "common.hpp"
 #include "detector.hpp"
+#include "opencv2/gapi.hpp"
 #include "ore_cube.hpp"
 
 struct OreCubeDetectorParam {
@@ -20,6 +21,7 @@ class OreCubeDetector : public Detector<OreCube, OreCubeDetectorParam> {
  private:
   std::vector<std::vector<cv::Point>> contours_, contours_poly_;
   component::Timer duration_cube_;
+  cv::gapi::wip::draw::Prims prims_;
 
   void InitDefaultParams(const std::string &path);
   bool PrepareParams(const std::string &path);

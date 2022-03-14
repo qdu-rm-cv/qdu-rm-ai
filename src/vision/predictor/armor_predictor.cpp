@@ -2,6 +2,8 @@
 
 #include <execution>
 
+#include "opencv2/gapi/render.hpp"
+
 void ArmorPredictor::MatchArmor() {
   duration_predict_.Start();
 
@@ -62,7 +64,8 @@ const tbb::concurrent_vector<Armor> &ArmorPredictor::Predict() {
 
 void ArmorPredictor::VisualizePrediction(const cv::Mat &output, int verbose) {
   auto draw_armor = [&](Armor &armor) {
-    armor.VisualizeObject(output, verbose > 0);
+    auto prims = armor.VisualizeObject(verbose > 0);
+    for (auto &prim : prims) prims_.emplace_back(prim);
   };
 
   if (!predicts_.empty()) {
@@ -72,6 +75,8 @@ void ArmorPredictor::VisualizePrediction(const cv::Mat &output, int verbose) {
   if (verbose > 1) {
     std::string label =
         cv::format("Find predict in %ld ms.", duration_predict_.Count());
-    draw::VisualizeLabel(output, label, 3);
+    prims_.emplace_back(draw::VisualizeLabel(label, 3));
   }
+  cv::Mat frame = output.clone();
+  cv::gapi::wip::draw::render(frame, prims_);
 }

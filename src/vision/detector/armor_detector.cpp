@@ -2,6 +2,9 @@
 
 #include <execution>
 
+#include "opencv2/gapi/core.hpp"
+#include "opencv2/gapi/imgproc.hpp"
+#include "opencv2/gapi/render.hpp"
 #include "spdlog/spdlog.h"
 
 void ArmorDetector::InitDefaultParams(const std::string &params_path) {
@@ -68,50 +71,60 @@ void ArmorDetector::FindLightBars(const cv::Mat &frame) {
   frame_size_ = frame.size();
   const double frame_area = frame_size_.area();
 
-  std::vector<cv::Mat> channels(3);
-  cv::Mat result;
-  cv::split(frame, channels);
-
   if (enemy_team_ == game::Team::kUNKNOWN) {
     SPDLOG_ERROR("enemy_team_ is {}", game::TeamToString(enemy_team_));
     return;
   }
 
+  /* G-API 进行图像处理运算 */
+  auto graph_computate = [&]() {
+    cv::GMat in, b, g, r, result;
+    std::tie(b, g, r) = cv::gapi::split3(in);
+
 #if 0
   if (enemy_team_ == game::Team::kBLUE) {
-    result = channels[0];
+    result = b;
   } else if (enemy_team_ == game::Team::kRED) {
-    result = channels[2];
+    result = r;
   }
 #else
-  if (enemy_team_ == game::Team::kBLUE) {
-    result = channels[0] - channels[2];
-  } else if (enemy_team_ == game::Team::kRED) {
-    result = channels[2] - channels[0];
-  }
+    if (enemy_team_ == game::Team::kBLUE) {
+      result = b - r;
+    } else if (enemy_team_ == game::Team::kRED) {
+      result = r - b;
+    }
 #endif
 
-  cv::threshold(result, result, params_.binary_th, 255., cv::THRESH_BINARY);
-  /*
-    if (params_.se_erosion >= 0.) {
-      cv::Mat kernel = cv::getStructuringElement(
-          cv::MORPH_ELLIPSE,
-          cv::Size(2 * params_.se_erosion + 1, 2 * params_.se_erosion + 1));
-      cv::morphologyEx(result, result, cv::MORPH_OPEN, kernel);
-    }
-  */
-  cv::findContours(result, contours_, cv::RETR_EXTERNAL,
-                   cv::CHAIN_APPROX_TC89_KCOS);
+    result =
+        cv::gapi::threshold(result, params_.binary_th, 255., cv::THRESH_BINARY);
+
+    /*
+      if (params_.se_erosion >= 0.) {
+        cv::Mat kernel = cv::getStructuringElement(
+            cv::MORPH_ELLIPSE,
+            cv::Size(2 * params_.se_erosion + 1, 2 * params_.se_erosion + 1));
+        result = cv::gapi::morphologyEx(result, cv::MORPH_OPEN, kernel);
+      }
+    */
+
+    cv::GArray<cv::GArray<cv::Point>> contours = cv::gapi::findContours(
+        result, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_TC89_KCOS);
+
+    cv::detail::VectorRef vec;
+    contours.VCtor(vec);
+    contours_ = vec.wref<std::vector<cv::Point>>();
 
 #if 0 /* 平滑轮廓应该有用，但是这里简化轮廓没用 */
   contours_poly_.resize(contours_.size());
-  for (size_t k = 0; k < contours_.size(); ++k) {
+  for (size_t k = 0; k < vec.size(); ++k) {
     cv::approxPolyDP(cv::Mat(contours_[k]), contours_poly_[k],
                      params_.ap_erosion, true);
   }
 #endif
 
-  SPDLOG_DEBUG("Found contours: {}", contours_.size());
+    SPDLOG_DEBUG("Found contours: {}", contours_.size());
+    return cv::GComputation(in, result);
+  };
 
   /* 检查轮廓是否为灯条 */
   auto check_lightbar = [&](const auto &contour) {
@@ -145,6 +158,10 @@ void ArmorDetector::FindLightBars(const cv::Mat &frame) {
 
     lightbars_.emplace_back(potential_bar);
   };
+
+  auto graph_computater = graph_computate();
+  cv::Mat out_frame;
+  graph_computater.apply(frame, out_frame);
 
   /* 并行验证灯条 */
   std::for_each(std::execution::par_unseq, contours_.begin(), contours_.end(),
@@ -237,33 +254,36 @@ const tbb::concurrent_vector<Armor> &ArmorDetector::Detect(
 }
 
 void ArmorDetector::VisualizeResult(const cv::Mat &output, int verbose) {
-  auto draw_lightbar = [&](LightBar &bar) {
-    bar.VisualizeObject(output, verbose > 2, draw::kGREEN, cv::MARKER_CROSS);
+  prims_.clear();
+
+  auto graph_draw_lightbar = [&](LightBar &bar) {
+    auto prims =
+        bar.VisualizeObject(verbose > 2, draw::kGREEN, cv::MARKER_CROSS);
+    for (auto &prim : prims) prims_.emplace_back(prim);
   };
-  auto draw_armor = [&](Armor &armor) {
-    armor.VisualizeObject(output, verbose > 2);
+  auto graph_draw_armor = [&](Armor &armor) {
+    auto prims = armor.VisualizeObject(verbose > 2);
+    for (auto &prim : prims) prims_.emplace_back(prim);
   };
 
-  if (verbose > 0) {
-    cv::drawContours(output, contours_, -1, draw::kRED);
-    cv::drawContours(output, contours_poly_, -1, draw::kYELLOW);
-  }
   if (verbose > 1) {
     std::string label = cv::format("%ld bars in %ld ms.", lightbars_.size(),
                                    duration_bars_.Count());
-    draw::VisualizeLabel(output, label, 1);
+    prims_.emplace_back(draw::VisualizeLabel(label, 1));
 
     label = cv::format("%ld armors in %ld ms.", targets_.size(),
                        duration_armors_.Count());
-    draw::VisualizeLabel(output, label, 2);
+    prims_.emplace_back(draw::VisualizeLabel(label, 2));
   }
 
   if (!lightbars_.empty()) {
     std::for_each(std::execution::par_unseq, lightbars_.begin(),
-                  lightbars_.end(), draw_lightbar);
+                  lightbars_.end(), graph_draw_lightbar);
   }
   if (!targets_.empty()) {
     std::for_each(std::execution::par_unseq, targets_.begin(), targets_.end(),
-                  draw_armor);
+                  graph_draw_armor);
   }
+  cv::Mat frame = output.clone();
+  cv::gapi::wip::draw::render(frame, prims_);
 }

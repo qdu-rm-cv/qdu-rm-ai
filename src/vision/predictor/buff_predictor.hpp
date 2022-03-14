@@ -8,6 +8,7 @@
 #include "common.hpp"
 #include "ekf.hpp"
 #include "kalman.hpp"
+#include "opencv2/gapi.hpp"
 #include "opencv2/opencv.hpp"
 #include "predictor.hpp"
 
@@ -33,6 +34,7 @@ class BuffPredictor : public Predictor<Armor, BuffPredictorParam, Kalman> {
   std::chrono::system_clock::time_point end_time_;
   std::vector<cv::Point2f> circumference_;
   component::Timer duration_direction_, duration_predict_;
+  cv::gapi::wip::draw::Prims prims_;
 
   void InitDefaultParams(const std::string &path);
   bool PrepareParams(const std::string &path);

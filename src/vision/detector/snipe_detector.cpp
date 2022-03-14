@@ -2,6 +2,8 @@
 
 #include <execution>
 
+#include "opencv2/gapi/render.hpp"
+
 void SnipeDetector::InitDefaultParams(const std::string &params_path) {
   cv::FileStorage fs(params_path,
                      cv::FileStorage::WRITE | cv::FileStorage::FORMAT_JSON);
@@ -60,16 +62,19 @@ const tbb::concurrent_vector<Armor> &SnipeDetector::Detect(
 
 void SnipeDetector::VisualizeResult(const cv::Mat &output, int verbose) {
   auto draw_armor = [&](Armor &armor) {
-    armor.VisualizeObject(output, verbose > 2);
+    auto prims = armor.VisualizeObject(verbose > 2);
+    for (auto &prim : prims) prims_.emplace_back(prim);
   };
   if (verbose > 1) {
     std::string label = cv::format("Find %ld Armors in %ld ms", targets_.size(),
                                    duration_armors_.Count());
-    draw::VisualizeLabel(output, label);
+    prims_.emplace_back(draw::VisualizeLabel(label));
   }
 
   if (!targets_.empty()) {
     std::for_each(std::execution::par_unseq, targets_.begin(), targets_.end(),
                   draw_armor);
   }
+  cv::Mat frame = output.clone();
+  cv::gapi::wip::draw::render(frame, prims_);
 }

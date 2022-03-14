@@ -4,6 +4,7 @@
 #include <ctime>
 
 #include "common.hpp"
+#include "opencv2/gapi/render.hpp"
 
 using std::chrono::duration_cast;
 using std::chrono::high_resolution_clock;
@@ -403,15 +404,17 @@ void BuffPredictor::VisualizePrediction(const cv::Mat &output, int add_lable) {
     if (add_lable > 0) {
       auto vertices = predict.ImageVertices();
       for (std::size_t i = 0; i < vertices.size(); ++i)
-        cv::line(output, vertices[i], vertices[(i + 1) % 4], draw::kYELLOW, 8);
+        prims_.emplace_back(cv::gapi::wip::draw::Line(
+            vertices[i], vertices[(i + 1) % 4], draw::kYELLOW, 8));
       std::string buf = cv::format("%.3f, %.3f", predict.ImageCenter().x,
                                    predict.ImageCenter().y);
-      cv::putText(output, buf, vertices[1], draw::kCV_FONT, 1.0, draw::kRED);
+      prims_.emplace_back(cv::gapi::wip::draw::Text(
+          buf, vertices[1], draw::kCV_FONT, 1.0, draw::kRED));
     }
     if (add_lable > 1) {
       if (cv::Point2f(0, 0) != predict.ImageCenter())
-        cv::line(output, buff_.GetCenter(), predict.ImageCenter(), draw::kRED,
-                 3);
+        prims_.emplace_back(cv::gapi::wip::draw::Line(
+            buff_.GetCenter(), predict.ImageCenter(), draw::kRED, 3));
     }
   }
   if (add_lable > 2) {
@@ -419,9 +422,12 @@ void BuffPredictor::VisualizePrediction(const cv::Mat &output, int add_lable) {
         cv::format("Direction : %s in %ld ms.",
                    component::DirectionToString(direction_).c_str(),
                    duration_direction_.Count());
-    draw::VisualizeLabel(output, label, 3);
+    prims_.emplace_back(draw::VisualizeLabel(label, 3));
 
     label = cv::format("Find predict in %ld ms.", duration_predict_.Count());
-    draw::VisualizeLabel(output, label, 4);
+    prims_.emplace_back(draw::VisualizeLabel(label, 4));
   }
+
+  cv::Mat frame = output.clone();
+  cv::gapi::wip::draw::render(frame, prims_);
 }
