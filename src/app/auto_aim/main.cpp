@@ -16,7 +16,8 @@ class AutoAim : private App {
   component::Recorder recorder_;
 
  public:
-  AutoAim(const std::string& log_path) : App(log_path) {
+  AutoAim(const std::string& log_path)
+      : App(log_path, component::Logger::FMT::kFMT_THREAD) {
     SPDLOG_WARN("***** Setting Up Auto Aiming System. *****");
 
     /* 初始化设备 */

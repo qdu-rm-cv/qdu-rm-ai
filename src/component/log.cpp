@@ -8,6 +8,8 @@ const std::string fmt_default("%+");
 const std::string fmt_filelogger("[%Y-%m-%d %T.%3!u] %^[%l] [%!]%$ [%s:%#] %v");
 const std::string fmt_funcname(
     "[%Y-%m-%d %T.%3!u] %^[%l]%$ [%s:%#] \033[34m[%!]\033[0m %v");
+const std::string fmt_thread(
+    "[%Y-%m-%d %T.%3!u] (id:%t) %^[%l]%$ [%s:%#] [%!] %v");
 
 const std::string ToFormatString(FMT fmt) {
   switch (fmt) {
@@ -17,6 +19,8 @@ const std::string ToFormatString(FMT fmt) {
       return fmt_filelogger;
     case FMT::kFMT_TEST:
       return fmt_funcname;
+    case FMT::kFMT_THREAD:
+      return fmt_thread;
     default:
       return fmt_default;
   }

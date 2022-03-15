@@ -4,8 +4,9 @@
 
 class App {
  public:
-  App(const std::string &log_path) {
-    component::Logger::SetLogger(log_path);
+  App(const std::string &log_path,
+      component::Logger::FMT fmt = component::Logger::FMT::kFMT_FILE) {
+    component::Logger::SetLogger(log_path, fmt);
     SPDLOG_DEBUG("Log path : {}", log_path);
     SPDLOG_TRACE("Constructed App.");
   }

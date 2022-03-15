@@ -10,7 +10,12 @@ namespace component {
 
 namespace Logger {
 
-enum class FMT { kFMT_DEFAULT, kFMT_FILE, kFMT_TEST };
+enum class FMT {
+  kFMT_DEFAULT,
+  kFMT_FILE,
+  kFMT_TEST,
+  kFMT_THREAD,
+};
 
 void SetLogger(
     spdlog::level::level_enum level = spdlog::level::level_enum::debug,
