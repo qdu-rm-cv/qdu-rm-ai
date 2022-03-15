@@ -88,15 +88,15 @@ void GuidingLightParam::Write(const std::string &params_path) {
   fs << "maxArea" << paramd_.maxArea;
 
   fs << "filterByCircularity" << static_cast<int>(paramd_.filterByCircularity);
-  fs << "minCircularity" << paramd_.minCircularity / 5.;
-  fs << "maxCircularity" << paramd_.maxCircularity / 1.;
+  fs << "minCircularity" << paramd_.minCircularity;
+  fs << "maxCircularity" << paramd_.maxCircularity;
 
   fs << "filterByInertia" << static_cast<int>(paramd_.filterByInertia);
-  fs << "minInertiaRatio" << paramd_.minInertiaRatio / 10.;
-  fs << "maxInertiaRatio" << paramd_.maxInertiaRatio / 1.;
+  fs << "minInertiaRatio" << paramd_.minInertiaRatio;
+  fs << "maxInertiaRatio" << paramd_.maxInertiaRatio;
 
   fs << "filterByConvexity" << static_cast<int>(paramd_.filterByConvexity);
-  fs << "minConvexity" << paramd_.minConvexity / 5.;
-  fs << "maxConvexity" << paramd_.maxConvexity / 1.;
+  fs << "minConvexity" << paramd_.minConvexity;
+  fs << "maxConvexity" << paramd_.maxConvexity;
   SPDLOG_WARN("Wrote params.");
 }
