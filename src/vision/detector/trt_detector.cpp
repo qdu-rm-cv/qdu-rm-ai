@@ -15,55 +15,7 @@
 
 using namespace nvinfer1;
 
-cv::Mat Preprocess(cv::Mat raw) {
-  cv::Mat image;
-  raw.convertTo(image, CV_32FC3, 1.0 / 255.0, 0);
-  std::vector<cv::Mat1f> ch(3);
-  cv::split(image, ch);
-  cv::Mat final;
-  cv::merge(final, ch);
-  return final;
-}
-
-static float IOU(const Detection &det1, const Detection &det2) {
-  const float left =
-      std::max(det1.x_ctr - det1.w / 2., det2.x_ctr - det2.w / 2.);
-  const float right =
-      std::min(det1.x_ctr + det1.w / 2., det2.x_ctr + det2.w / 2.);
-  const float top =
-      std::max(det1.y_ctr - det1.h / 2., det2.y_ctr - det2.h / 2.);
-  const float bottom =
-      std::min(det1.y_ctr + det1.h / 2., det2.y_ctr + det2.h / 2.);
-
-  if (top > bottom || left > right) return 0.;
-
-  const float inter_box_s = (right - left) * (bottom - top);
-  return inter_box_s / (det1.w * det1.h + det2.w * det2.h - inter_box_s);
-}
-
-void NonMaxSuppression(std::vector<Detection> &dets, float nms_thresh) {
-  if (dets.empty()) return;
-
-  std::vector<Detection> keep;
-
-  std::sort(dets.begin(), dets.end(),
-            [](const Detection &det1, const Detection &det2) {
-              return det1.conf < det2.conf;
-            });
-
-  while (!dets.empty()) {
-    auto highest = dets.back();
-    keep.push_back(highest);
-    dets.pop_back();
-
-    for (auto it = dets.begin(); it != dets.end(); ++it) {
-      if (IOU(highest, *it) > nms_thresh) {
-        dets.erase(it);
-      }
-    }
-  }
-  dets = keep;
-}
+namespace TRT {
 
 template <typename T>
 void TRTDeleter::operator()(T *obj) const {
@@ -89,15 +41,70 @@ void TRTLogger::log(Severity severity, const char *msg) {
 
 int TRTLogger::GetVerbosity() { return (int)Severity::kVERBOSE; }
 
-std::vector<Detection> TrtDetector::PostProcess(std::vector<float> prob) {
-  std::vector<Detection> dets;
+}  // namespace TRT
+
+cv::Mat Preprocess(cv::Mat raw) {
+  cv::Mat image;
+  raw.convertTo(image, CV_32FC3, 1.0 / 255.0, 0);
+  std::vector<cv::Mat1f> ch(3);
+  cv::split(image, ch);
+  cv::Mat final;
+  cv::merge(ch, final);
+  return final;
+}
+
+static float IOU(const TRT::Detection &det1, const TRT::Detection &det2) {
+  const float left =
+      std::max(det1.x_ctr - det1.w / 2., det2.x_ctr - det2.w / 2.);
+  const float right =
+      std::min(det1.x_ctr + det1.w / 2., det2.x_ctr + det2.w / 2.);
+  const float top =
+      std::max(det1.y_ctr - det1.h / 2., det2.y_ctr - det2.h / 2.);
+  const float bottom =
+      std::min(det1.y_ctr + det1.h / 2., det2.y_ctr + det2.h / 2.);
+
+  if (top > bottom || left > right) return 0.;
+
+  const float inter_box_s = (right - left) * (bottom - top);
+  return inter_box_s / (det1.w * det1.h + det2.w * det2.h - inter_box_s);
+}
+
+void NonMaxSuppression(std::vector<TRT::Detection> &dets, float nms_thresh) {
+  if (dets.empty()) return;
+
+  std::vector<TRT::Detection> keep;
+
+  std::sort(dets.begin(), dets.end(),
+            [](const TRT::Detection &det1, const TRT::Detection &det2) {
+              return det1.conf < det2.conf;
+            });
+
+  while (!dets.empty()) {
+    auto highest = dets.back();
+    keep.push_back(highest);
+    dets.pop_back();
+
+    for (auto it = dets.begin(); it != dets.end(); ++it) {
+      if (IOU(highest, *it) > nms_thresh) {
+        dets.erase(it);
+      }
+    }
+  }
+  dets = keep;
+}
+
+std::vector<TRT::Detection> TrtDetector::PostProcess(std::vector<float> prob) {
+  std::vector<TRT::Detection> dets;
+  for (auto &p : prob) {
+    if (std::isnan(p)) prob.erase(p);
+  }
 
   for (auto it = prob.begin(); it != prob.end(); it += dim_out_.d[4]) {
     if (*(it + 4) > conf_thresh_) {
       auto max_conf = std::max_element(it + 4, it + dim_out_.d[4]);
       auto class_id = std::distance(it + 4, max_conf);
 
-      Detection det{
+      TRT::Detection det{
           *it,
           *(it + 1),
           *(it + 2),
@@ -110,7 +117,7 @@ std::vector<Detection> TrtDetector::PostProcess(std::vector<float> prob) {
   }
   // [4] obj conf
   // [5] [6] [7] [8] class_conf
-  // [5] [6] [7] [8] *= [4] conf = obj_conf * cls_conf;
+  // [5] [6] [7] [8] *= [4] conf = obj_conf * class_conf;
   // [0] [1] [2] [3] = x_ctr y_ctr w h
   return dets;
 }
@@ -166,11 +173,11 @@ bool TrtDetector::CreateEngine() {
 
   auto profile = builder->createOptimizationProfile();
   profile->setDimensions(network->getInput(0)->getName(),
-                         OptProfileSelector::kMIN, Dims4{1, 3, 608, 608});
+                         OptProfileSelector::kMIN, Dims4{1, 3, 640, 640});
   profile->setDimensions(network->getInput(0)->getName(),
-                         OptProfileSelector::kOPT, Dims4{1, 3, 608, 608});
+                         OptProfileSelector::kOPT, Dims4{1, 3, 640, 640});
   profile->setDimensions(network->getInput(0)->getName(),
-                         OptProfileSelector::kMAX, Dims4{1, 3, 608, 608});
+                         OptProfileSelector::kMAX, Dims4{1, 3, 640, 640});
   config->addOptimizationProfile(profile);
 
   if (builder->platformHasFastFp16()) config->setFlag(BuilderFlag::kFP16);
@@ -230,7 +237,7 @@ bool TrtDetector::LoadEngine() {
 }
 
 bool TrtDetector::SaveEngine() {
-  SPDLOG_ERROR("[TrtDetector] SaveEngine.");
+  SPDLOG_DEBUG("[TrtDetector] SaveEngine.");
 
   if (engine_) {
     auto engine_serialized = UniquePtr<IHostMemory>(engine_->serialize());
@@ -277,35 +284,29 @@ bool TrtDetector::InitMemory() {
       case DataType::kFLOAT:
         volume *= sizeof(float);
         break;
-
       default:
         SPDLOG_ERROR("[TrtDetector] Do not support input type: {}", type);
         break;
     }
 
-    void *device_memory;
+    void *device_memory = nullptr;
     cudaMalloc(&device_memory, volume);
     bindings_.push_back(device_memory);
     bingings_size_.push_back(volume);
 
-    SPDLOG_DEBUG("[TrtDetector] Binding {} : {}", i, engine_->getBindingName(i));
+    SPDLOG_DEBUG("[TrtDetector] Binding {} : {}", i,
+                 engine_->getBindingName(i));
   }
   return true;
 }
 
-TrtDetector::TrtDetector(const std::string& onnx_file_path, float conf_thresh = 0.5,
-                   float nms_thresh = 0.5)
-    : onnx_file_path_(onnx_file_path),
-      conf_thresh_(conf_thresh),
-      nms_thresh_(nms_thresh) {
-  engine_path_ = onnx_file_path_ + ".engine";
+TrtDetector::TrtDetector() { SPDLOG_TRACE("Constructed."); }
 
-  if (!LoadEngine()) {
-    CreateEngine();
-    SaveEngine();
-  }
-  CreateContex();
-  InitMemory();
+TrtDetector::TrtDetector(const std::string &onnx_file_path, float conf_thresh,
+                         float nms_thresh) {
+  SetOnnxPath(onnx_file_path);
+  Init(conf_thresh, nms_thresh);
+
   SPDLOG_DEBUG("[TrtDetector] Constructed.");
 }
 
@@ -315,6 +316,25 @@ TrtDetector::~TrtDetector() {
   for (auto it = bindings_.begin(); it != bindings_.end(); ++it) cudaFree(*it);
 
   SPDLOG_DEBUG("[TrtDetector] Destructed.");
+}
+void TrtDetector::SetOnnxPath(const std::string &onnx_file_path) {
+  onnx_file_path_ = onnx_file_path;
+  engine_path_.assign(onnx_file_path, 0, onnx_file_path.find(".onnx"));
+  engine_path_ = engine_path_ + std::string(".engine");
+  SPDLOG_DEBUG("Onnx and engine file has been loaded");
+}
+
+void TrtDetector::Init(float conf_thresh, float nms_thresh) {
+  conf_thresh_ = conf_thresh;
+  nms_thresh_ = nms_thresh;
+  SPDLOG_DEBUG("Params has been set.");
+
+  if (!LoadEngine()) {
+    CreateEngine();
+    SaveEngine();
+  }
+  CreateContex();
+  InitMemory();
 }
 
 bool TrtDetector::TestInfer() {
@@ -352,7 +372,7 @@ bool TrtDetector::TestInfer() {
   return true;
 }
 
-std::vector<Detection> TrtDetector::Infer(cv::Mat &raw) {
+std::vector<TRT::Detection> TrtDetector::Infer(cv::Mat &raw) {
   SPDLOG_DEBUG("[TrtDetector] Infer.");
 
   std::vector<float> output(bingings_size_.at(idx_out_) / sizeof(float));

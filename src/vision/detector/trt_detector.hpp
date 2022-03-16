@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+namespace TRT {
+
 class TRTDeleter {
  public:
   template <typename T>
@@ -32,15 +34,17 @@ struct Detection {
   float class_id;
 };
 
+}  // namespace TRT
+
 class TrtDetector {
   template <typename T>
-  using UniquePtr = std::unique_ptr<T, TRTDeleter>;
+  using UniquePtr = std::unique_ptr<T, TRT::TRTDeleter>;
 
  private:
   std::string onnx_file_path_;
   std::string engine_path_;
 
-  TRTLogger logger_;
+  TRT::TRTLogger logger_;
 
   UniquePtr<nvinfer1::ICudaEngine> engine_;
   UniquePtr<nvinfer1::IExecutionContext> context_;
@@ -53,7 +57,7 @@ class TrtDetector {
   nvinfer1::Dims dim_in_, dim_out_;
   int nc;
 
-  std::vector<Detection> PostProcess(std::vector<float> prob);
+  std::vector<TRT::Detection> PostProcess(std::vector<float> prob);
 
   bool CreateEngine();
   bool LoadEngine();
@@ -62,8 +66,15 @@ class TrtDetector {
   bool InitMemory();
 
  public:
-  TrtDetector(const std::string& onnx_file_path, float conf_thresh, float nms_thresh);
+  TrtDetector();
+  TrtDetector(const std::string &onnx_file_path, float conf_thresh = 0.5f,
+              float nms_thresh = 0.5f);
   ~TrtDetector();
+
+  void SetOnnxPath(const std::string &onnx_file_path);
+  void Init(float conf_thresh = 0.5f, float nms_thresh = 0.5f);
+
+  std::vector<TRT::Detection> Infer(cv::Mat &);
+
   bool TestInfer();
-  std::vector<Detection> Infer(cv::Mat &);
 };
