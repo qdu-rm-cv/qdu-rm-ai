@@ -69,7 +69,7 @@ bool HikCamera::OpenPrepare(unsigned int index) {
     return false;
   }
 
-  err = MV_CC_CreateHandle(&camera_handle_, mv_dev_list_.pDeviceInfo[index]);
+  err = MV_CC_CreateHandle(&camera_handle_, mv_dev_list_.pDeviceInfo[0]);
   if (err != MV_OK) {
     SPDLOG_ERROR("CreateHandle fail! err: {0:x}.", err);
     return false;
