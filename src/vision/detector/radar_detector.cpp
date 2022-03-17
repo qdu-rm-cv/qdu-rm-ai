@@ -64,7 +64,7 @@ Alert RadarDetector::DetectRegion(const cv::Mat& frame) {
 
   if (detections.empty()) {
     SPDLOG_ERROR("Detections is empty.");
-    return;
+    return alert;
   }
   for (auto& detection : detections) {
     cv::Rect2f anchor(detection.x_ctr - detection.w / 2.,

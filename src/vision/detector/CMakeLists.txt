@@ -31,6 +31,7 @@ if(BUILD_NN)
 
 else()
     list(FILTER ${PROJECT_NAME}_SOURCES EXCLUDE REGEX "trt.*$")
+    list(FILTER ${PROJECT_NAME}_SOURCES EXCLUDE REGEX "radar.*$")
 
     add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_SOURCES})
 

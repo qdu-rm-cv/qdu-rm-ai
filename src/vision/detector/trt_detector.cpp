@@ -95,9 +95,6 @@ void NonMaxSuppression(std::vector<TRT::Detection> &dets, float nms_thresh) {
 
 std::vector<TRT::Detection> TrtDetector::PostProcess(std::vector<float> prob) {
   std::vector<TRT::Detection> dets;
-  for (auto &p : prob) {
-    if (std::isnan(p)) prob.erase(p);
-  }
 
   for (auto it = prob.begin(); it != prob.end(); it += dim_out_.d[4]) {
     if (*(it + 4) > conf_thresh_) {
@@ -372,7 +369,7 @@ bool TrtDetector::TestInfer() {
   return true;
 }
 
-std::vector<TRT::Detection> TrtDetector::Infer(cv::Mat &raw) {
+std::vector<TRT::Detection> TrtDetector::Infer(const cv::Mat &raw) {
   SPDLOG_DEBUG("[TrtDetector] Infer.");
 
   std::vector<float> output(bingings_size_.at(idx_out_) / sizeof(float));

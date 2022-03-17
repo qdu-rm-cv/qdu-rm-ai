@@ -74,7 +74,7 @@ class TrtDetector {
   void SetOnnxPath(const std::string &onnx_file_path);
   void Init(float conf_thresh = 0.5f, float nms_thresh = 0.5f);
 
-  std::vector<TRT::Detection> Infer(cv::Mat &);
+  std::vector<TRT::Detection> Infer(const cv::Mat &);
 
   bool TestInfer();
 };

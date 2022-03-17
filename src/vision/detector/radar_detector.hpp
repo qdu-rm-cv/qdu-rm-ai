@@ -26,7 +26,7 @@ class RadarDetector {
   TrtDetector detector_;
 
   bool Search(std::vector<cv::Point2f> contour, cv::Rect2f anchor);
-  Alert DetectRegion();
+  Alert DetectRegion(const cv::Mat& frame);
 
  public:
   RadarDetector();
