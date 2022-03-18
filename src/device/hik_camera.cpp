@@ -107,8 +107,19 @@ bool HikCamera::OpenPrepare(unsigned int index) {
     SPDLOG_INFO("ResultingFrameRate: {}.", frame_rate.fCurValue);
   }
 
-  if ((err = MV_CC_SetEnumValue(camera_handle_, "ExposureAuto", 2)) != MV_OK) {
-    SPDLOG_ERROR("ExposureAuto fail! err: {0:x}.", err);
+  if ((err = MV_CC_SetEnumValue(camera_handle_, "ExposureAuto", 0)) != MV_OK) {
+    SPDLOG_ERROR("ExposureAuto closes fail! err: {0:x}.", err);
+    return false;
+  }
+
+  if ((err = MV_CC_SetEnumValue(camera_handle_, "ExposureMode", 0)) != MV_OK) {
+    SPDLOG_ERROR("ExposureMode fail! err: {0:x}.", err);
+    return false;
+  }
+
+  if ((err = MV_CC_SetFloatValue(camera_handle_, "ExposureTime", 600.0)) !=
+      MV_OK) {
+    SPDLOG_ERROR("ExposureTime fail! err: {0:x}.", err);
     return false;
   }
 
