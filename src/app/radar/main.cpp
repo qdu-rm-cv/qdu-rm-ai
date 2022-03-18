@@ -1,5 +1,6 @@
 #include "app.hpp"
 #include "armor_detector.hpp"
+#include "behavior.hpp"
 #include "compensator.hpp"
 #include "hik_camera.hpp"
 #include "opencv2/opencv.hpp"
@@ -11,6 +12,7 @@ class Radar : private App {
   Robot robot_;
   HikCamera cam_, base_cam_, outpost_cam_;
   RadarDetector detector_;
+  Behavior manager_;
 
  public:
   Radar(const std::string& log_path) : App(log_path) {
@@ -45,7 +47,9 @@ class Radar : private App {
       cv::Mat dst;
       cv::hconcat(frame, 3, dst);
 
-      detector_.Detect(frame[0]);
+      auto alert = detector_.Detect(frame[0]);
+      manager_.SetNotice(alert);
+      robot_.Pack(manager_.GetData(), 9999);
       if (' ' == cv::waitKey(10)) {
         cv::waitKey(0);
       }

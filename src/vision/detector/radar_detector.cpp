@@ -58,8 +58,8 @@ bool RadarDetector::Search(std::vector<cv::Point2f> contour,
     return false;
 }
 
-Alert RadarDetector::DetectRegion(const cv::Mat& frame) {
-  Alert alert;
+game::Alert RadarDetector::DetectRegion(const cv::Mat& frame) {
+  game::Alert alert;
   auto detections = detector_.Infer(frame);
 
   if (detections.empty()) {
@@ -105,9 +105,9 @@ RadarDetector::RadarDetector(const std::string& onnx_file_path,
 
 RadarDetector::~RadarDetector() { SPDLOG_TRACE("Destructed."); }
 
-Alert RadarDetector::Detect(const cv::Mat& frame) {
+game::Alert RadarDetector::Detect(const cv::Mat& frame) {
   SPDLOG_DEBUG("Detecting");
-  Alert result = DetectRegion(frame);
+  game::Alert result = DetectRegion(frame);
   SPDLOG_DEBUG("Detected.");
   return result;
 }

@@ -67,5 +67,14 @@ void Behavior::Move(float v) {
   else
     data_.chassis_move_vec.wz = M_PI / 3;
 }
+void Behavior::SetNotice(game::Alert alert) {
+  if (alert.enemy_buff) data_.notice |= AI_NOTICE_BUFF;
+  if (alert.enemy_snipe) data_.notice |= AI_NOTICE_SNIPE;
+  if (alert.enemy_slope) data_.notice |= AI_NOTICE_SLOPE;
+  if (alert.self_outpost) data_.notice |= AI_NOTICE_OUTPOST;
+  if (alert.self_sentry) data_.notice |= AI_NOTICE_SENTRY;
+  if (alert.self_base) data_.notice |= AI_NOTICE_BASE;
+  SPDLOG_DEBUG("Notice has been set.");
+}
 
 Protocol_DownData_t &Behavior::GetData() { return data_; }

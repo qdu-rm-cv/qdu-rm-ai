@@ -38,6 +38,23 @@ AimMethod StringToAimMethod(std::string name);
 }  // namespace component
 
 namespace game {
+struct Alert {
+  bool enemy_buff;
+  bool enemy_snipe;
+  bool enemy_slope;
+  bool self_outpost;
+  bool self_sentry;
+  bool self_base;
+
+  Alert() {
+    enemy_buff = false;
+    enemy_snipe = false;
+    enemy_slope = false;
+    self_outpost = false;
+    self_sentry = false;
+    self_base = false;
+  }
+};
 
 enum class Team {
   kUNKNOWN,
