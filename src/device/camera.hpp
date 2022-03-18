@@ -8,9 +8,11 @@
 #include "opencv2/imgproc.hpp"
 #include "semaphore.hpp"
 #include "spdlog/spdlog.h"
+#include "timer.hpp"
 
 class Camera {
  private:
+  component::Recorder recorder_ = component::Recorder("CameraThread");
   virtual void GrabPrepare() = 0;
   virtual void GrabLoop() = 0;
 
@@ -18,8 +20,10 @@ class Camera {
     SPDLOG_DEBUG("[GrabThread] Started.");
     frame_signal_.Init();
     GrabPrepare();
-    while (grabing) GrabLoop();
-
+    while (grabing) {
+      GrabLoop();
+      recorder_.Record();
+    }
     SPDLOG_DEBUG("[GrabThread] Stoped.");
   }
 
