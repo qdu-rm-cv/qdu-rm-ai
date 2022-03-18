@@ -24,6 +24,7 @@ class Behavior {
   void Update(int base_hp, int sentry_hp, int bullet_num);
   void Aim(component::Euler aiming_eulr);
   void Move(float v);
+  void SetNotice(game::Alert alert);
 
   Protocol_DownData_t &GetData();
 };

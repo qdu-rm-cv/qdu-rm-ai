@@ -7,6 +7,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     device
     object
     detector
+    behavior
     predictor
     compensator
     spdlog::spdlog
