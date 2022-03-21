@@ -18,10 +18,8 @@ enum class FMT {
 };
 
 void SetLogger(
-    spdlog::level::level_enum level = spdlog::level::level_enum::debug,
-    FMT fmt = FMT::kFMT_TEST, const std::string& path = "log/log.log");
-
-void SetLogger(const std::string& path, FMT fmt = FMT::kFMT_TEST);
+    const std::string& path = "log/log.log", FMT fmt = FMT::kFMT_TEST,
+    spdlog::level::level_enum level = spdlog::level::level_enum::debug);
 
 }  // namespace Logger
 

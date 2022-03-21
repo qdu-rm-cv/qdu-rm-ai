@@ -57,7 +57,6 @@ void Robot::ThreadTrans() {
       command.crc16 = crc16::CRC16_Calc((uint8_t *)&command.data,
                                         sizeof(command.data), UINT16_MAX);
       serial_.Trans((char *)&command, sizeof(command));
-      std::this_thread::sleep_for(std::chrono::milliseconds(2));
     }
   }
   SPDLOG_DEBUG("[ThreadTrans] Stoped.");

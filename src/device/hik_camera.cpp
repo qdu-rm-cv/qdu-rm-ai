@@ -49,7 +49,6 @@ void HikCamera::GrabLoop() {
       CV_8UC3, raw_frame.pBufAddr);
 
   std::lock_guard<std::mutex> lock(frame_stack_mutex_);
-  frame_stack_.clear();
   frame_stack_.push_front(raw_mat.clone());
   frame_signal_.Signal();
   if (nullptr != raw_frame.pBufAddr) {
