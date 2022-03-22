@@ -83,8 +83,24 @@ message(STATUS "OpenCV version: ${OpenCV_VERSION}")
 message(STATUS "spdlog version: ${spdlog_VERSION}")
 message(STATUS "TBB version: ${TBB_VERSION}")
 
-option(BUILD_NN "Build nn" OFF)
+
+#---------------------------------------------------------------------------------------
+# Packages Options
+#---------------------------------------------------------------------------------------
+
+message(STATUS "----------------------- Packages Options ------------------------")
+
+set(BUILD_NN 0)
+set(BUILD_EKF 0)
 message(STATUS "Build nn: ${BUILD_NN}")
+message(STATUS "Build EKF: ${BUILD_EKF}")
+
+if(BUILD_EKF)
+    find_package(Eigen3 REQUIRED)
+    find_package(Ceres 2 REQUIRED)
+    message(STATUS "Eigen version: ${Eigen3_VERSION}")
+    message(STATUS "Ceres version: ${Ceres_VERSION}")
+endif()
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_compile_definitions(SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_DEBUG)
