@@ -39,10 +39,13 @@
   - [MVS SDK from HIKROBOT](https://www.hikrobotics.com/cn/machinevision/service/download?module=0).
   - [spdlog](https://github.com/gabime/spdlog).
   - [Google Test](https://github.com/google/googletest)
+  - [oneTBB](https://github.com/oneapi-src/oneTBB) or `libtbb-dev`
   - 可选
-    - [oneTBB](https://github.com/oneapi-src/oneTBB) or `libtbb-dev`
     - [CUDA](https://developer.nvidia.com/cuda-downloads)
     - [TensorRT](https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html)
+    - [Eigen](https://eigen.tuxfamily.org/index.php?title=Main_Page)
+    - [Ceres-Solver](http://ceres-solver.org/)
+    - [ninja-build](https://ninja-build.org/manual.html) or `ninja-build`
 
 - 开发测试环境
   - Ubuntu
@@ -127,6 +130,16 @@
 | device | 设备库 | 外接设备的抽象 |
 | vision | 视觉库 | 目标识别等代码 |
 
+| vision内 | 内容 | 备注 |
+| ---- | ---- | ---- |
+| classifier | 分类器 | 装甲板分类器 |
+| compensator | 弹道补偿器 | 三维解算、测距、弹道补偿 |
+| detector | 探测器 | 装甲板探测、能量机关等的探测器 |
+| object | 对象类 | 图像对象、物理对象和比赛中抽象出的各种基础对象类 |
+| params | 参数类 | 可视化调参的参数类 |
+| predictor | 预测器 | 滤波器和集成的预测器 |
+| process | 流程 | 对视觉处理其余模块的组合 |
+
 ## 系统介绍
 
 ### 软件流程图
@@ -145,21 +158,23 @@
 
 近期：
 
-1. 完成对物理世界模型的抽象
+1. 修缮好测距模块和弹道补偿器模块
 
-2. 修缮好测距模块和弹道补偿器模块
-
-3. 实现类似多级流水线的视觉算法流程。[参考文章](https://opencv.org/hybrid-cv-dl-pipelines-with-opencv-4-4-g-api/)
-
-远期：
-
-1. 第一阶段
+2. 引入神经网络
     1. 使用基于pytorch的yolov5算法，训练得到的权重和模型导出到ONNX格式。
     2. 在妙算平台使用TensorRT运行导出的模型。
     3. 添加Int8运行
 
-2. 第二阶段
-    1. 添加雷达部分代码
+3. 完成各种滤波器进行平滑化处理，并完成预测器
+
+4. 完成其余兵种任务
     2. 矿石旋转部分代码
     3. 飞镖控制部分代码
 
+远期：
+
+1. 实现类似多级流水线的视觉算法流程。[参考文章](https://opencv.org/hybrid-cv-dl-pipelines-with-opencv-4-4-g-api/)(等待OpenCV完善架构)
+
+2. 多线程进行生产者消费者调度
+
+3. 优化传统视觉算法和参数增强程序鲁棒性
