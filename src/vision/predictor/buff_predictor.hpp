@@ -6,7 +6,6 @@
 #include "buff.hpp"
 #include "buff_detector.hpp"
 #include "common.hpp"
-#include "ekf.hpp"
 #include "kalman.hpp"
 #include "opencv2/opencv.hpp"
 #include "predictor.hpp"
@@ -14,12 +13,6 @@
 // TODO : 修改参数，使KF可以上场使用
 
 struct BuffPredictorParam {
-  bool is_EKF;
-  EKF::Matx55d Q_mat;
-  EKF::Matx33d R_mat;
-  EKF::Matx55d Q_AC_mat;
-  EKF::Matx33d R_AC_mat;
-  bool is_KF;
   double delay_time;
   int error_frame;
 };

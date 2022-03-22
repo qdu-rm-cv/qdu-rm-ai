@@ -59,22 +59,6 @@ void BuffPredictor::InitDefaultParams(const std::string &params_path) {
                      cv::FileStorage::WRITE | cv::FileStorage::FORMAT_JSON);
   SPDLOG_WARN("filter method: {}", filter_.method_);
   if (filter_.method_ != Method::kUNKNOWN) {
-    if (filter_.method_ == Method::kEKF) {
-      fs << "is_EKF" << true;
-      fs << "Q_mat" << EKF::Matx55d::eye();
-      fs << "R_mat" << EKF::Matx33d::eye();
-      fs << "Q_AC_mat" << EKF::Matx55d::eye();
-      fs << "R_AC_mat" << EKF::Matx33d::eye();
-      fs << "is_KF" << false;
-    } else if (filter_.method_ == Method::kKF) {
-      SPDLOG_WARN("write kf param");
-      fs << "is_EKF" << false;
-      fs << "Q_mat" << EKF::Matx55d::zeros();
-      fs << "R_mat" << EKF::Matx33d::zeros();
-      fs << "Q_AC_mat" << EKF::Matx55d::zeros();
-      fs << "R_AC_mat" << EKF::Matx33d::zeros();
-      fs << "is_KF" << true;
-    }
     fs << "delay_time" << 0.1542;
     fs << "error_frame" << 5;
   }
@@ -86,12 +70,6 @@ bool BuffPredictor::PrepareParams(const std::string &params_path) {
                      cv::FileStorage::READ | cv::FileStorage::FORMAT_JSON);
 
   if (fs.isOpened()) {
-    params_.is_EKF = (int)fs["is_EKF"] != 0 ? true : false;
-    params_.Q_mat = fs["Q_mat"].mat();
-    params_.R_mat = fs["R_mat"].mat();
-    params_.Q_AC_mat = fs["Q_AC_mat"].mat();
-    params_.R_AC_mat = fs["R_AC_mat"].mat();
-    params_.is_KF = (int)fs["is_KF"] != 0 ? true : false;
     params_.delay_time = fs["delay_time"];
     params_.error_frame = fs["error_frame"];
     return true;
@@ -106,10 +84,10 @@ bool BuffPredictor::PrepareParams(const std::string &params_path) {
  *
  */
 void BuffPredictor::MatchDirection() {
-  duration_direction_.Start();
-  SPDLOG_WARN("start MatchDirection");
+  SPDLOG_WARN("Start MatchDirection");
 
   if (direction_ == component::Direction::kUNKNOWN) {
+    duration_direction_.Start();
     cv::Point2f center = buff_.GetCenter();
     double angle, sum = 0;
     std::vector<double> angles;
@@ -137,8 +115,7 @@ void BuffPredictor::MatchDirection() {
                    buff_.GetTarget().ImageCenter().x,
                    buff_.GetTarget().ImageCenter().y);
     }
-
-    SPDLOG_WARN("Buff's Direction is {}", /* TODO */
+    SPDLOG_WARN("Buff's Direction is {}",
                 component::DirectionToString(direction_));
     duration_direction_.Calc("Predict Direction");
   }
@@ -414,10 +391,15 @@ void BuffPredictor::VisualizePrediction(const cv::Mat &output, int add_lable) {
     }
   }
   if (add_lable > 2) {
-    std::string label =
-        cv::format("Direction : %s in %ld ms.",
-                   component::DirectionToString(direction_).c_str(),
-                   duration_direction_.Count());
+    std::string label;
+    if (direction_ == component::Direction::kUNKNOWN) {
+      label = cv::format("Direction : %s in %ld ms.",
+                         component::DirectionToString(direction_).c_str(),
+                         duration_direction_.Count());
+    } else {
+      label = cv::format("Direction : %s.",
+                         component::DirectionToString(direction_).c_str());
+    }
     draw::VisualizeLabel(output, label, 3);
 
     label = cv::format("Find predict in %ld ms.", duration_predict_.Count());
