@@ -13,6 +13,7 @@ target_link_libraries(${PROJECT_NAME}
     Threads::Threads
     spdlog::spdlog
     component
+    usbp-1
 )
 
 target_link_directories(${PROJECT_NAME} PUBLIC

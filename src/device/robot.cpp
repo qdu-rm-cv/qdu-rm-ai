@@ -57,7 +57,12 @@ void Robot::ThreadTrans() {
     if (!is_empty) {
       command.crc16 = crc16::CRC16_Calc((uint8_t *)&command.data,
                                         sizeof(command.data), UINT16_MAX);
-      serial_.Trans((char *)&command, sizeof(command));
+      if (serial_.Trans((char *)&command, sizeof(command))) {
+        mutex_command_.lock();
+        while (!serial_.Reopen())
+          std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        mutex_command_.unlock();
+      }
     }
   }
   SPDLOG_DEBUG("[ThreadTrans] Stoped.");
@@ -82,10 +87,14 @@ Robot::~Robot() {
 
 void Robot::Init(const std::string &dev_path) {
   serial_.Open(dev_path);
-  serial_.Config();
-  if (!serial_.IsOpen()) {
-    SPDLOG_ERROR("Can't open device.");
-  }
+
+  thread_continue = true;
+  thread_recv_ = std::thread(&Robot::ThreadRecv, this);
+  thread_trans_ = std::thread(&Robot::ThreadTrans, this);
+}
+
+void Robot::Init() {
+  serial_.Open();
 
   thread_continue = true;
   thread_recv_ = std::thread(&Robot::ThreadRecv, this);

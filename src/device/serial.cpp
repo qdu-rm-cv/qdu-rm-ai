@@ -14,7 +14,7 @@
  *
  */
 Serial::Serial() {
-  dev_ = -1;
+  Open();
   SPDLOG_TRACE("Constructed.");
 }
 
@@ -24,13 +24,7 @@ Serial::Serial() {
  * @param dev_path 具体要读写的串口设备
  */
 Serial::Serial(const std::string& dev_path) {
-  dev_ = open(dev_path.c_str(), O_RDWR);
-
-  if (dev_ < 0)
-    SPDLOG_ERROR("Can't open Serial device.");
-  else
-    Config();
-
+  Open(dev_path);
   SPDLOG_TRACE("Constructed.");
 }
 
@@ -46,12 +40,41 @@ Serial::~Serial() {
 /**
  * @brief 打开串口
  *
+ */
+void Serial::Open() {
+  dev_ = open(usb_.GetPortName().c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
+
+  if (dev_ < 0)
+    SPDLOG_ERROR("Can't open Serial device.");
+  else
+    Config();
+}
+
+/**
+ * @brief 打开串口
+ *
  * @param dev_path 具体要读写的串口设备
  */
 void Serial::Open(const std::string& dev_path) {
   dev_ = open(dev_path.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
 
-  if (dev_ < 0) SPDLOG_ERROR("Can't open Serial device.");
+  if (dev_ < 0)
+    SPDLOG_ERROR("Can't open Serial device.");
+  else
+    Config();
+}
+
+/**
+ * @brief 重新打开串口
+ *
+ * @return true 打开成功
+ * @return false 打开失败
+ */
+bool Serial::Reopen() {
+  Close();
+  Open();
+  if (IsOpen()) return true;
+  return false;
 }
 
 /**
@@ -60,7 +83,10 @@ void Serial::Open(const std::string& dev_path) {
  * @return true 已打开
  * @return false 未打开
  */
-bool Serial::IsOpen() { return (dev_ > 0); }
+bool Serial::IsOpen() {
+  SPDLOG_DEBUG("Open serial handle {}", dev_);
+  return (dev_ > 0);
+}
 
 /**
  * @brief 配置串口
@@ -125,10 +151,10 @@ bool Serial::Config(bool parity, StopBits stop_bit, DataLength data_length,
   tty_cfg.c_oflag &= ~(OPOST);
   tty_cfg.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
   tty_cfg.c_iflag &= ~(ICRNL | INLCR | IGNCR | IXON | IXOFF | IXANY);
-  
+
   // 清空输入输出缓冲区
   tcflush(dev_, TCIOFLUSH);
-  
+
   switch (data_length) {
     case DataLength::kDATA_LEN_5:
       tty_cfg.c_cflag |= CS5;

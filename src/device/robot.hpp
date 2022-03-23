@@ -33,6 +33,7 @@ class Robot {
   Robot(const std::string &dev_path);
   ~Robot();
 
+  void Init();
   void Init(const std::string &dev_path);
 
   game::Team GetEnemyTeam();

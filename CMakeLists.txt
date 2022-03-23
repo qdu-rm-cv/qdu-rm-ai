@@ -76,31 +76,14 @@ find_package(OpenCV REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(Threads REQUIRED)
 find_package(TBB REQUIRED)
+find_package(PkgConfig REQUIRED)
+    pkg_check_modules(usbp REQUIRED libusbp-1)
 
 message(STATUS "BehaviorTreeV3 version: ${BehaviorTreeV3_VERSION}")
 message(STATUS "CUDA version: ${CUDA_VERSION}")
 message(STATUS "OpenCV version: ${OpenCV_VERSION}")
 message(STATUS "spdlog version: ${spdlog_VERSION}")
 message(STATUS "TBB version: ${TBB_VERSION}")
-
-
-#---------------------------------------------------------------------------------------
-# Packages Options
-#---------------------------------------------------------------------------------------
-
-message(STATUS "----------------------- Packages Options ------------------------")
-
-set(BUILD_NN 0)
-set(BUILD_EKF 0)
-message(STATUS "Build nn: ${BUILD_NN}")
-message(STATUS "Build EKF: ${BUILD_EKF}")
-
-if(BUILD_EKF)
-    find_package(Eigen3 REQUIRED)
-    find_package(Ceres 2 REQUIRED)
-    message(STATUS "Eigen version: ${Eigen3_VERSION}")
-    message(STATUS "Ceres version: ${Ceres_VERSION}")
-endif()
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_compile_definitions(SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_DEBUG)
@@ -111,6 +94,25 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Realase")
 elseif(CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
     add_compile_definitions(SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_INFO)
 endif ()
+
+
+#---------------------------------------------------------------------------------------
+# Packages Options
+#---------------------------------------------------------------------------------------
+
+message(STATUS "----------------------- Packages Options ------------------------")
+
+set(BUILD_NN 0)
+set(BUILD_EKF 0)
+message(STATUS "Build NN: ${BUILD_NN}")
+message(STATUS "Build EKF: ${BUILD_EKF}")
+
+if(BUILD_EKF)
+    find_package(Eigen3 REQUIRED)
+    find_package(Ceres 2 REQUIRED)
+    message(STATUS "Eigen version: ${Eigen3_VERSION}")
+    message(STATUS "Ceres version: ${Ceres_VERSION}")
+endif()
 
 #---------------------------------------------------------------------------------------
 # Source

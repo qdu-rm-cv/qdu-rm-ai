@@ -40,6 +40,7 @@
   - [spdlog](https://github.com/gabime/spdlog).
   - [Google Test](https://github.com/google/googletest)
   - [oneTBB](https://github.com/oneapi-src/oneTBB) or `libtbb-dev`
+  - [libusbp](https://github.com/pololu/libusbp)
   - 可选
     - [CUDA](https://developer.nvidia.com/cuda-downloads)
     - [TensorRT](https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html)
