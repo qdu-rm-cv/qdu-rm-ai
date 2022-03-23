@@ -30,36 +30,28 @@ void SetLogger(const std::string& path, FMT fmt,
                spdlog::level::level_enum level) {
   std::string fmt_str = ToFormatString(fmt);
 
-  if (fmt == FMT::kFMT_TEST) {
-    auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-    console_sink->set_pattern(fmt_str);
-    spdlog::set_default_logger(std::make_shared<spdlog::logger>(
-        "default", spdlog::sinks_init_list{console_sink}));
-    spdlog::set_pattern(fmt_str);
-    spdlog::flush_on(level);
-    spdlog::set_level(level);
-  } else if (fmt == FMT::kFMT_FILE) {
-    auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-    console_sink->set_pattern(fmt_str);
-    auto file_sink =
-        std::make_shared<spdlog::sinks::basic_file_sink_mt>(path, true);
-    file_sink->set_pattern(fmt_default);
-    spdlog::set_default_logger(std::make_shared<spdlog::logger>(
-        "default", spdlog::sinks_init_list{console_sink, file_sink}));
+  auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+  console_sink->set_pattern(fmt_str);
+  auto file_sink =
+      std::make_shared<spdlog::sinks::basic_file_sink_mt>(path, true);
+  file_sink->set_pattern(fmt_default);
 
 #if (SPDLOG_ACTIVE_LEVEL == SPDLOG_LEVEL_DEBUG)
-    spdlog::flush_on(spdlog::level::debug);
-    spdlog::set_level(spdlog::level::debug);
+  spdlog::flush_on(spdlog::level::debug);
+  spdlog::set_level(spdlog::level::debug);
 #elif (SPDLOG_ACTIVE_LEVEL == SPDLOG_LEVEL_INFO)
-    spdlog::flush_on(spdlog::level::info);
-    spdlog::set_level(spdlog::level::info);
+  spdlog::flush_on(spdlog::level::info);
+  spdlog::set_level(spdlog::level::info);
 #endif
 
-  } else {
-    spdlog::set_pattern(fmt_str);
+  if (fmt != FMT::kFMT_FILE) {
+    file_sink->set_pattern(fmt_str);
     spdlog::flush_on(level);
     spdlog::set_level(level);
   }
+
+  spdlog::set_default_logger(std::make_shared<spdlog::logger>(
+      "default", spdlog::sinks_init_list{console_sink, file_sink}));
   SPDLOG_DEBUG("Logging setted.");
 }
 
