@@ -46,9 +46,11 @@ void HikCamera::GrabLoop() {
 
   cv::Mat raw_mat(
       cv::Size(raw_frame.stFrameInfo.nWidth, raw_frame.stFrameInfo.nHeight),
-      CV_8UC3, raw_frame.pBufAddr);
+      CV_8UC1, raw_frame.pBufAddr);
+  cv::cvtColor(raw_mat, raw_mat, cv::COLOR_BayerRG2BGR);
 
   std::lock_guard<std::mutex> lock(frame_stack_mutex_);
+  frame_stack_.clear();
   frame_stack_.push_front(raw_mat.clone());
   frame_signal_.Signal();
   if (nullptr != raw_frame.pBufAddr) {
@@ -86,7 +88,7 @@ bool HikCamera::OpenPrepare(unsigned int index) {
   }
 
   err = MV_CC_SetEnumValue(camera_handle_, "PixelFormat",
-                           PixelType_Gvsp_RGB8_Packed);
+                           PixelType_Gvsp_BayerRG8);
   if (err != MV_OK) {
     SPDLOG_ERROR("PixelFormat fail! err: {0:x}.", err);
     return false;
@@ -107,12 +109,23 @@ bool HikCamera::OpenPrepare(unsigned int index) {
     SPDLOG_INFO("ResultingFrameRate: {}.", frame_rate.fCurValue);
   }
 
-  if ((err = MV_CC_SetEnumValue(camera_handle_, "ExposureAuto", 2)) != MV_OK) {
-    SPDLOG_ERROR("ExposureAuto fail! err: {0:x}.", err);
+  if ((err = MV_CC_SetEnumValue(camera_handle_, "ExposureAuto", 0)) != MV_OK) {
+    SPDLOG_ERROR("ExposureAuto closes fail! err: {0:x}.", err);
     return false;
   }
 
-  if ((err = MV_CC_SetEnumValue(camera_handle_, "GammaSelector", 2)) != MV_OK) {
+  if ((err = MV_CC_SetEnumValue(camera_handle_, "ExposureMode", 0)) != MV_OK) {
+    SPDLOG_ERROR("ExposureMode fail! err: {0:x}.", err);
+    return false;
+  }
+
+  if ((err = MV_CC_SetFloatValue(camera_handle_, "ExposureTime", 600.0)) !=
+      MV_OK) {
+    SPDLOG_ERROR("ExposureTime fail! err: {0:x}.", err);
+    return false;
+  }
+
+  if ((err = MV_CC_SetEnumValue(camera_handle_, "GammaSelector", 1)) != MV_OK) {
     SPDLOG_ERROR("GammaSelector fail! err: {0:x}.", err);
     return false;
   }

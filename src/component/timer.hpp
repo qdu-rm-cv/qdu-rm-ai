@@ -38,7 +38,7 @@ class Recorder {
   void Print() {
     while (true) {
       std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-      SPDLOG_DEBUG("[{}] FPS : {}", thread_name_, fps_);
+      SPDLOG_CRITICAL("[{}] FPS : {}", thread_name_, fps_);
       fps_ = 0;
     }
   }
