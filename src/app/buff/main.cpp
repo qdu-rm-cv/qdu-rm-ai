@@ -49,9 +49,10 @@ class BuffAim : private App {
 
   void Run() {
     SPDLOG_WARN("***** Running Buff Aiming System. *****");
+    cv::Mat frame;
 
     while (1) {
-      cv::Mat frame = cam_.GetFrame();
+      cam_.GetFrame(frame);
       if (frame.empty()) {
         SPDLOG_ERROR("cam.GetFrame is null");
         continue;

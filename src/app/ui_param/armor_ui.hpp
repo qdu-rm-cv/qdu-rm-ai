@@ -70,9 +70,10 @@ class ArmorUIParam : private App {
                        &armor_param_.parami_.center_dist_high_th, 255);
 
     cv::Mat blank = cv::Mat::zeros(320, 240, CV_8UC1);
+    cv::Mat frame;
 
     while (true) {
-      cv::Mat frame = cam_.GetFrame();
+      cam_.GetFrame(frame);
       if (frame.empty()) continue;
 
       SPDLOG_INFO("frame size {},{}", frame.size().width, frame.size().height);

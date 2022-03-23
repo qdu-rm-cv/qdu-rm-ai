@@ -17,7 +17,7 @@ class AutoAim : private App {
 
  public:
   AutoAim(const std::string& log_path)
-      : App(log_path, component::Logger::FMT::kFMT_THREAD) {
+      : App(log_path, component::Logger::FMT::kFMT_FILE) {
     SPDLOG_WARN("***** Setting Up Auto Aiming System. *****");
 
     /* 初始化设备 */
@@ -27,12 +27,12 @@ class AutoAim : private App {
     detector_.LoadParams("../../../../runtime/RMUL2022_Armor.json");
     compensator_.LoadCameraMat("../../../../runtime/MV-CA016-10UC-6mm_1.json");
 
-    do {
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    } while (robot_.GetEnemyTeam() != game::Team::kUNKNOWN);
+    // do {
+    //   std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    // } while (robot_.GetEnemyTeam() != game::Team::kUNKNOWN);
 
-    detector_.SetEnemyTeam(robot_.GetEnemyTeam());
-    // detector_.SetEnemyTeam(game::Team::kBLUE);
+    // detector_.SetEnemyTeam(robot_.GetEnemyTeam());
+    detector_.SetEnemyTeam(game::Team::kBLUE);
   }
 
   ~AutoAim() {
@@ -44,16 +44,17 @@ class AutoAim : private App {
   /* 运行的主程序 */
   void Run() {
     SPDLOG_WARN("***** Running Auto Aiming System. *****");
+    cv::Mat frame;
 
     while (1) {
-      cv::Mat frame = cam_.GetFrame();
+      cam_.GetFrame(frame);
       if (frame.empty()) continue;
       auto armors = detector_.Detect(frame);
 
       if (armors.size() != 0) {
-        compensator_.Apply(armors, frame, robot_.GetEuler());
-        manager_.Aim(armors.front().GetAimEuler());
-        robot_.Pack(manager_.GetData(), 9999);
+        // compensator_.Apply(armors, frame, robot_.GetEuler());
+        // manager_.Aim(armors.front().GetAimEuler());
+        // robot_.Pack(manager_.GetData(), 9999);
 
         detector_.VisualizeResult(frame, 10);
       }

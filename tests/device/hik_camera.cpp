@@ -11,7 +11,8 @@ TEST(TestHikCamera, TestCapture) {
   HikCamera cam;
   ASSERT_TRUE(cam.Open(0) == 0) << "Can not open camera 0.";
   std::this_thread::sleep_for(std::chrono::milliseconds(100));
-  cv::Mat frame = cam.GetFrame();
+  cv::Mat frame;
+  cam.GetFrame(frame);
   ASSERT_FALSE(frame.empty()) << "Can not get frame from camera.";
 
   cv::imwrite(img_path, frame);

@@ -55,9 +55,10 @@ class BuffUIParam : private App {
                        &buff_param_.parami_.rect_ratio_high_th, 6000);
 
     cv::Mat blank = cv::Mat::zeros(320, 240, CV_8UC1);
+    cv::Mat frame;
 
     while (true) {
-      cv::Mat frame = cam_.GetFrame();
+      cam_.GetFrame(frame);
       if (frame.empty()) continue;
 
       SPDLOG_INFO("frame size {},{}", frame.size().width, frame.size().height);

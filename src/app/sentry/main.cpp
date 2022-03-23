@@ -39,9 +39,10 @@ class SentryAim : private App {
   /* 运行的主程序 */
   void Run() {
     SPDLOG_WARN("***** Running Auto Aiming System. *****");
+    cv::Mat frame;
 
     while (1) {
-      cv::Mat frame = cam_.GetFrame();
+      cam_.GetFrame(frame);
       if (frame.empty()) continue;
       auto armors = detector_.Detect(frame);
       // target = predictor.Predict(armors, frame);

@@ -37,12 +37,12 @@ class Radar : private App {
   /* 运行的主程序 */
   void Run() {
     SPDLOG_WARN("***** Running Auto Aiming System. *****");
+    cv::Mat frame[3];
 
     while (1) {
-      cv::Mat frame[3];
-      frame[0] = cam_.GetFrame();
-      frame[1] = base_cam_.GetFrame();
-      frame[2] = outpost_cam_.GetFrame();
+      cam_.GetFrame(frame[0]);
+      base_cam_.GetFrame(frame[1]);
+      outpost_cam_.GetFrame(frame[2]);
 
       cv::Mat dst;
       cv::hconcat(frame, 3, dst);

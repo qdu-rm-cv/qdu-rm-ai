@@ -71,9 +71,10 @@ class AutomaticAim : public App {
   /* 运行的主程序 */
   void Run() {
     SPDLOG_WARN("***** Running Auto Aiming System. *****");
+    cv::Mat frame;
 
     while (1) {
-      cv::Mat frame = cam_.GetFrame();
+      cam_.GetFrame(frame);
       if (frame.empty()) continue;
 
       assitant_.SetRFID(robot_.GetRFID());
