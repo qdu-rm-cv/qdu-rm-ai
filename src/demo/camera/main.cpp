@@ -1,32 +1,76 @@
-#include <iostream>
-
+#include "demo.hpp"
 #include "hik_camera.hpp"
-#include "spdlog/sinks/basic_file_sink.h"
-#include "spdlog/sinks/stdout_color_sinks.h"
-#include "spdlog/spdlog.h"
+#include "opencv2/opencv.hpp"
+
+namespace {
+
+const std::string kSOURCE = "../../../../../redbuff01.avi";
+const std::string kOUTPUT = "../../../../../writer.avi";
+
+}  // namespace
+
+class CameraDemo : public App {
+ private:
+  cv::VideoWriter writer_;
+  HikCamera cam_;
+  bool recording_;
+
+ public:
+  CameraDemo(const std::string& log_path) : App(log_path) {
+    SPDLOG_WARN("***** Setting Up Buff Aiming System. *****");
+
+    /* 初始化设备 */
+    cam_.Open(0);
+    cam_.Setup(640, 480);
+
+    writer_.open(kOUTPUT, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), 60,
+                 cv::Size(640, 480));
+    if (!writer_.isOpened()) {
+      SPDLOG_ERROR("Error occur");
+    }
+
+    recording_ = false;
+  }
+
+  ~CameraDemo() {
+    /* 关闭设备 */
+
+    SPDLOG_WARN("***** Shuted Down Buff Aiming System. *****");
+  }
+
+  /* Demo Running */
+  void Run() {
+    SPDLOG_WARN("***** Running Buff Aiming System. *****");
+    cv::Mat frame;
+
+    while (1) {
+      cam_.GetFrame(frame);
+      if (frame.empty()) {
+        SPDLOG_ERROR("GetFrame is null");
+        continue;
+      }
+      if (recording_) {
+        writer_.write(frame);
+      }
+
+      cv::imshow("RESULT", frame);
+      int key = cv::waitKey(10);
+      if ('q' == key || 'Q' == key) {
+        break;
+      }
+      if ('s' == key || 'S' == key) {
+        recording_ = true;
+      }
+    }
+  }
+};
 
 int main(int argc, char const* argv[]) {
   (void)argc;
   (void)argv;
 
-  auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-  auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(
-      "logs/radar.log", true);
+  CameraDemo camera_demo("logs/camera_demo.log");
+  camera_demo.Run();
 
-  spdlog::sinks_init_list sink_list = {console_sink, file_sink};
-
-  spdlog::set_default_logger(
-      std::make_shared<spdlog::logger>("default", sink_list));
-
-#if (SPDLOG_ACTIVE_LEVEL == SPDLOG_LEVEL_DEBUG)
-  spdlog::flush_on(spdlog::level::debug);
-  spdlog::set_level(spdlog::level::debug);
-#elif (SPDLOG_ACTIVE_LEVEL == SPDLOG_LEVEL_INFO)
-  spdlog::flush_on(spdlog::level::info);
-  spdlog::set_level(spdlog::level::info);
-#endif
-
-  SPDLOG_WARN("***** Running HikCamera Recording Demo. *****");
-
-  return 0;
+  return EXIT_SUCCESS;
 }
