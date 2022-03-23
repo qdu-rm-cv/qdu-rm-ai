@@ -161,7 +161,7 @@ bool Serial::Config(bool parity, StopBits stop_bit, DataLength data_length,
  * @return ssize_t 已发送的长度
  */
 std::size_t Serial::Trans(const void* buff, std::size_t len) {
-  std::lock_guard<std::mutex> lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_w_);
   return write(dev_, buff, len);
 }
 
@@ -173,7 +173,7 @@ std::size_t Serial::Trans(const void* buff, std::size_t len) {
  * @return ssize_t 已发送的长度
  */
 std::size_t Serial::Recv(void* buff, std::size_t len) {
-  std::lock_guard<std::mutex> lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_r_);
   return read(dev_, buff, len);
 }
 

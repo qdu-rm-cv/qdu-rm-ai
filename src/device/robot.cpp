@@ -45,12 +45,13 @@ void Robot::ThreadTrans() {
   Protocol_DownPackage_t command;
 
   while (thread_continue) {
+    pack_signal_.Wait();
     bool is_empty = true;
     mutex_command_.lock();
     if (commandq_.size() > 0) {
-      command.data = commandq_.back();
+      command.data = commandq_.front();
+      commandq_.pop_front();
       is_empty = false;
-      commandq_.clear();
     }
     mutex_command_.unlock();
     if (!is_empty) {
@@ -206,5 +207,6 @@ void Robot::Pack(Protocol_DownData_t &data, double distance) {
 
   mutex_command_.lock();
   commandq_.emplace_back(data);
+  pack_signal_.Signal();
   mutex_command_.unlock();
 }

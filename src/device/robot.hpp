@@ -9,6 +9,7 @@
 #include "opencv2/core/quaternion.hpp"
 #include "opencv2/opencv.hpp"
 #include "protocol.h"
+#include "semaphore.hpp"
 #include "serial.hpp"
 
 class Robot {
@@ -22,6 +23,7 @@ class Robot {
   Protocol_UpDataMCU_t mcu_;
 
   std::mutex mutex_command_, mutex_ref_, mutex_mcu_;
+  component::Semaphore pack_signal_;
 
   void ThreadRecv();
   void ThreadTrans();

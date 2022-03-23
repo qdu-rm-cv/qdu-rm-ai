@@ -28,7 +28,8 @@ enum class DataLength {
 class Serial {
  private:
   int dev_;
-  std::mutex mutex_;
+  std::mutex mutex_w_;
+  std::mutex mutex_r_;
 
  public:
   /**
