@@ -4,6 +4,8 @@
 #include "common.hpp"
 #include "gtest/gtest.h"
 
+namespace {
+
 ArmorClassifier armor_classifier("../../../runtime/armor_classifier.onnx",
                                  "../../../runtime/armor_classifier_lable.json",
                                  cv::Size(28, 28));
@@ -11,10 +13,12 @@ ArmorClassifier armor_classifier("../../../runtime/armor_classifier.onnx",
 game::Model Classify(const std::string& path) {
   cv::Mat f = cv::imread(path);
   Armor armor(cv::RotatedRect(cv::Point2f(0, 0), cv::Point2f(f.cols, 0),
-                              cv::Point2f(f.cols, f.rows)));
+                              cv::Point2f(f.cols, f.rows)));  
   armor_classifier.ClassifyModel(armor, f);
   return armor.GetModel();
 }
+
+}  // namespace
 
 TEST(TestVision, TestArmorClassifier) {
   ASSERT_TRUE(Classify("../../../image/test_classifier_0.png") ==
@@ -32,8 +36,8 @@ TEST(TestVision, TestArmorClassifierInput) {
   Armor armor(cv::RotatedRect(cv::Point2f(0, 0), cv::Point2f(f.cols, 0),
                               cv::Point2f(f.cols, f.rows)));
 
-  cv::imwrite("../../../image/test_face.png", armor.ImageFace(f));
+  cv::imwrite("../../../image/test_face.png", armor.Face(f));
   cv::Mat nn_input;
-  cv::resize(armor.ImageFace(f), nn_input, cv::Size(28, 28));
+  cv::resize(armor.Face(f), nn_input, cv::Size(28, 28));
   cv::imwrite("../../../image/test_nn_input.png", nn_input);
 }

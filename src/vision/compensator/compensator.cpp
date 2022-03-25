@@ -6,6 +6,9 @@
 namespace {
 
 const double kG = 9.80665;
+const double kINFANTRY = 10.;
+const double kHERO = 10.;
+const double kSENTRY = 10.;
 
 }  // namespace
 
@@ -26,14 +29,24 @@ void Compensator::VisualizePnp(Armor& armor, const cv::Mat& output,
 
 Compensator::Compensator() { SPDLOG_TRACE("Constructed."); }
 
-Compensator::Compensator(const std::string& cam_mat_path) {
+Compensator::Compensator(const std::string& cam_mat_path,
+                         const game::Arm& arm) {
   SPDLOG_TRACE("Constructed.");
   // TODO : 和机械、兵种相关，后期放到namespace
-  gun_cam_distance_ = 0;
+  SetArm(arm);
   LoadCameraMat(cam_mat_path);
 }
 
 Compensator::~Compensator() { SPDLOG_TRACE("Destructed."); }
+
+void Compensator::SetArm(const game::Arm& arm) {
+  if (arm == game::Arm::kINFANTRY)
+    gun_cam_distance_ = kINFANTRY;
+  else if (arm == game::Arm::kHERO)
+    gun_cam_distance_ = kHERO;
+  else if (arm == game::Arm::kSENTRY)
+    gun_cam_distance_ = kSENTRY;
+}
 
 void Compensator::LoadCameraMat(const std::string& path) {
   cv::FileStorage fs(path,
@@ -52,9 +65,7 @@ void Compensator::LoadCameraMat(const std::string& path) {
   }
 }
 
-void Compensator::SolveAngles(Armor& armor, component::Euler euler) {
-  (void)euler;
-  component::Euler aiming_eulr;
+void Compensator::PnpEstimate(Armor& armor) {
   cv::Mat rot_vec, trans_vec;
 
   cv::solvePnP(armor.PhysicVertices(), armor.ImageVertices(), cam_mat_,
@@ -62,7 +73,11 @@ void Compensator::SolveAngles(Armor& armor, component::Euler euler) {
 
   trans_vec.at<double>(1, 0) -= gun_cam_distance_;
   armor.SetRotVec(rot_vec), armor.SetTransVec(trans_vec);
+}
 
+void Compensator::SolveAngles(Armor& armor) {
+  component::Euler aiming_eulr;
+  PnpEstimate(armor);
   double x_pos = armor.GetTransVec().at<double>(0, 0);
   double y_pos = armor.GetTransVec().at<double>(1, 0);
   double z_pos = armor.GetTransVec().at<double>(2, 0);
@@ -96,8 +111,8 @@ void Compensator::Apply(tbb::concurrent_vector<Armor>& armors,
       armor.SetModel(game::Model::kINFANTRY);
       SPDLOG_ERROR("Hasn't set model.");
     }
-    SolveAngles(armor, euler);
-    // CompensateGravity(armor, euler);
+    SolveAngles(armor);
+    CompensateGravity(armor, euler);
   }
   cv::Point2f frame_center(frame.cols / 2, frame.rows / 2);
   std::sort(armors.begin(), armors.end(),

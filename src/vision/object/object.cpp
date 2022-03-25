@@ -18,24 +18,6 @@ double ImageObject::ImageAngle() const { return image_angle_; }
 
 double ImageObject::ImageAspectRatio() const { return image_ratio_; }
 
-cv::Mat ImageObject::ImageFace(const cv::Mat &frame) const {
-  cv::Mat face;
-  cv::warpPerspective(frame, face, trans_, face_size_);
-  cv::cvtColor(face, face, cv::COLOR_RGB2GRAY);
-  cv::medianBlur(face, face, 1);
-#if 0
-  cv::equalizeHist(face, face); /* Tried. No help. */
-#endif
-  cv::threshold(face, face, 0., 255., cv::THRESH_BINARY | cv::THRESH_TRIANGLE);
-
-  /* 截取中间正方形 */
-  float min_edge = std::min(face.cols, face.rows);
-  const int offset_w = (face.cols - min_edge) / 2;
-  const int offset_h = (face.rows - min_edge) / 2;
-  face = face(cv::Rect(offset_w, offset_h, min_edge, min_edge));
-  return face;
-}
-
 void ImageObject::VisualizeObject(const cv::Mat &output, bool add_lable,
                                   const cv::Scalar color,
                                   cv::MarkerTypes type) {

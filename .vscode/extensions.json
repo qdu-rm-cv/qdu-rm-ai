@@ -12,9 +12,9 @@
 		"davidanson.vscode-markdownlint",		// Markdown语法扩展
 		"aaron-bond.better-comments",			// 更多种类的高亮注释
 		"coenraads.bracket-pair-colorizer-2",	// 彩虹括号2
-		"xyz.local-history",					// 本地历史记录
-		"hediet.vscode-drawio",					// 内嵌的draw.io
-		"guyutongxue.cpp-reference"				// VSC快速查找cppreference.com
+		// "xyz.local-history",					// 本地历史记录
+		// "hediet.vscode-drawio",				// 内嵌的draw.io
+		// "guyutongxue.cpp-reference"			// VSC快速查找cppreference.com
 	],
 	// List of extensions recommended by VS Code that should not be recommended for users of this workspace.
 	"unwantedRecommendations": []

@@ -37,8 +37,6 @@ class ImageObject {
 
   double ImageAspectRatio() const;
 
-  cv::Mat ImageFace(const cv::Mat &frame) const;
-
   void VisualizeObject(const cv::Mat &output, bool add_lable,
                        const cv::Scalar color = draw::kGREEN,
                        cv::MarkerTypes type = cv::MarkerTypes::MARKER_DIAMOND);

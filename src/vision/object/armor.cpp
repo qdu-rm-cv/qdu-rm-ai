@@ -68,16 +68,6 @@ void Armor::Init() {
                  std::min(rect_.size.height, rect_.size.width);
   image_vertices_.resize(4);
   rect_.points(image_vertices_.data());
-
-  double len;
-  if (ImageAspectRatio() > 1.2) {
-    trans_ = cv::getPerspectiveTransform(ImageVertices(), kDST_POV_BIG);
-    len = kARMOR_LENGTH_BIG;
-  } else {
-    trans_ = cv::getPerspectiveTransform(ImageVertices(), kDST_POV_SMALL);
-    len = kARMOR_LENGTH_SMALL;
-  }
-  face_size_ = cv::Size(len, kARMOR_WIDTH);
 }
 
 Armor::Armor() { SPDLOG_TRACE("Constructed."); }
@@ -110,6 +100,39 @@ void Armor::SetModel(game::Model model) {
 }
 
 const cv::RotatedRect Armor::GetRect() const { return rect_; }
+
+cv::Mat Armor::Face(const cv::Mat &frame) {
+  double len;
+  cv::Mat face;
+  std::vector<cv::Point2f> pts(4);
+
+  if (ImageAspectRatio() > 1.2) {
+    trans_ = cv::getPerspectiveTransform(ImageVertices(), kDST_POV_BIG);
+    len = kARMOR_LENGTH_BIG;
+  } else {
+    trans_ = cv::getPerspectiveTransform(ImageVertices(), kDST_POV_SMALL);
+    len = kARMOR_LENGTH_SMALL;
+  }
+  face_size_ = cv::Size(len, kARMOR_WIDTH);
+
+  cv::warpPerspective(frame, face, trans_, face_size_);
+  cv::warpPerspective(ImageVertices(), pts, trans_, face_size_);
+  face = face(cv::boundingRect(pts));
+
+  cv::cvtColor(face, face, cv::COLOR_RGB2GRAY);
+  cv::medianBlur(face, face, 1);
+#if 0
+  cv::equalizeHist(face, face); /* Tried. No help. */
+#endif
+  cv::threshold(face, face, 0., 255., cv::THRESH_BINARY | cv::THRESH_TRIANGLE);
+
+  /* 截取中间正方形 */
+  float min_edge = std::min(face.cols, face.rows);
+  const int offset_w = (face.cols - min_edge) / 2;
+  const int offset_h = (face.rows - min_edge) / 2;
+  face = face(cv::Rect(offset_w, offset_h, min_edge, min_edge));
+  return face;
+}
 
 component::Euler Armor::GetAimEuler() const { return aiming_euler_; }
 void Armor::SetAimEuler(const component::Euler &elur) { aiming_euler_ = elur; }

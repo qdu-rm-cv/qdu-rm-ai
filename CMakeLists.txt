@@ -95,7 +95,6 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
     add_compile_definitions(SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_INFO)
 endif ()
 
-
 #---------------------------------------------------------------------------------------
 # Packages Options
 #---------------------------------------------------------------------------------------
