@@ -72,16 +72,16 @@ class Camera {
    *
    * @return cv::Mat 拍摄的图像
    */
-  virtual void GetFrame(cv::Mat& frame) {
-    frame_signal_.Wait();
-
+  virtual bool GetFrame(cv::Mat& frame) {
     std::lock_guard<std::mutex> lock(frame_stack_mutex_);
     if (!frame_stack_.empty()) {
       cv::resize(frame_stack_.front(), frame, cv::Size(frame_w_, frame_h_));
-      frame_stack_.pop_front();
+      frame_stack_.clear();
     } else {
-      SPDLOG_ERROR("Empty frame stack!");
+      //SPDLOG_ERROR("Empty frame stack!");
+      return false;
     }
+    return true;
   }
   /**
    * @brief 关闭相机设备

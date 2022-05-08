@@ -1,0 +1,11 @@
+{
+    "hue_low_th": 26,
+    "hue_high_th": 34,
+    "saturation_low_th": 43,
+    "saturation_high_th": 255,
+    "value_low_th": 46,
+    "value_high_th": 255,
+    "binary_th": 120,
+    "area_low_th": 5000,
+    "area_high_th": 75000
+}

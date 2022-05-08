@@ -1,0 +1,17 @@
+{
+    "binary_th": 220,
+    "contour_size_low_th": 0,
+    "contour_area_low_th": 1.0000000000000001e-05,
+    "contour_area_high_th": 1.0000000000000000e-03,
+    "bar_area_low_th": 1.0000000000000001e-05,
+    "bar_area_high_th": 1.0000000000000000e-03,
+    "angle_high_th": 60,
+    "aspect_ratio_low_th": 2,
+    "aspect_ratio_high_th": 1000,
+    "angle_diff_th": 2.0000000000000001e-01,
+    "length_diff_th": 2.0000000000000001e-01,
+    "height_diff_th": 2.0000000000000001e-01,
+    "area_diff_th": 5.9999999999999998e-01,
+    "center_dist_low_th": 1,
+    "center_dist_high_th": 4
+}

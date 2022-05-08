@@ -98,8 +98,8 @@ void BuffDetector::MatchBuff(const cv::Mat &frame) {
 
     cv::dilate(img, img, kernel);
     cv::morphologyEx(img, img, cv::MORPH_CLOSE, kernel);
-
   */
+
   cv::findContours(img, contours_, cv::RETR_TREE, cv::CHAIN_APPROX_NONE);
 
 #if 0
@@ -117,12 +117,13 @@ void BuffDetector::MatchBuff(const cv::Mat &frame) {
       return;
 
     cv::RotatedRect rect = cv::minAreaRect(contour);
+    double rect_area = rect.size.area() + 1;
+    SPDLOG_WARN("[rect_area] is {}", rect_area);
     double rect_ratio = rect.size.aspectRatio();
-    double contour_area = cv::contourArea(contour);
-    double rect_area = rect.size.area();
 
-    SPDLOG_DEBUG("contour_area is {}", contour_area);
-    SPDLOG_DEBUG("rect_area is {}", rect_area);
+    double contour_area = cv::contourArea(contour) + 1;
+    SPDLOG_DEBUG("[contour_area] is {}", contour_area);
+
     if (contour_area > params_.contour_center_area_low_th &&
         contour_area < params_.contour_center_area_high_th) {
       if (rect_ratio < params_.rect_center_ratio_high_th &&
@@ -135,16 +136,16 @@ void BuffDetector::MatchBuff(const cv::Mat &frame) {
     }
 
     /* 筛选锤子 : [max(1.2 * 轮廓, 20 * R标)]  <  [锤子]  <  [80 * R标] */
-    if (rect_area > params_.hammar_rect_contour_ratio_th * contour_area &&
-        rect_area > params_.hammar_rect_center_div_low_th * center_rect_area &&
-        rect_area < params_.hammar_rect_center_div_high_th * center_rect_area) {
+    if (rect_area > 1.2 * contour_area && rect_area > 10 * center_rect_area &&
+        rect_area < 60 * center_rect_area) {
       hammer_ = rect;
-      SPDLOG_DEBUG("hammer_contour's area is {}", contour_area);
+      SPDLOG_WARN("hammer_contour's area is {}", contour_area);
       return;
     }
-    /* 筛选宝剑 */
+
+    /* 将宝剑在矩形列表中清除 */
     if (0 < hammer_.size.area()) {
-      if (contour_area > 1.5 * hammer_.size.area()) return;
+      if (contour_area > 1.2 * hammer_.size.area()) return;
       if (rect_area > 0.7 * hammer_.size.area()) return;
     }
 
@@ -152,15 +153,14 @@ void BuffDetector::MatchBuff(const cv::Mat &frame) {
     if (rect_ratio < params_.rect_ratio_low_th) return;
     if (rect_ratio > params_.rect_ratio_high_th) return;
 
-    if (rect_area < center_rect_area * params_.armor_rect_center_div_low_th)
-      return;
-    if (rect_area > center_rect_area * params_.armor_rect_center_div_high_th)
-      return;
+    SPDLOG_DEBUG("rect_area is {}, center_rect_area {}", rect_area,
+                 center_rect_area);
+    if (rect_area < 1 * center_rect_area) return;
+    if (rect_area > 30 * center_rect_area) return;
 
-    if (contour_area < rect_area * params_.armor_contour_rect_div_low_th)
-      return;
-    if (contour_area > rect_area * params_.armor_contour_rect_div_high_th)
-      return;
+    SPDLOG_DEBUG("contour_area is {}, rect_area {}", contour_area, rect_area);
+    if (contour_area > rect_area * 1.6) return;
+    if (contour_area < rect_area * 0.5) return;
 
     SPDLOG_DEBUG("armor's area is {}", rect_area);
     Armor armor = Armor(rect);
@@ -168,14 +168,21 @@ void BuffDetector::MatchBuff(const cv::Mat &frame) {
     armors.emplace_back(armor);
   };
 
+  std::sort(
+      contours_.begin(), contours_.end(),
+      [](std::vector<cv::Point> contour1, std::vector<cv::Point> contour2) {
+        return cv::contourArea(contour1) < cv::contourArea(contour2);
+      });
+
   std::for_each(std::execution::par_unseq, contours_.begin(), contours_.end(),
                 check_armor);
 
   duration_armors_.Calc("Find Armors");
 
-  SPDLOG_DEBUG("armors.size is {}", armors.size());
+  SPDLOG_WARN("armors.size is {}", armors.size());
   SPDLOG_DEBUG("the buff's hammer area is {}", hammer_.size.area());
 
+  duration_buff_.Start();
   if (armors.size() > 0 && hammer_.size.area() > 0) {
     buff_.SetTarget(armors[0]);
     if (armors.size() > 1)
@@ -185,8 +192,8 @@ void BuffDetector::MatchBuff(const cv::Mat &frame) {
           buff_.SetTarget(armor);
     buff_.SetArmors(armors);
 
+    SPDLOG_WARN("Find Target Buff Armor");
     targets_.emplace_back(buff_);
-
   } else {
     SPDLOG_WARN("can't find buff_armor");
   }
@@ -236,7 +243,7 @@ const tbb::concurrent_vector<Buff> &BuffDetector::Detect(const cv::Mat &frame) {
   SPDLOG_DEBUG("Detecting");
   MatchBuff(frame);
   SPDLOG_DEBUG("Detected.");
-  targets_.emplace_back(buff_);
+  if (buff_.GetTarget().GetRect().center.x != 0) targets_.emplace_back(buff_);
   return targets_;
 }
 
@@ -262,9 +269,15 @@ void BuffDetector::VisualizeResult(const cv::Mat &output, int verbose) {
     for (std::size_t i = 0; i < 4; ++i)
       cv::line(output, vertices[i], vertices[(i + 1) % 4], draw::kYELLOW);
 
-    cv::drawMarker(output, buff_.GetCenter(), draw::kYELLOW,
-                   cv::MARKER_DIAMOND);
+    cv::circle(output, buff_.GetCenter(), 5, draw::kRED, -1);
   }
+  std::string label =
+      cv::format("%f, %f", buff_.GetCenter().x, buff_.GetCenter().y);
+  draw::VisualizeLabel(output, label, 3);
+
+  label = cv::format("%f, %f", buff_.GetTarget().ImageCenter().x,
+                     buff_.GetTarget().ImageCenter().y);
+  draw::VisualizeLabel(output, label, 4);
   VisualizeArmors(output, verbose > 2);
   SPDLOG_DEBUG("Visualized.");
 }

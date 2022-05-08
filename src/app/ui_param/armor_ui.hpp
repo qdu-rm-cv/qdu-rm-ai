@@ -44,30 +44,30 @@ class ArmorUIParam : private App {
     cv::createTrackbar("contour_area_low_th", window_handle_,
                        &armor_param_.parami_.contour_area_low_th, 200);
     cv::createTrackbar("contour_area_high_th", window_handle_,
-                       &armor_param_.parami_.contour_area_high_th, 200);
+                       &armor_param_.parami_.contour_area_high_th, 500);
     cv::createTrackbar("bar_area_low_th", window_handle_,
                        &armor_param_.parami_.bar_area_low_th, 200);
     cv::createTrackbar("bar_area_high_th", window_handle_,
-                       &armor_param_.parami_.bar_area_high_th, 200);
+                       &armor_param_.parami_.bar_area_high_th, 500);
     cv::createTrackbar("angle_high_th", window_handle_,
-                       &armor_param_.parami_.angle_high_th, 1000);
+                       &armor_param_.parami_.angle_high_th, 600);
     cv::createTrackbar("aspect_ratio_low_th", window_handle_,
                        &armor_param_.parami_.aspect_ratio_low_th, 100);
     cv::createTrackbar("aspect_ratio_high_th", window_handle_,
                        &armor_param_.parami_.aspect_ratio_high_th, 100);
 
     cv::createTrackbar("angle_diff_th", window_handle_,
-                       &armor_param_.parami_.angle_diff_th, 1000);
+                       &armor_param_.parami_.angle_diff_th, 30000);
     cv::createTrackbar("length_diff_th", window_handle_,
-                       &armor_param_.parami_.length_diff_th, 1000);
+                       &armor_param_.parami_.length_diff_th, 200);
     cv::createTrackbar("height_diff_th", window_handle_,
-                       &armor_param_.parami_.height_diff_th, 1000);
+                       &armor_param_.parami_.height_diff_th, 200);
     cv::createTrackbar("area_diff_th", window_handle_,
-                       &armor_param_.parami_.area_diff_th, 1000);
+                       &armor_param_.parami_.area_diff_th, 5000);
     cv::createTrackbar("center_dist_low_th", window_handle_,
-                       &armor_param_.parami_.center_dist_low_th, 1000);
+                       &armor_param_.parami_.center_dist_low_th, 200);
     cv::createTrackbar("center_dist_high_th", window_handle_,
-                       &armor_param_.parami_.center_dist_high_th, 255);
+                       &armor_param_.parami_.center_dist_high_th, 9000);
 
     cv::Mat blank = cv::Mat::zeros(320, 240, CV_8UC1);
     cv::Mat frame;

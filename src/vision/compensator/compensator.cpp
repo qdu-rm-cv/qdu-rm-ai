@@ -5,8 +5,8 @@
 
 namespace {
 
-const double kG = 9.80665;
-const double kINFANTRY = 10.;
+const double kG = 9.7945;
+const double kINFANTRY = 60;
 const double kHERO = 10.;
 const double kSENTRY = 10.;
 
@@ -40,6 +40,7 @@ Compensator::Compensator(const std::string& cam_mat_path,
 Compensator::~Compensator() { SPDLOG_TRACE("Destructed."); }
 
 void Compensator::SetArm(const game::Arm& arm) {
+  arm_ = arm;
   if (arm == game::Arm::kINFANTRY)
     gun_cam_distance_ = kINFANTRY;
   else if (arm == game::Arm::kHERO)
@@ -75,16 +76,18 @@ void Compensator::PnpEstimate(Armor& armor) {
   armor.SetRotVec(rot_vec), armor.SetTransVec(trans_vec);
 }
 
-void Compensator::SolveAngles(Armor& armor) {
+void Compensator::SolveAngles(Armor& armor, const component::Euler& euler) {
   component::Euler aiming_eulr;
   PnpEstimate(armor);
   double x_pos = armor.GetTransVec().at<double>(0, 0);
   double y_pos = armor.GetTransVec().at<double>(1, 0);
   double z_pos = armor.GetTransVec().at<double>(2, 0);
+  SPDLOG_INFO("initial pitch : {}, initial yaw : {}", euler.pitch, euler.yaw);
   SPDLOG_WARN("x : {}, y : {}, z : {} ", x_pos, y_pos, z_pos);
-  distance_ = sqrt(x_pos * x_pos + y_pos * y_pos + z_pos * z_pos);
+  distance_ = sqrt(x_pos * x_pos + y_pos * y_pos + z_pos * z_pos) / 1000;
+  SPDLOG_INFO("distance:{}", distance_);
 
-  if (distance_ > 5000) {
+  if (distance_ > 5) {
     // PinHoleSolver
     double ax = cam_mat_.at<double>(0, 0);
     double ay = cam_mat_.at<double>(1, 1);
@@ -101,25 +104,42 @@ void Compensator::SolveAngles(Armor& armor) {
     aiming_eulr.pitch = -atan(y_pos / sqrt(x_pos * x_pos + z_pos * z_pos));
     aiming_eulr.yaw = atan(x_pos / z_pos);
   }
+  SPDLOG_INFO("compensator pitch : {}", aiming_eulr.pitch);
+  aiming_eulr.pitch = aiming_eulr.pitch + euler.pitch;
+  aiming_eulr.yaw = aiming_eulr.yaw + euler.yaw;
+
+  SPDLOG_INFO("final pitch : {}", aiming_eulr.pitch);
   armor.SetAimEuler(aiming_eulr);
 }
 
 void Compensator::Apply(tbb::concurrent_vector<Armor>& armors,
-                        const cv::Mat& frame, const component::Euler& euler) {
-  for (auto& armor : armors) {
-    if (armor.GetModel() == game::Model::kUNKNOWN) {
-      armor.SetModel(game::Model::kINFANTRY);
-      SPDLOG_ERROR("Hasn't set model.");
-    }
-    SolveAngles(armor);
-    CompensateGravity(armor, euler);
-  }
+                        const cv::Mat& frame, const double ballet_speed,
+                        const component::Euler& euler) {
   cv::Point2f frame_center(frame.cols / 2, frame.rows / 2);
   std::sort(armors.begin(), armors.end(),
             [frame_center](Armor& armor1, Armor& armor2) {
               return cv::norm(armor1.ImageCenter() - frame_center) <
                      cv::norm(armor2.ImageCenter() - frame_center);
             });
+  auto& armor = armors.front();
+  if (armor.GetModel() == game::Model::kUNKNOWN) {
+    armor.SetModel(game::Model::kINFANTRY);
+    SPDLOG_ERROR("Hasn't set model.");
+  }
+  SolveAngles(armor, euler);
+  CompensateGravity(armor, ballet_speed);
+}
+
+void Compensator::Apply(Armor& armor, const cv::Mat& frame, const double ballet_speed,
+           const component::Euler& euler) {
+  cv::Point2f frame_center(frame.cols / 2, frame.rows / 2);
+
+  if (armor.GetModel() == game::Model::kUNKNOWN) {
+    armor.SetModel(game::Model::kINFANTRY);
+    SPDLOG_ERROR("Hasn't set model.");
+  }
+  SolveAngles(armor, euler);
+  CompensateGravity(armor, ballet_speed);
 }
 
 void Compensator::VisualizeResult(tbb::concurrent_vector<Armor>& armors,
@@ -129,17 +149,46 @@ void Compensator::VisualizeResult(tbb::concurrent_vector<Armor>& armors,
   }
 }
 
-void Compensator::CompensateGravity(Armor& armor, component::Euler euler) {
-  component::Euler aiming_eulr;
-  aiming_eulr.pitch = armor.GetAimEuler().pitch + euler.pitch;
-  float compensate_pitch = atan(
-      (sin(aiming_eulr.pitch) - 0.5 * kG * distance_ / pow(ballet_speed_, 2)) /
-      cos(aiming_eulr.pitch));
-  aiming_eulr.pitch = (armor.GetAimEuler().pitch + compensate_pitch) * (-0.01);
-  armor.SetAimEuler(aiming_eulr);
+void Compensator::CompensateGravity(Armor& armor, const double ballet_speed) {
+  component::Euler aiming_eulr = armor.GetAimEuler();
+#if 0
+  double pitch = aiming_eulr.pitch;
+  double A = (distance_ * kG) / (ballet_speed * ballet_speed);
+  double B = tan(pitch) / cos(pitch);
+  /* B = sin(pitch) / (cos(pitch) * cos(pitch)) */
+  double C = 1 / cos(pitch);
+  double D = B * B + C * C;
+  double E = 2 * B * (A - B);
+  double F = (A - B) * (A - B) - C * C;
 
-  // 人为补偿
-  // aiming_eulr.pitch += 3.2 / 180.0 * CV_PI;
+  for (int i = 0; i < 2; i++) {
+    double temporary_result =
+        0.5 * acos((E + pow(-1, i) * sqrt(E * E - 4 * D * F)) / (2 * D));
+    if (temporary_result > 0 && temporary_result < pitch) {
+      pitch = -temporary_result;
+      continue;
+    }
+  }
+
+  if (distance_ <= 2) {
+    pitch *= 1.0;
+  } else if (distance_ > 2.5 && distance_ <= 3) {
+    pitch *= 1.0;
+  } else if (distance_ > 3 && distance_ <= 3.5) {
+    pitch *= 0.85;
+  } else if (distance_ > 3.5 && distance_ <= 4) {
+    pitch *= 0.8;
+  } else if (distance_ > 4) {
+    pitch *= 0.75;
+  }
+  SPDLOG_INFO("Distance : {} <==> Now pitch : {}", distance_, pitch);
+  aiming_eulr.pitch = pitch;
+#else
+  (void)ballet_speed;
+  aiming_eulr.yaw -= 0.3 / 180 * CV_PI;
+  aiming_eulr.pitch += 3.0 / 180 * CV_PI;
+#endif
+  armor.SetAimEuler(aiming_eulr);
 }
 
 #ifdef RMU2021
@@ -152,10 +201,10 @@ void Compensator::CompensateGravity(Armor& armor, component::Euler euler) {
  * @param target 目标坐标
  * @return double 出射角度
  */
-double Compensator::SolveSurfaceLanchAngle(cv::Point2f target) {
-  const double v_2 = pow(ballet_speed_, 2);
+double Compensator::SolveSurfaceLanchAngle(cv::Point2f target, double ballet_speed) {
+  const double v_2 = pow(ballet_speed, 2);
   const double up_base =
-      std::sqrt(std::pow(ballet_speed_, 4) -
+      std::sqrt(std::pow(ballet_speed, 4) -
                 kG * (kG * std::pow(target.x, 2) + 2 * target.y * v_2));
   const double low = kG * target.x;
   const double ans1 = std::atan2(v_2 + up_base, low);
