@@ -22,11 +22,11 @@ const double kDELTA = 3;  //总延迟时间
  *
  * @param p 圆周
  * @param ctr 圆心
- * @return double 旋转角(-pi~pi)
+ * @return double 旋转角(0~2pi)
  */
 static double CalRotatedAngle(const cv::Point2f &p, const cv::Point2f &ctr) {
   auto rel = p - ctr;
-  return std::atan2(rel.x, rel.y);
+  return std::atan2(rel.y, rel.x);
 }
 
 #ifdef RMU2021
@@ -89,18 +89,17 @@ void BuffPredictor::MatchDirection() {
   if (direction_ == component::Direction::kUNKNOWN) {
     duration_direction_.Start();
     cv::Point2f center = buff_.GetCenter();
-    double angle, sum = 0;
+    double sum = 0;
     std::vector<double> angles;
 
     if (circumference_.size() == 5) {
       for (auto point : circumference_) {
-        angle = CalRotatedAngle(point, center);
-        angles.emplace_back(angle);
+        angles.emplace_back(CalRotatedAngle(point, center));
       }
 
-      for (auto i = circumference_.size(); i > circumference_.size() - 4; i--) {
+      for (auto i = circumference_.size(); i > 1; i--) {
         double delta = angles[i] - angles[i - 1];
-        sum += delta;
+        if (std::abs(delta) < M_PI_4) sum += delta;
       }
 
       if (sum > 0)
@@ -109,11 +108,6 @@ void BuffPredictor::MatchDirection() {
         direction_ = component::Direction::kUNKNOWN;
       else
         direction_ = component::Direction::kCW;
-
-      circumference_.emplace_back(buff_.GetTarget().ImageCenter());
-      SPDLOG_WARN("Back of circumference point {}, {}.",
-                  buff_.GetTarget().ImageCenter().x,
-                  buff_.GetTarget().ImageCenter().y);
     } else if (circumference_.size() < 5) {
       circumference_.emplace_back(buff_.GetTarget().ImageCenter());
     }
@@ -150,6 +144,7 @@ Armor BuffPredictor::RotateArmor(double theta) {
  */
 void BuffPredictor::MatchPredict() {
   duration_predict_.Start();
+  if (component::Direction::kUNKNOWN == direction_) return;
   if (cv::Point2f(0, 0) == buff_.GetCenter()) {
     SPDLOG_ERROR("Center is empty.");
     return;
@@ -158,7 +153,6 @@ void BuffPredictor::MatchPredict() {
     SPDLOG_ERROR("Target center is empty.");
     return;
   }
-  if (component::Direction::kUNKNOWN == direction_) return;
   component::BuffState state = GetState();
   double theta = 0;
   if (state == component::BuffState::kSMALL) {

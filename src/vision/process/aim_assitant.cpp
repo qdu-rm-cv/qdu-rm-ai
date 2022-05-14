@@ -90,6 +90,11 @@ void AimAssitant::SetRace(game::Race race) { b_predictor_.SetRace(race); }
 
 void AimAssitant::SetTime(double time) { b_predictor_.SetTime(time); }
 
+component::AimMethod AimAssitant::GetMethod() {
+  SPDLOG_DEBUG("{}", component::AimMethodToString(method_));
+  return method_;
+}
+
 const tbb::concurrent_vector<Armor>& AimAssitant::Aim(const cv::Mat& frame) {
   armors_.clear();
   if (method_ == component::AimMethod::kUNKNOWN) {

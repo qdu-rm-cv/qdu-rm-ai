@@ -41,7 +41,8 @@ class AimAssitant {
   void SetRace(game::Race race);
   void SetTime(double time);
 
-  const tbb::concurrent_vector<Armor>& Aim(const cv::Mat& frame);
+  component::AimMethod GetMethod();
 
+  const tbb::concurrent_vector<Armor>& Aim(const cv::Mat& frame);
   void VisualizeResult(const cv::Mat& frame, int add_label = 1);
 };

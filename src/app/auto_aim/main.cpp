@@ -58,7 +58,7 @@ class AutoAim : private App {
       if (!detector_async_.GetResult(armors)) continue;
 
       compensator_.Apply(armors, frame, robot_.GetBalletSpeed(),
-                         robot_.GetEuler());
+                         robot_.GetEuler(), component::AimMethod::kARMOR);
       manager_.Aim(armors.front().GetAimEuler());
       robot_.Pack(manager_.GetData(), 9999);
       SPDLOG_WARN("pack");

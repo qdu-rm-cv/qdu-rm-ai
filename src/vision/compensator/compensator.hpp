@@ -12,7 +12,8 @@ class Compensator {
   game::Arm arm_;
 
   void SolveAngles(Armor& armor, const component::Euler& euler);
-  void CompensateGravity(Armor& armor, const double ballet_speed);
+  void CompensateGravity(Armor& armor, const double ballet_speed,
+                         component::AimMethod method);
 
   void VisualizePnp(Armor& armor, const cv::Mat& output, bool add_lable);
 
@@ -27,10 +28,11 @@ class Compensator {
 
   void PnpEstimate(Armor& armor);
   void Apply(tbb::concurrent_vector<Armor>& armors, const cv::Mat& frame,
-             const double ballet_speed, const component::Euler& euler);
+             const double ballet_speed, const component::Euler& euler,
+             component::AimMethod method);
 
-  void Apply(Armor& armor, const cv::Mat& frame,
-             const double ballet_speed, const component::Euler& euler);
+  void Apply(Armor& armor, const cv::Mat& frame, const double ballet_speed,
+             const component::Euler& euler, component::AimMethod method);
 
   void VisualizeResult(tbb::concurrent_vector<Armor>& armors,
                        const cv::Mat& output, int verbose = 1);

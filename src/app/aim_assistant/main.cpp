@@ -82,7 +82,7 @@ class AutomaticAim : public App {
 
       if (armors.size() > 0) {
         compensator_.Apply(armors, frame, robot_.GetBalletSpeed(),
-                           robot_.GetEuler());
+                           robot_.GetEuler(), assitant_.GetMethod());
         Armor armor = armors.front();
 
         if (arm_ == game::Arm::kSENTRY) {
