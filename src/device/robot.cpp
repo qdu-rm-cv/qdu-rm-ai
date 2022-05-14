@@ -172,7 +172,8 @@ component::Euler Robot::GetEuler() {
   euler.pitch = vec[0];
   euler.roll = vec[1];
   euler.yaw = vec[2];
-  SPDLOG_INFO("GetEuler P: {}, R: {}, Y: {}", euler.pitch, euler.roll, euler.yaw);
+  SPDLOG_INFO("GetEuler P: {}, R: {}, Y: {}", euler.pitch, euler.roll,
+              euler.yaw);
   return euler;
 }
 

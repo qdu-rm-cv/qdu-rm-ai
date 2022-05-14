@@ -16,13 +16,12 @@ target_link_libraries(${PROJECT_NAME}
     usbp-1
 )
 
-target_link_directories(${PROJECT_NAME} PUBLIC
-    if (CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
-        /opt/MVS/lib/aarch64/
-    else()
-        /opt/MVS/lib/64/
-    endif()
-)
+if (CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
+    target_link_directories(${PROJECT_NAME} PUBLIC /opt/MVS/lib/aarch64/)
+else()
+    target_link_directories(${PROJECT_NAME} PUBLIC /opt/MVS/lib/64/)
+endif()
+
 
 target_include_directories(${PROJECT_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}

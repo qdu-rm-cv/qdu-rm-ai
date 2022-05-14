@@ -20,6 +20,7 @@ USB::USB(const uint16_t &vid, const uint16_t &pid) {
   vid_ = vid;
   pid_ = pid;
   port_name_ = ConnectPortName(vid, pid);
+  SPDLOG_TRACE("Constructed");
 }
 
 USB::~USB() { SPDLOG_TRACE("Destructed"); }
@@ -33,7 +34,8 @@ const std::string USB::ConnectPortName(const uint16_t &vid,
     SPDLOG_ERROR("Cannot find device with vid:{}, pid:{}", vid, pid);
   }
   libusbp::serial_port port(device, kINTERFACE, kCOMPOSITE);
-  return port.get_name();
+  port_name_ = port.get_name();
+  return port_name_;
 }
 
 const std::vector<USB> AutoList() {

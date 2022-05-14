@@ -57,15 +57,9 @@ class Serial {
   /**
    * @brief 打开串口
    *
-   */
-  void Open();
-
-  /**
-   * @brief 打开串口
-   *
    * @param dev_path 具体要读写的串口设备
    */
-  void Open(const std::string& dev_path);
+  void Open(const std::string& dev_path = "empty");
 
   /**
    * @brief 重新打开串口

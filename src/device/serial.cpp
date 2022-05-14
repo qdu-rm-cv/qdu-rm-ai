@@ -14,7 +14,7 @@
  *
  */
 Serial::Serial() {
-  Open();
+  dev_ = -1;
   SPDLOG_TRACE("Constructed.");
 }
 
@@ -40,23 +40,14 @@ Serial::~Serial() {
 /**
  * @brief 打开串口
  *
- */
-void Serial::Open() {
-  dev_ = open(usb_.GetPortName().c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
-
-  if (dev_ < 0)
-    SPDLOG_ERROR("Can't open Serial device.");
-  else
-    Config();
-}
-
-/**
- * @brief 打开串口
- *
  * @param dev_path 具体要读写的串口设备
  */
 void Serial::Open(const std::string& dev_path) {
-  dev_ = open(dev_path.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
+  if (dev_path.compare("empty")) {
+    dev_ = open(usb_.GetPortName().c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
+  } else {
+    dev_ = open(dev_path.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
+  }
 
   if (dev_ < 0)
     SPDLOG_ERROR("Can't open Serial device.");
