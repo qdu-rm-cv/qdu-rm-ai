@@ -21,24 +21,24 @@ class BuffAim : private App {
     SPDLOG_WARN("***** Setting Up Buff Aiming System. *****");
 
     /* 初始化设备 */
-    robot_.Init("/dev/ttyTHS0");
+    robot_.Init("/dev/ttyACM0");
     cam_.Open(0);
     cam_.Setup(640, 480);
-    detector_.LoadParams("../../../../runtime/RMUT2021_Buff.json");
+    detector_.LoadParams("../../../../runtime/RMUT2022_Buff.json");
     predictor_.LoadParams("../../../../runtime/RMUT2022_Buff_Pre.json");
     compensator_.LoadCameraMat("../../../../runtime/MV-CA016-10UC-6mm_1.json");
 
-    do {
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    } while ((robot_.GetEnemyTeam() != game::Team::kUNKNOWN) &&
-             (robot_.GetTime() != 0) &&
-             (robot_.GetRace() != game::Race::kUNKNOWN));
-    detector_.SetTeam(robot_.GetEnemyTeam());
-    predictor_.SetTime(robot_.GetTime());
-    predictor_.SetRace(robot_.GetRace());
-    // detector_.SetTeam(game::Team::kRED);
-    // predictor_.SetRace(game::Race::kRMUC);
-    // predictor_.SetTime(10);
+    // do {
+    //   std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    // } while ((robot_.GetEnemyTeam() != game::Team::kUNKNOWN) &&
+    //          (robot_.GetTime() != 0) &&
+    //          (robot_.GetRace() != game::Race::kUNKNOWN));
+    // detector_.SetTeam(robot_.GetEnemyTeam());
+    // predictor_.SetTime(robot_.GetTime());
+    // predictor_.SetRace(robot_.GetRace());
+    detector_.SetTeam(game::Team::kRED);
+    predictor_.SetRace(game::Race::kRMUT);
+    predictor_.SetTime(10);
   }
 
   ~BuffAim() {
@@ -52,24 +52,21 @@ class BuffAim : private App {
     cv::Mat frame;
 
     while (1) {
-      cam_.GetFrame(frame);
-      if (frame.empty()) {
-        SPDLOG_ERROR("cam.GetFrame is null");
-        continue;
-      }
+      if (!cam_.GetFrame(frame)) continue;
 
       auto buffs = detector_.Detect(frame);
 
       if (buffs.size() > 0) {
         predictor_.SetBuff(buffs.back());
-        auto armors = predictor_.Predict();
-        if (armors.size() != 0) {
-          compensator_.Apply(armors, frame, robot_.GetEuler());
-          manager_.Aim(armors.front().GetAimEuler());
-          robot_.Pack(manager_.GetData(), 9999);
+        auto armor = predictor_.Predict().front();
+        // auto armor = buffs.front().GetTarget();
 
-          predictor_.VisualizePrediction(frame, 10);
-        }
+        compensator_.Apply(armor, frame, robot_.GetBalletSpeed(),
+                           robot_.GetEuler());
+        manager_.Aim(armor.GetAimEuler());
+        robot_.Pack(manager_.GetData(), 9999);
+
+        predictor_.VisualizePrediction(frame, 10);
 
         detector_.VisualizeResult(frame, 10);
       }

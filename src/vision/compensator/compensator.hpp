@@ -6,12 +6,13 @@
 
 class Compensator {
  private:
-  double ballet_speed_, distance_;
+  double distance_;
   cv::Mat cam_mat_, distor_coff_;
   double gun_cam_distance_;  //枪口到镜头的距离
+  game::Arm arm_;
 
-  void SolveAngles(Armor& armor);
-  void CompensateGravity(Armor& armor, component::Euler euler);
+  void SolveAngles(Armor& armor, const component::Euler& euler);
+  void CompensateGravity(Armor& armor, const double ballet_speed);
 
   void VisualizePnp(Armor& armor, const cv::Mat& output, bool add_lable);
 
@@ -26,13 +27,16 @@ class Compensator {
 
   void PnpEstimate(Armor& armor);
   void Apply(tbb::concurrent_vector<Armor>& armors, const cv::Mat& frame,
-             const component::Euler& euler);
+             const double ballet_speed, const component::Euler& euler);
+
+  void Apply(Armor& armor, const cv::Mat& frame,
+             const double ballet_speed, const component::Euler& euler);
 
   void VisualizeResult(tbb::concurrent_vector<Armor>& armors,
                        const cv::Mat& output, int verbose = 1);
 
 #ifdef RMU2021
-  double SolveSurfaceLanchAngle(cv::Point2f target);
+  double SolveSurfaceLanchAngle(cv::Point2f target, double ballet_speed);
   cv::Vec3f EstimateWorldCoord(Armor& armor);
 #endif
 };

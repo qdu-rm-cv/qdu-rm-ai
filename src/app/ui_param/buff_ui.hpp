@@ -45,21 +45,25 @@ class BuffUIParam : private App {
                        &buff_param_.parami_.contour_center_area_low_th, 3000);
     cv::createTrackbar("contour_center_area_high_th", window_handle_,
                        &buff_param_.parami_.contour_center_area_high_th, 6000);
-    cv::createTrackbar("rect_center_ratio_low_th", window_handle_,
+    cv::createTrackbar("rect_center_ratio_low_th / 1000", window_handle_,
                        &buff_param_.parami_.rect_center_ratio_low_th, 3000);
-    cv::createTrackbar("rect_center_ratio_high_th", window_handle_,
+    cv::createTrackbar("rect_center_ratio_high_th / 1000", window_handle_,
                        &buff_param_.parami_.rect_center_ratio_high_th, 3000);
-    cv::createTrackbar("rect_ratio_low_th", window_handle_,
+    cv::createTrackbar("rect_ratio_low_th / 1000", window_handle_,
                        &buff_param_.parami_.rect_ratio_low_th, 3000);
-    cv::createTrackbar("rect_ratio_high_th", window_handle_,
+    cv::createTrackbar("rect_ratio_high_th / 1000", window_handle_,
                        &buff_param_.parami_.rect_ratio_high_th, 6000);
 
     cv::Mat blank = cv::Mat::zeros(320, 240, CV_8UC1);
+    cv::Mat overimg;
     cv::Mat frame;
 
     while (true) {
       cam_.GetFrame(frame);
-      if (frame.empty()) continue;
+      if (frame.empty()) {
+        SPDLOG_WARN("Empty");
+        continue;
+      }
 
       SPDLOG_INFO("frame size {},{}", frame.size().width, frame.size().height);
 
@@ -68,7 +72,6 @@ class BuffUIParam : private App {
       detector_.VisualizeResult(frame, 11);
 
       cv::imshow(window_handle_, frame);
-      cv::imshow("img", frame);
       char key = cv::waitKey(3);
       if (key == 's' || key == 'S') {
         buff_param_.Write(param_path_);

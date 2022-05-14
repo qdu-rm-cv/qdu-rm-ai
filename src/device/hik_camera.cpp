@@ -47,12 +47,15 @@ void HikCamera::GrabLoop() {
   cv::Mat raw_mat(
       cv::Size(raw_frame.stFrameInfo.nWidth, raw_frame.stFrameInfo.nHeight),
       CV_8UC1, raw_frame.pBufAddr);
-  cv::cvtColor(raw_mat, raw_mat, cv::COLOR_BayerRG2BGR);
+
+  if (!raw_mat.empty())
+    cv::cvtColor(raw_mat, raw_mat, cv::COLOR_BayerRG2BGR);
 
   std::lock_guard<std::mutex> lock(frame_stack_mutex_);
   frame_stack_.clear();
   frame_stack_.push_front(raw_mat.clone());
   frame_signal_.Signal();
+  SPDLOG_DEBUG("frame_stack_ size: {}", frame_stack_.size());
   if (nullptr != raw_frame.pBufAddr) {
     if ((err = MV_CC_FreeImageBuffer(camera_handle_, &raw_frame)) != MV_OK) {
       SPDLOG_ERROR("[GrabThread] FreeImageBuffer fail! err: {0:x}.", err);
@@ -119,7 +122,7 @@ bool HikCamera::OpenPrepare(unsigned int index) {
     return false;
   }
 
-  if ((err = MV_CC_SetFloatValue(camera_handle_, "ExposureTime", 600.0)) !=
+  if ((err = MV_CC_SetFloatValue(camera_handle_, "ExposureTime", 1000.0)) !=
       MV_OK) {
     SPDLOG_ERROR("ExposureTime fail! err: {0:x}.", err);
     return false;

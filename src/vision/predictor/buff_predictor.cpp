@@ -111,9 +111,11 @@ void BuffPredictor::MatchDirection() {
         direction_ = component::Direction::kCW;
 
       circumference_.emplace_back(buff_.GetTarget().ImageCenter());
-      SPDLOG_DEBUG("Back of circumference point {}, {}.",
-                   buff_.GetTarget().ImageCenter().x,
-                   buff_.GetTarget().ImageCenter().y);
+      SPDLOG_WARN("Back of circumference point {}, {}.",
+                  buff_.GetTarget().ImageCenter().x,
+                  buff_.GetTarget().ImageCenter().y);
+    } else if (circumference_.size() < 5) {
+      circumference_.emplace_back(buff_.GetTarget().ImageCenter());
     }
     SPDLOG_WARN("Buff's Direction is {}",
                 component::DirectionToString(direction_));
@@ -168,8 +170,6 @@ void BuffPredictor::MatchPredict() {
   }
   theta = theta / 180 * CV_PI;
   Armor armor = RotateArmor(theta);
-  /* 没有Buff对应的模型，并且在当时情况下不可能有哨兵，故用kSENTRY代替 */
-  armor.SetModel(game::Model::kSENTRY);
   predicts_.emplace_back(armor);
   SPDLOG_WARN("Buff has been predicted.");
 
@@ -363,6 +363,9 @@ const tbb::concurrent_vector<Armor> &BuffPredictor::Predict() {
   MatchDirection();
   MatchPredict();
   SPDLOG_WARN("Predicted.");
+  if (predicts_.size() == 0) {
+    predicts_.emplace_back(buff_.GetTarget());
+  }
   return predicts_;
 }
 
@@ -379,7 +382,7 @@ void BuffPredictor::VisualizePrediction(const cv::Mat &output, int add_lable) {
     if (add_lable > 0) {
       auto vertices = predict.ImageVertices();
       for (std::size_t i = 0; i < vertices.size(); ++i)
-        cv::line(output, vertices[i], vertices[(i + 1) % 4], draw::kYELLOW, 8);
+        cv::line(output, vertices[i], vertices[(i + 1) % 4], draw::kYELLOW, 2);
       std::string buf = cv::format("%.3f, %.3f", predict.ImageCenter().x,
                                    predict.ImageCenter().y);
       cv::putText(output, buf, vertices[1], draw::kCV_FONT, 1.0, draw::kRED);
@@ -387,7 +390,7 @@ void BuffPredictor::VisualizePrediction(const cv::Mat &output, int add_lable) {
     if (add_lable > 1) {
       if (cv::Point2f(0, 0) != predict.ImageCenter())
         cv::line(output, buff_.GetCenter(), predict.ImageCenter(), draw::kRED,
-                 3);
+                 2);
     }
   }
   if (add_lable > 2) {
@@ -400,9 +403,9 @@ void BuffPredictor::VisualizePrediction(const cv::Mat &output, int add_lable) {
       label = cv::format("Direction : %s.",
                          component::DirectionToString(direction_).c_str());
     }
-    draw::VisualizeLabel(output, label, 3);
+    draw::VisualizeLabel(output, label, 5);
 
     label = cv::format("Find predict in %ld ms.", duration_predict_.Count());
-    draw::VisualizeLabel(output, label, 4);
+    draw::VisualizeLabel(output, label, 6);
   }
 }
