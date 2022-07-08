@@ -78,6 +78,13 @@ class BuffPredictor : public Predictor<Armor, BuffPredictorParam, Kalman> {
   void SetBuff(const Buff &buff);
 
   /**
+   * @brief Set the Direction object
+   *
+   * @param direction
+   */
+  void ChangeDirection(bool direction);
+
+  /**
    * @brief Get the State object
    *
    * @return component::BuffState& 当前能量机关旋转状态

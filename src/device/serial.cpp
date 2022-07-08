@@ -7,6 +7,7 @@
 #include <cerrno>
 #include <cstring>
 
+#include "common.hpp"
 #include "spdlog/spdlog.h"
 
 /**
@@ -24,6 +25,7 @@ Serial::Serial() {
  * @param dev_path 具体要读写的串口设备
  */
 Serial::Serial(const std::string& dev_path) {
+  thread_timeout_ = std::thread(&Serial::TimeOutCheck, this);
   Open(dev_path);
   SPDLOG_TRACE("Constructed.");
 }
@@ -34,6 +36,8 @@ Serial::Serial(const std::string& dev_path) {
  */
 Serial::~Serial() {
   Close();
+  time_continue_ = false;
+  thread_timeout_.join();
   SPDLOG_TRACE("Destructed.");
 }
 
@@ -42,30 +46,20 @@ Serial::~Serial() {
  *
  * @param dev_path 具体要读写的串口设备
  */
-void Serial::Open(const std::string& dev_path) {
-  if (dev_path.compare("empty")) {
+void Serial::Open(const std::string& dev_path = "") {
+  if (dev_path == "") {
     dev_ = open(usb_.GetPortName().c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
-  } else {
-    dev_ = open(dev_path.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
   }
+  dev_ = open(dev_path.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
 
-  if (dev_ < 0)
+  if (dev_ < 0) dev_ = open("/dev/ttyACM1", O_RDWR | O_NOCTTY | O_NDELAY);
+  if (dev_ < 0) dev_ = open("/dev/ttyACM0", O_RDWR | O_NOCTTY | O_NDELAY);
+
+  if (dev_ < 0) {
     SPDLOG_ERROR("Can't open Serial device.");
-  else
+    exit(-1);
+  } else
     Config();
-}
-
-/**
- * @brief 重新打开串口
- *
- * @return true 打开成功
- * @return false 打开失败
- */
-bool Serial::Reopen() {
-  Close();
-  Open();
-  if (IsOpen()) return true;
-  return false;
 }
 
 /**
@@ -200,3 +194,24 @@ std::size_t Serial::Recv(void* buff, std::size_t len) {
  * @return int 状态代码
  */
 int Serial::Close() { return close(dev_); }
+
+//!
+//! Wrote, but unused
+//!
+/**
+ * @brief 延时检查函数
+ *
+ */
+void Serial::TimeOutCheck() {
+  SPDLOG_DEBUG("[Timeout Detect Thread] Started.");
+  timer_.Start();
+  while (time_continue_) {
+    timer_.Calc();
+    if (timer_.Count() > 20)  // 20 ms
+    {
+      SPDLOG_ERROR("serial timeout: {}, will exit -1", timer_.Count());
+      this->Close();
+      exit(-1);
+    }
+  }
+}

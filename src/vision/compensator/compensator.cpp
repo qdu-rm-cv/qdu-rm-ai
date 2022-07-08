@@ -151,13 +151,11 @@ void Compensator::VisualizeResult(tbb::concurrent_vector<Armor>& armors,
     VisualizePnp(armor, output, verbose > 1);
   }
 }
-
 void Compensator::CompensateGravity(Armor& armor, const double ballet_speed,
                                     component::AimMethod method) {
   component::Euler aiming_eulr = armor.GetAimEuler();
-  // #if 0
   if (method == component::AimMethod::kARMOR) {
-    double pitch = aiming_eulr.pitch;
+    double pitch = -aiming_eulr.pitch;
     double A = (distance_ * kG) / (ballet_speed * ballet_speed);
     double B = tan(pitch) / cos(pitch);
     /* B = sin(pitch) / (cos(pitch) * cos(pitch)) */
@@ -186,14 +184,59 @@ void Compensator::CompensateGravity(Armor& armor, const double ballet_speed,
     } else if (distance_ > 4) {
       pitch *= 0.75;
     }
-    SPDLOG_INFO("Distance : {} <==> Now pitch : {}", distance_, pitch);
+    SPDLOG_INFO("Distance : {} <=> Now pitch : {}", distance_, pitch);
+    aiming_eulr.pitch = pitch;
+  } else if (0) {
+    // (void)ballet_speed;
+    aiming_eulr.yaw -= 0.3 / 180 * CV_PI;
+    double pitch = aiming_eulr.pitch;
+    double A = -((distance_ * kG) / (ballet_speed * ballet_speed));
+    double B = tan(pitch) / cos(pitch);
+    /* B = sin(pitch) / (cos(pitch) * cos(pitch)) */
+    double C = 1 / cos(pitch);
+    double D = B * B + C * C;
+    double E = 2 * B * (A - B);
+    double F = (A - B) * (A - B) - C * C;
+
+    for (int i = 0; i < 2; i++) {
+      double temporary_result =
+          0.5 * acos((E + pow(-1, i) * sqrt(E * E - 4 * D * F)) / (2 * D));
+      SPDLOG_DEBUG("temporary_pitch{}", temporary_result);
+
+      if (temporary_result > 0 && temporary_result > pitch &&
+          temporary_result < 0.5) {
+        pitch = 1.3 * temporary_result;
+        SPDLOG_INFO("{} <=> {}", aiming_eulr.pitch, pitch);
+        continue;
+      }
+    }
     aiming_eulr.pitch = pitch;
   } else {
-    (void)ballet_speed;
-    aiming_eulr.yaw -= 0.3 / 180 * CV_PI;
-    aiming_eulr.pitch += 3.0 / 180 * CV_PI;
+    SPDLOG_WARN("start {}, {}", aiming_eulr.yaw, aiming_eulr.pitch);
+    aiming_eulr.yaw += 0.4 / 180 * CV_PI;
+    if (aiming_eulr.pitch < 0.15) {
+      aiming_eulr.pitch += 1.7 / 180 * CV_PI;
+      SPDLOG_WARN("0.1");
+    } else if (aiming_eulr.pitch < 0.25) {
+      aiming_eulr.pitch += 1.8 / 180 * CV_PI;
+      SPDLOG_WARN("0.2");
+    } else if (aiming_eulr.pitch < 0.3) {
+      aiming_eulr.pitch += 2.5 / 180 * CV_PI;
+      SPDLOG_WARN("0.3");
+    } else if (aiming_eulr.pitch < 0.4) {
+      aiming_eulr.pitch += 2.5 / 180 * CV_PI;
+      SPDLOG_WARN("0.4");
+    } else if (aiming_eulr.pitch < 0.5) {
+      aiming_eulr.pitch += 2.8 / 180 * CV_PI;
+      SPDLOG_WARN("0.5");
+    } else {
+      aiming_eulr.pitch += 3.0 / 180 * CV_PI;
+      SPDLOG_WARN("else");
+    }
+    SPDLOG_WARN(" end {}, {}", aiming_eulr.yaw, aiming_eulr.pitch);
   }
   armor.SetAimEuler(aiming_eulr);
+  SPDLOG_DEBUG("Armor Euler is setted");
 }
 
 #ifdef RMU2021

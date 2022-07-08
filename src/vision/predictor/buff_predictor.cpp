@@ -26,7 +26,7 @@ const double kDELTA = 3;  //总延迟时间
  */
 static double CalRotatedAngle(const cv::Point2f &p, const cv::Point2f &ctr) {
   auto rel = p - ctr;
-  return std::atan2(rel.y, rel.x);
+  return std::atan2(-rel.y, rel.x) + M_PI;
 }
 
 #ifdef RMU2021
@@ -89,38 +89,46 @@ void BuffPredictor::MatchDirection() {
   if (direction_ == component::Direction::kUNKNOWN) {
     duration_direction_.Start();
     cv::Point2f center = buff_.GetCenter();
-    double sum = 0;
+    double angle, sum = 0;
     std::vector<double> angles;
 
-    if (circumference_.size() == 5) {
-      for (auto point : circumference_) {
-        angles.emplace_back(CalRotatedAngle(point, center));
-      }
-
-      for (auto i = circumference_.size(); i > 1; i--) {
-        double delta = angles[i] - angles[i - 1];
-        if (std::abs(delta) < M_PI_4) sum += delta;
-      }
-
-      if (sum > 0)
-        direction_ = component::Direction::kCCW;
-      else if (sum == 0)
-        direction_ = component::Direction::kUNKNOWN;
-      else
-        direction_ = component::Direction::kCW;
-    } else if (circumference_.size() < 5) {
-      circumference_.emplace_back(buff_.GetTarget().ImageCenter());
+    for (auto point : circumference_) {
+      angle = CalRotatedAngle(point, center);
+      angles.emplace_back(angle);
+      SPDLOG_WARN("angle[i], {}", angle);
     }
-    SPDLOG_WARN("Buff's Direction is {}",
-                component::DirectionToString(direction_));
-    duration_direction_.Calc("Predict Direction");
-  }
+
+    for (auto i = circumference_.size() - 1; i > circumference_.size() - 29;
+         i--) {
+      double delta = angles[i] - angles[i - 1];
+      if (std::abs(delta) > M_PI / 4) delta = 0;
+      SPDLOG_WARN("delta {}: {} - {} =  {},", i, angles[i], angles[i - 1],
+                  delta);
+      sum += delta;
+    }
+
+    if (sum > 0)
+      direction_ = component::Direction::kCCW;  //逆時針
+    else if (sum == 0)
+      direction_ = component::Direction::kUNKNOWN;
+    else
+      direction_ = component::Direction::kCW;  //順時針
+
+    circumference_.emplace_back(buff_.GetTarget().ImageCenter());
+    SPDLOG_WARN(" sum is {}", sum);
+  } else if (circumference_.size() < 30) {
+    circumference_.emplace_back(buff_.GetTarget().ImageCenter());
+  } else
+    circumference_.erase(circumference_.begin());
+  SPDLOG_WARN("Buff's Direction is {}",
+              component::DirectionToString(direction_));
+  duration_direction_.Calc("Predict Direction");
 }
 
 /**
  * @brief 根据原装甲板和能量机关中心夹角角度模拟旋转装甲板
  *
- * @param theta 旋转角度
+ * @param theta 变化的旋转角度
  * @return Armor 旋转后装甲板
  */
 Armor BuffPredictor::RotateArmor(double theta) {
@@ -144,7 +152,6 @@ Armor BuffPredictor::RotateArmor(double theta) {
  */
 void BuffPredictor::MatchPredict() {
   duration_predict_.Start();
-  if (component::Direction::kUNKNOWN == direction_) return;
   if (cv::Point2f(0, 0) == buff_.GetCenter()) {
     SPDLOG_ERROR("Center is empty.");
     return;
@@ -153,19 +160,25 @@ void BuffPredictor::MatchPredict() {
     SPDLOG_ERROR("Target center is empty.");
     return;
   }
+  if (component::Direction::kUNKNOWN == direction_) return;
   component::BuffState state = GetState();
   double theta = 0;
   if (state == component::BuffState::kSMALL) {
-    theta = PredictIntegralRotatedAngle(GetTime());
-    if (direction_ == component::Direction::kCW) theta = -theta;
+    // theta = PredictIntegralRotatedAngle(2);
+    theta = 10;
+    theta = theta / 180 * CV_PI;
   } else if (state == component::BuffState::kBIG) {
-    theta = CalRotatedAngle(filter_.Predict(buff_.GetTarget().ImageCenter()),
-                            buff_.GetCenter());
+    theta = std::abs(
+        CalRotatedAngle(filter_.Predict(buff_.GetTarget().ImageCenter()),
+                        buff_.GetCenter()) -
+        CalRotatedAngle(buff_.GetTarget().ImageCenter(), buff_.GetCenter()));
   }
-  theta = theta / 180 * CV_PI;
+  if (direction_ == component::Direction::kCCW) theta = -theta;
   Armor armor = RotateArmor(theta);
+  armor.SetModel(game::Model::kHERO);
   predicts_.emplace_back(armor);
-  SPDLOG_WARN("Buff has been predicted.");
+  SPDLOG_WARN("Buff has been predicted. {}",
+              component::DirectionToString(direction_));
 
   duration_predict_.Calc("Match Predict");
 }
@@ -257,6 +270,16 @@ void BuffPredictor::SetBuff(const Buff &buff) {
     SPDLOG_DEBUG("Get Buff Center {},{} ", buff_.GetTarget().ImageCenter().x,
                  buff_.GetTarget().ImageCenter().y);
   }
+}
+
+void BuffPredictor::ChangeDirection(bool direction) {
+  if (direction) {
+    direction_ = component::Direction::kCW;
+  } else {
+    direction_ = component::Direction::kCCW;
+  }
+  SPDLOG_CRITICAL("Direction changed, now : {}",
+                  component::DirectionToString(direction_));
 }
 
 /**

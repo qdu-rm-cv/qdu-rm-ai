@@ -17,7 +17,8 @@ class BuffAim : private App {
   Behavior manager_;
 
  public:
-  BuffAim(const std::string& log_path) : App(log_path) {
+  BuffAim(const std::string& log_path)
+      : App(log_path, component::Logger::FMT::kFMT_THREAD) {
     SPDLOG_WARN("***** Setting Up Buff Aiming System. *****");
 
     /* 初始化设备 */
@@ -26,7 +27,7 @@ class BuffAim : private App {
     cam_.Setup(640, 480);
     detector_.LoadParams("../../../../runtime/RMUT2022_Buff.json");
     predictor_.LoadParams("../../../../runtime/RMUT2022_Buff_Pre.json");
-    compensator_.LoadCameraMat("../../../../runtime/MV-CA016-10UC-6mm_1.json");
+    compensator_.LoadCameraMat("../../../../runtime/MV-CA016-10UC-6mm_2.json");
 
     // do {
     //   std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -55,12 +56,12 @@ class BuffAim : private App {
       if (!cam_.GetFrame(frame)) continue;
 
       auto buffs = detector_.Detect(frame);
-
       if (buffs.size() > 0) {
         predictor_.SetBuff(buffs.back());
-        auto armor = predictor_.Predict().front();
+        auto armors = predictor_.Predict();
+        auto armor = armors.front();
+        SPDLOG_WARN("size : {}", armors.size());
         // auto armor = buffs.front().GetTarget();
-
         compensator_.Apply(armor, frame, robot_.GetBalletSpeed(),
                            robot_.GetEuler(), component::AimMethod::kBUFF);
         manager_.Aim(armor.GetAimEuler());
@@ -71,11 +72,14 @@ class BuffAim : private App {
         detector_.VisualizeResult(frame, 10);
       }
 
-      cv::imshow("xxx", frame);
-      cv::waitKey(1);
-      if (' ' == cv::waitKey(10)) {
+      cv::imshow("frame", frame);
+      char key = cv::waitKey(10);
+      if (' ' == key) {
         cv::waitKey(0);
+      } else if ('M' == key) {
+        predictor_.ChangeDirection(true);
       }
+      predictor_.ChangeDirection(robot_.GetNotice());
     }
   }
 };

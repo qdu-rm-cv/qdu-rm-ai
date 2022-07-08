@@ -17,6 +17,7 @@ class USB {
   ~USB();
 
   const std::string& GetPortName();
+  const std::string ConnectPortName();
   const std::string ConnectPortName(const uint16_t& vid, const uint16_t& pid);
 };
 

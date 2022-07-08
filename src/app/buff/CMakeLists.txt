@@ -11,9 +11,9 @@ if(BUILD_EKF)
         predictor
         process
         compensator
-        behavior 
-        spdlog::spdlog 
-        ${CERES_LIBRARIES} 
+        behavior
+        spdlog::spdlog
+        ${CERES_LIBRARIES}
     )
 
     target_include_directories(${PROJECT_NAME} PRIVATE
@@ -41,8 +41,9 @@ else()
         ${CMAKE_CURRENT_SOURCE_DIR}/..
         $<TARGET_PROPERTY:behavior,INTERFACE_INCLUDE_DIRECTORIES>
     )
-
 endif()
+
+add_compile_options(-g)
 
 add_dependencies(${PROJECT_NAME}
     device

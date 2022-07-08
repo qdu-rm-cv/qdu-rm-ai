@@ -28,9 +28,9 @@ void Robot::ThreadRecv() {
       }
     } else if (AI_ID_MCU == id) {
       serial_.Recv(&robot, sizeof(robot));
-
       if (crc16::CRC16_Verify((uint8_t *)&robot, sizeof(robot))) {
         mutex_mcu_.lock();
+        recorder_.Record();
         std::memcpy(&mcu_, &(robot.data), sizeof(mcu_));
         mutex_mcu_.unlock();
       }
@@ -57,12 +57,13 @@ void Robot::ThreadTrans() {
     if (!is_empty) {
       command.crc16 = crc16::CRC16_Calc((uint8_t *)&command.data,
                                         sizeof(command.data), UINT16_MAX);
-      if (serial_.Trans((char *)&command, sizeof(command))) {
-        mutex_command_.lock();
-        while (!serial_.Reopen())
-          std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        mutex_command_.unlock();
-      }
+      serial_.Trans((char *)&command, sizeof(command));
+      // if (serial_.Trans((char *)&command, sizeof(command))) {
+      //   mutex_command_.lock();
+      //   while (!serial_.Reopen())
+      //     std::this_thread::sleep_for(std::chrono::milliseconds(1));
+      //   mutex_command_.unlock();
+      // }
     }
   }
   SPDLOG_DEBUG("[ThreadTrans] Stoped.");
@@ -87,14 +88,6 @@ Robot::~Robot() {
 
 void Robot::Init(const std::string &dev_path) {
   serial_.Open(dev_path);
-
-  thread_continue = true;
-  thread_recv_ = std::thread(&Robot::ThreadRecv, this);
-  thread_trans_ = std::thread(&Robot::ThreadTrans, this);
-}
-
-void Robot::Init() {
-  serial_.Open();
 
   thread_continue = true;
   thread_recv_ = std::thread(&Robot::ThreadRecv, this);
@@ -185,6 +178,13 @@ cv::Mat Robot::GetRotMat() {
 float Robot::GetBalletSpeed() { return mcu_.ball_speed; }
 
 float Robot::GetChassicSpeed() { return mcu_.chassis_speed; }
+
+bool Robot::GetNotice() {
+  if (mcu_.notice & (uint8_t)1) {
+    return true;
+  }
+  return false;
+}
 
 void Robot::Pack(Protocol_DownData_t &data, double distance) {
   double w = mcu_.quat.q0, x = mcu_.quat.q1, y = mcu_.quat.q2, z = mcu_.quat.q3;

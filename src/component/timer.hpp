@@ -18,7 +18,7 @@ class Timer {
 
   void Start() { start_ = std::chrono::high_resolution_clock::now(); }
 
-  std::chrono::milliseconds Calc(const std::string& duration_name) {
+  std::chrono::milliseconds Calc(const std::string& duration_name = "") {
     end_ = std::chrono::high_resolution_clock::now();
     duration_ =
         std::chrono::duration_cast<std::chrono::milliseconds>(end_ - start_);

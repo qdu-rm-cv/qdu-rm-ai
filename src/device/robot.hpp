@@ -11,6 +11,7 @@
 #include "protocol.h"
 #include "semaphore.hpp"
 #include "serial.hpp"
+#include "timer.hpp"
 
 class Robot {
  private:
@@ -24,7 +25,7 @@ class Robot {
 
   std::mutex mutex_command_, mutex_ref_, mutex_mcu_;
   component::Semaphore pack_signal_;
-
+  component::Recorder recorder_ = component::Recorder("recv");
   void ThreadRecv();
   void ThreadTrans();
 
@@ -33,7 +34,6 @@ class Robot {
   Robot(const std::string &dev_path);
   ~Robot();
 
-  void Init();
   void Init(const std::string &dev_path);
 
   game::Team GetEnemyTeam();
@@ -49,6 +49,7 @@ class Robot {
   cv::Mat GetRotMat();
   float GetBalletSpeed();
   float GetChassicSpeed();
+  bool GetNotice();
 
   void Pack(Protocol_DownData_t &data, const double distance);
 };

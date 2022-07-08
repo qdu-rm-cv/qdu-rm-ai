@@ -3,6 +3,7 @@
 #include <mutex>
 #include <string>
 
+#include "timer.hpp"
 #include "usb.hpp"
 
 /* 波特率 */
@@ -34,6 +35,12 @@ class Serial {
   std::mutex mutex_w_;
   std::mutex mutex_r_;
 
+  component::Timer timer_;
+  std::thread thread_timeout_;
+  bool time_continue_ = false;
+
+  int null_count_ = 0;
+
  public:
   /**
    * @brief Construct a new Serial object
@@ -59,15 +66,7 @@ class Serial {
    *
    * @param dev_path 具体要读写的串口设备
    */
-  void Open(const std::string& dev_path = "empty");
-
-  /**
-   * @brief 重新打开串口
-   *
-   * @return true 打开成功
-   * @return false 打开失败
-   */
-  bool Reopen();
+  void Open(const std::string& dev_path);
 
   /**
    * @brief 检查串口是否打开
@@ -116,4 +115,10 @@ class Serial {
    * @return int 状态代码
    */
   int Close();
+
+  /**
+   * @brief 延时检查函数
+   *
+   */
+  void TimeOutCheck();
 };

@@ -12,7 +12,7 @@ const bool kCOMPOSITE = true;
 }  // namespace
 
 USB::USB() {
-  port_name_ = ConnectPortName(kVID, kPID);
+  // port_name_ = ConnectPortName(kVID, kPID);
   SPDLOG_TRACE("Constructed");
 }
 
@@ -26,6 +26,11 @@ USB::USB(const uint16_t &vid, const uint16_t &pid) {
 USB::~USB() { SPDLOG_TRACE("Destructed"); }
 
 const std::string &USB::GetPortName() { return port_name_; }
+
+const std::string USB::ConnectPortName() {
+  port_name_ = ConnectPortName(kVID, kPID);
+  return port_name_;
+}
 
 const std::string USB::ConnectPortName(const uint16_t &vid,
                                        const uint16_t &pid) {

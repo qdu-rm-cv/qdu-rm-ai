@@ -5,6 +5,7 @@
 #include <string>
 #include <thread>
 
+#include "common.hpp"
 #include "opencv2/imgproc.hpp"
 #include "opencv2/opencv.hpp"
 #include "spdlog/spdlog.h"
@@ -48,8 +49,7 @@ void HikCamera::GrabLoop() {
       cv::Size(raw_frame.stFrameInfo.nWidth, raw_frame.stFrameInfo.nHeight),
       CV_8UC1, raw_frame.pBufAddr);
 
-  if (!raw_mat.empty())
-    cv::cvtColor(raw_mat, raw_mat, cv::COLOR_BayerRG2BGR);
+  if (!raw_mat.empty()) cv::cvtColor(raw_mat, raw_mat, cv::COLOR_BayerRG2BGR);
 
   std::lock_guard<std::mutex> lock(frame_stack_mutex_);
   frame_stack_.clear();
@@ -71,76 +71,89 @@ bool HikCamera::OpenPrepare(unsigned int index) {
   if (index >= mv_dev_list_.nDeviceNum) {
     SPDLOG_ERROR("Intput index:{} >= nDeviceNum:{} !", index,
                  mv_dev_list_.nDeviceNum);
+    exit(-1);
     return false;
   }
 
-  err = MV_CC_CreateHandle(&camera_handle_, mv_dev_list_.pDeviceInfo[0]);
-  if (err != MV_OK) {
-    SPDLOG_ERROR("CreateHandle fail! err: {0:x}.", err);
+  if ((err = MV_CC_CreateHandle(&camera_handle_,
+                                mv_dev_list_.pDeviceInfo[0])) != MV_OK) {
+    SPDLOG_ERROR("CreateHandle fail! err: {0:x}.", (u_int8_t)err);
+    exit(-1);
     return false;
   }
 
   if ((err = MV_CC_OpenDevice(camera_handle_)) != MV_OK) {
-    SPDLOG_ERROR("OpenDevice fail! err: {0:x}.", err);
+    SPDLOG_ERROR("OpenDevice fail! err: {}.", (u_int8_t)err);
+    exit(-1);
     return false;
   }
 
   if ((err = MV_CC_SetEnumValue(camera_handle_, "TriggerMode", 0)) != MV_OK) {
-    SPDLOG_ERROR("TriggerMode fail! err: {0:x}.", err);
+    SPDLOG_ERROR("TriggerMode fail! err: {0:x}.", (u_int8_t)err);
+    exit(-1);
     return false;
   }
 
-  err = MV_CC_SetEnumValue(camera_handle_, "PixelFormat",
-                           PixelType_Gvsp_BayerRG8);
-  if (err != MV_OK) {
-    SPDLOG_ERROR("PixelFormat fail! err: {0:x}.", err);
+  if ((err = MV_CC_SetEnumValue(camera_handle_, "PixelFormat",
+                                PixelType_Gvsp_BayerRG8)) != MV_OK) {
+    SPDLOG_ERROR("PixelFormat fail! err: {0:x}.", (u_int8_t)err);
+    exit(-1);
     return false;
   }
 
-  err = MV_CC_SetEnumValue(camera_handle_, "AcquisitionMode", 2);
-  if (err != MV_OK) {
-    SPDLOG_ERROR("AcquisitionMode fail! err: {0:x}.", err);
+  if ((err = MV_CC_SetEnumValue(camera_handle_, "AcquisitionMode", 2)) !=
+      MV_OK) {
+    SPDLOG_ERROR("AcquisitionMode fail! err: {0:x}.", (u_int8_t)err);
+    exit(-1);
     return false;
   }
 
   MVCC_FLOATVALUE frame_rate;
-  err = MV_CC_GetFloatValue(camera_handle_, "ResultingFrameRate", &frame_rate);
-  if (err != MV_OK) {
-    SPDLOG_ERROR("ResultingFrameRate fail! err: {0:x}.", err);
+
+  if ((err = MV_CC_GetFloatValue(camera_handle_, "ResultingFrameRate",
+                                 &frame_rate)) != MV_OK) {
+    SPDLOG_ERROR("ResultingFrameRate fail! err: {0:x}.", (u_int8_t)err);
+    exit(-1);
     return false;
   } else {
     SPDLOG_INFO("ResultingFrameRate: {}.", frame_rate.fCurValue);
   }
 
   if ((err = MV_CC_SetEnumValue(camera_handle_, "ExposureAuto", 0)) != MV_OK) {
-    SPDLOG_ERROR("ExposureAuto closes fail! err: {0:x}.", err);
+    SPDLOG_ERROR("ExposureAuto closes fail! err: {0:x}.", (u_int8_t)err);
+    exit(-1);
     return false;
   }
 
   if ((err = MV_CC_SetEnumValue(camera_handle_, "ExposureMode", 0)) != MV_OK) {
-    SPDLOG_ERROR("ExposureMode fail! err: {0:x}.", err);
+    SPDLOG_ERROR("ExposureMode fail! err: {0:x}.", (u_int8_t)err);
+    exit(-1);
     return false;
   }
 
   if ((err = MV_CC_SetFloatValue(camera_handle_, "ExposureTime", 1000.0)) !=
       MV_OK) {
-    SPDLOG_ERROR("ExposureTime fail! err: {0:x}.", err);
+    SPDLOG_ERROR("ExposureTime fail! err: {0:x}.", (uint8_t)err);
+    exit(-1);
     return false;
   }
 
   if ((err = MV_CC_SetEnumValue(camera_handle_, "GammaSelector", 1)) != MV_OK) {
-    SPDLOG_ERROR("GammaSelector fail! err: {0:x}.", err);
+    SPDLOG_ERROR("GammaSelector fail! err: {0:x}.", (uint8_t)err);
+    exit(-1);
     return false;
   }
 
   if ((err = MV_CC_SetBoolValue(camera_handle_, "GammaEnable", true)) !=
       MV_OK) {
-    SPDLOG_ERROR("GammaEnable fail! err: {0:x}.", err);
+    SPDLOG_ERROR("GammaEnable fail! err: {0:x}.", (uint8_t)err);
+    exit(-1);
     return false;
   }
 
   if ((err = MV_CC_StartGrabbing(camera_handle_)) != MV_OK) {
-    SPDLOG_ERROR("StartGrabbing fail! err: {0:x}.", err);
+    SPDLOG_ERROR("StartGrabbing fail! err: {0:x}.", (uint8_t)err);
+    exit(-1);
     return false;
   }
   return true;
@@ -157,7 +170,8 @@ void HikCamera::Prepare() {
   std::memset(&mv_dev_list_, 0, sizeof(MV_CC_DEVICE_INFO_LIST));
   err = MV_CC_EnumDevices(MV_GIGE_DEVICE | MV_USB_DEVICE, &mv_dev_list_);
   if (err != MV_OK) {
-    SPDLOG_ERROR("EnumDevices fail! err: {0:x}.", err);
+    SPDLOG_ERROR("EnumDevices fail! err: {0:x}.", (uint8_t)err);
+    exit(-1);
   }
 
   if (mv_dev_list_.nDeviceNum > 0) {
@@ -218,15 +232,15 @@ int HikCamera::Close() {
 
   int err = MV_OK;
   if ((err = MV_CC_StopGrabbing(camera_handle_)) != MV_OK) {
-    SPDLOG_ERROR("StopGrabbing fail! err:{0:x}.", err);
+    SPDLOG_ERROR("StopGrabbing fail! err:{0:x}.", (uint8_t)err);
     return err;
   }
   if ((err = MV_CC_CloseDevice(camera_handle_)) != MV_OK) {
-    SPDLOG_ERROR("CloseDevice fail! err:{0:x}.", err);
+    SPDLOG_ERROR("CloseDevice fail! err:{0:x}.", (uint8_t)err);
     return err;
   }
   if ((err = MV_CC_DestroyHandle(camera_handle_)) != MV_OK) {
-    SPDLOG_ERROR("DestroyHandle fail! err:{0:x}.", err);
+    SPDLOG_ERROR("DestroyHandle fail! err:{0:x}.", (uint8_t)err);
     return err;
   }
   SPDLOG_DEBUG("Closed.");
