@@ -38,6 +38,7 @@ AimMethod StringToAimMethod(std::string name);
 }  // namespace component
 
 namespace game {
+
 struct Alert {
   bool enemy_buff;
   bool enemy_snipe;

@@ -6,13 +6,13 @@ file(GLOB ${PROJECT_NAME}_SOURCES
 )
 
 if(BUILD_NN)
-    add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_SOURCES} )
+    add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_SOURCES})
 
     target_link_libraries(${PROJECT_NAME} PUBLIC
-		${OpenCV_LIBS}
+        ${OpenCV_LIBS}
         tbb
-		spdlog::spdlog
-		component
+        spdlog::spdlog
+        component
         object
         param
         classifier
@@ -21,7 +21,7 @@ if(BUILD_NN)
         cudart
     )
 
-    if (CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
+    if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
         target_include_directories(${PROJECT_NAME} PUBLIC /usr/local/cuda/targets/aarch64-linux/include)
         target_link_directories(${PROJECT_NAME} PUBLIC /usr/local/cuda/targets/aarch64-linux/lib)
     else()
@@ -44,7 +44,6 @@ else()
         param
         classifier
     )
-
 endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC
