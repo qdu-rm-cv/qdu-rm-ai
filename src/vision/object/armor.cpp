@@ -28,17 +28,17 @@ std::vector<cv::Point2f> kDST_POV_BIG{
 
 /* clang-format off */
 const cv::Matx43d kCOORD_SMALL_ARMOR(
-    -kARMOR_LENGTH_SMALL / 2., -kARMOR_HEIGHT / 2, kARMOR_DEPTH,
-    kARMOR_LENGTH_SMALL / 2., -kARMOR_HEIGHT / 2, 0.,
-    kARMOR_LENGTH_SMALL / 2., kARMOR_HEIGHT / 2, 0.,
-    -kARMOR_LENGTH_SMALL / 2., kARMOR_HEIGHT / 2, kARMOR_DEPTH);
+    -kARMOR_LENGTH_SMALL / 2., -kARMOR_HEIGHT / 2, kARMOR_DEPTH / 2.,
+    kARMOR_LENGTH_SMALL / 2., -kARMOR_HEIGHT / 2, kARMOR_DEPTH / 2.,
+    kARMOR_LENGTH_SMALL / 2., kARMOR_HEIGHT / 2, -kARMOR_DEPTH / 2.,
+    -kARMOR_LENGTH_SMALL / 2., kARMOR_HEIGHT / 2, -kARMOR_DEPTH / 2.);
 
 const cv::Matx43d kCOORD_BIG_ARMOR(
-    -kARMOR_LENGTH_BIG / 2., -kARMOR_HEIGHT / 2, kARMOR_DEPTH,
-    kARMOR_LENGTH_BIG / 2., -kARMOR_HEIGHT / 2, 0.,
-    kARMOR_LENGTH_BIG / 2., kARMOR_HEIGHT / 2, 0.,
-    -kARMOR_LENGTH_BIG / 2., kARMOR_HEIGHT / 2, kARMOR_DEPTH);
-
+    -kARMOR_LENGTH_BIG / 2., -kARMOR_HEIGHT / 2, kARMOR_DEPTH / 2.,
+    kARMOR_LENGTH_BIG / 2., -kARMOR_HEIGHT / 2, kARMOR_DEPTH / 2.,
+    kARMOR_LENGTH_BIG / 2., kARMOR_HEIGHT / 2, -kARMOR_DEPTH / 2.,
+    -kARMOR_LENGTH_BIG / 2., kARMOR_HEIGHT / 2, -kARMOR_DEPTH / 2.);
+    
 const cv::Matx43d kCOORD_BUFF_ARMOR(
     -kARMOR_LENGTH_BIG / 2., -kARMOR_WIDTH / 2, 0.,
     kARMOR_LENGTH_BIG / 2., -kARMOR_WIDTH / 2, 0.,
@@ -116,8 +116,6 @@ cv::Mat Armor::Face(const cv::Mat &frame) {
   face_size_ = cv::Size(len, kARMOR_WIDTH);
 
   cv::warpPerspective(frame, face, trans_, face_size_);
-  cv::warpPerspective(ImageVertices(), pts, trans_, face_size_);
-  face = face(cv::boundingRect(pts));
 
   cv::cvtColor(face, face, cv::COLOR_RGB2GRAY);
   cv::medianBlur(face, face, 1);

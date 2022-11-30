@@ -2,6 +2,7 @@
 #ifdef async
 
 #include "app.hpp"
+#include "armor_classifier.hpp"
 #include "async_armor_detector.hpp"
 #include "behavior.hpp"
 #include "compensator.hpp"
@@ -17,6 +18,7 @@ class AutoAim : private App {
   Behavior manager_;
 
   component::Recorder recorder_ = component::Recorder("AutoAimThread");
+  ArmorClassifier classifier_;
 
  public:
   AutoAim(const std::string& log_path)
@@ -29,6 +31,9 @@ class AutoAim : private App {
     cam_.Setup(640, 480);
     detector_async_.LoadParams("../../../../runtime/RMUL2022_Armor.json");
     compensator_.LoadCameraMat("../../../../runtime/MV-CA016-10UC-6mm_1.json");
+    classifier_.LoadModel("../../../../runtime/armor_classifier.onnx");
+    classifier_.LoadLable("../../../../runtime/armor_classifier_lable.json");
+    classifier_.SetInputSize(cv::Size(28, 28));
 
     do {
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -56,7 +61,10 @@ class AutoAim : private App {
 
       detector_async_.PutFrame(frame);
       if (!detector_async_.GetResult(armors)) continue;
-
+      
+      for (auto armor : armors) {
+        classifier_.ClassifyModel(armor, frame);
+      }
       compensator_.Apply(armors, frame, robot_.GetBalletSpeed(),
                          robot_.GetEuler(), component::AimMethod::kARMOR);
       manager_.Aim(armors.front().GetAimEuler());

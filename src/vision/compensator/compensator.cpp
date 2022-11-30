@@ -161,28 +161,21 @@ void Compensator::CompensateGravity(Armor& armor, const double ballet_speed,
     /* B = sin(pitch) / (cos(pitch) * cos(pitch)) */
     double C = 1 / cos(pitch);
     double D = B * B + C * C;
-    double E = 2 * B * (A - B);
-    double F = (A - B) * (A - B) - C * C;
+    double E = 2 * B * (A + B);
+    double F = (A + B) * (A + B) - C * C;
 
-    for (int i = 0; i < 2; i++) {
-      double temporary_result =
-          0.5 * acos((E + pow(-1, i) * sqrt(E * E - 4 * D * F)) / (2 * D));
-      if (temporary_result > 0 && temporary_result < pitch) {
-        pitch = -temporary_result;
-        continue;
-      }
+    double temporary_result =
+        0.5 * acos((-E + pow(-1, 0) * sqrt(E * E - 4 * D * F)) / (2 * D));
+    if (temporary_result > pitch) {
+      pitch = temporary_result;
     }
-
-    if (distance_ <= 2) {
-      pitch *= 1.0;
-    } else if (distance_ > 2.5 && distance_ <= 3) {
-      pitch *= 1.0;
-    } else if (distance_ > 3 && distance_ <= 3.5) {
+    if (distance_ > 3 && distance_ <= 5) {
+      pitch *= 0.9;
+      aiming_eulr.yaw += 0.1 / 180 * CV_PI;
+    }
+    if (distance_ > 7) {
       pitch *= 0.85;
-    } else if (distance_ > 3.5 && distance_ <= 4) {
-      pitch *= 0.8;
-    } else if (distance_ > 4) {
-      pitch *= 0.75;
+      aiming_eulr.yaw += 0.3 / 180 * CV_PI;
     }
     SPDLOG_INFO("Distance : {} <=> Now pitch : {}", distance_, pitch);
     aiming_eulr.pitch = pitch;
