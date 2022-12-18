@@ -207,6 +207,17 @@ Model StringToModel(std::string name) {
   return Model::kUNKNOWN;
 }
 
+std::string MethodToString(const Method& m) {
+  switch (m) {
+    case Method::kEKF:
+      return std::string("Extend kalman filter");
+    case Method::kKF:
+      return std::string("Kalman filter");
+    default:
+      return std::string("Unknown");
+  }
+}
+
 bool HasBigArmor(Model model) {
   return (model == Model::kHERO || model == Model::kSENTRY);
 }

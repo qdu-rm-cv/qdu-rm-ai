@@ -101,11 +101,18 @@ enum class RFID {
   kSNIPE,
 };
 
+enum class Method {
+  kUNKNOWN,
+  kKF,
+  kEKF,
+};
+
 std::string TeamToString(Team team);
 std::string ModelToString(Model model);
 std::string ArmToString(Arm arm);
 std::string RaceToString(Race race);
 std::string RFIDToString(RFID rfid);
+std::string MethodToString(const Method& m);
 Model StringToModel(std::string name);
 
 bool HasBigArmor(Model model);

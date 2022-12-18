@@ -73,7 +73,7 @@ endif()
 # ---------------------------------------------------------------------------------------
 message(STATUS "----------------------- Building Options ------------------------")
 
-find_package(BehaviorTreeV3 REQUIRED)
+find_package(behaviortree_cpp_v3 REQUIRED)
 find_package(CUDA)
 find_package(OpenCV REQUIRED)
 find_package(spdlog REQUIRED)

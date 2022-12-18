@@ -57,8 +57,8 @@ static double PredictIntegralRotatedAngle(double t) {
 void BuffPredictor::InitDefaultParams(const std::string &params_path) {
   cv::FileStorage fs(params_path,
                      cv::FileStorage::WRITE | cv::FileStorage::FORMAT_JSON);
-  SPDLOG_WARN("filter method: {}", filter_.method_);
-  if (filter_.method_ != Method::kUNKNOWN) {
+  SPDLOG_WARN("filter method: {}", MethodToString(filter_.method_));
+  if (filter_.method_ != game::Method::kUNKNOWN) {
     fs << "delay_time" << 0.1542;
     fs << "error_frame" << 5;
   }

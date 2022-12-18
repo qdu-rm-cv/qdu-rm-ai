@@ -22,13 +22,16 @@ static void PrintDeviceInfo(MV_CC_DEVICE_INFO *mv_dev_info) {
   }
   if (mv_dev_info->nTLayerType == MV_USB_DEVICE) {
     SPDLOG_INFO("UserDefinedName: {}.",
-                mv_dev_info->SpecialInfo.stUsb3VInfo.chUserDefinedName);
+                reinterpret_cast<char *>(
+                    mv_dev_info->SpecialInfo.stUsb3VInfo.chUserDefinedName));
 
     SPDLOG_INFO("Serial Number: {}.",
-                mv_dev_info->SpecialInfo.stUsb3VInfo.chSerialNumber);
+                reinterpret_cast<char *>(
+                    mv_dev_info->SpecialInfo.stUsb3VInfo.chSerialNumber));
 
     SPDLOG_INFO("Device Number: {}.",
-                mv_dev_info->SpecialInfo.stUsb3VInfo.nDeviceNumber);
+                reinterpret_cast<char *>(
+                    mv_dev_info->SpecialInfo.stUsb3VInfo.nDeviceNumber));
   } else {
     SPDLOG_WARN("Not supported.");
   }

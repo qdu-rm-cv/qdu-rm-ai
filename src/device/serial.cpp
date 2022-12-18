@@ -90,7 +90,8 @@ bool Serial::Config(bool parity, StopBits stop_bit, DataLength data_length,
   SPDLOG_INFO(
       "parity={}, stop_bit={}, data_length={}, flow_ctrl={}, "
       "baud_rate={}",
-      parity, stop_bit, data_length, flow_ctrl, baud_rate);
+      (int)parity, (int)stop_bit, (int)data_length, (int)flow_ctrl,
+      (int)baud_rate);
 
   if (tcgetattr(dev_, &tty_cfg)) {
     SPDLOG_ERROR("Error {} from tcgetattr: {}.", errno, std::strerror(errno));
