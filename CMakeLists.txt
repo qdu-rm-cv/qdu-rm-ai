@@ -4,8 +4,8 @@ endif()
 
 cmake_minimum_required(VERSION 3.12)
 
-project(qdu_rm_ai
-    DESCRIPTION "AI for Robomaster"
+project(qdu-rm-ai
+    DESCRIPTION "QDU AI for Robomaster"
     VERSION 0.1.0
     LANGUAGES CXX
 )
@@ -74,7 +74,9 @@ endif()
 message(STATUS "----------------------- Building Options ------------------------")
 
 find_package(behaviortree_cpp_v3 REQUIRED)
+find_package(Ceres 2 REQUIRED)
 find_package(CUDA)
+find_package(Eigen3 REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(Threads REQUIRED)
@@ -83,7 +85,9 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(usbp REQUIRED libusbp-1)
 
 message(STATUS "BehaviorTreeV3 version: ${BehaviorTreeV3_VERSION}")
+message(STATUS "Ceres version: ${Ceres_VERSION}")
 message(STATUS "CUDA version: ${CUDA_VERSION}")
+message(STATUS "Eigen version: ${Eigen3_VERSION}")
 message(STATUS "OpenCV version: ${OpenCV_VERSION}")
 message(STATUS "spdlog version: ${spdlog_VERSION}")
 message(STATUS "TBB version: ${TBB_VERSION}")
@@ -99,21 +103,12 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
 endif()
 
 # ---------------------------------------------------------------------------------------
-# Packages Options
+# Packages Option
 # ---------------------------------------------------------------------------------------
-message(STATUS "----------------------- Packages Options ------------------------")
+message(STATUS "----------------------- Packages Option ------------------------")
 
 set(BUILD_NN 0)
-set(BUILD_EKF 0)
 message(STATUS "Build NN: ${BUILD_NN}")
-message(STATUS "Build EKF: ${BUILD_EKF}")
-
-if(BUILD_EKF)
-    find_package(Eigen3 REQUIRED)
-    find_package(Ceres 2 REQUIRED)
-    message(STATUS "Eigen version: ${Eigen3_VERSION}")
-    message(STATUS "Ceres version: ${Ceres_VERSION}")
-endif()
 
 # ---------------------------------------------------------------------------------------
 # Source
