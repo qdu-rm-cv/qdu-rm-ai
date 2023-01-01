@@ -17,7 +17,7 @@ class CameraDemo : public App {
 
  public:
   CameraDemo(const std::string& log_path) : App(log_path) {
-    SPDLOG_WARN("***** Setting Up Buff Aiming System. *****");
+    SPDLOG_WARN("***** Setting Up Camera Demo System. *****");
 
     /* 初始化设备 */
     cam_.Open(0);

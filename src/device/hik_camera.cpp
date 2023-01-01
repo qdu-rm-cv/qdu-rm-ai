@@ -10,6 +10,37 @@
 #include "opencv2/opencv.hpp"
 #include "spdlog/spdlog.h"
 
+namespace {
+
+const unsigned int kSDK_VERSION = 50463230;
+
+/**
+ * @brief 检查HikRobot相机错误
+ *
+ * @param err
+ * @param description
+ * @param exit_flag
+ *
+ * @return true if err==MV_OK
+ * @return false
+ */
+bool HikCheck(int err, const std::string_view description,
+              bool exit_flag = true) {
+  if (err != MV_OK) {
+    if (exit_flag) {
+      SPDLOG_ERROR("{} fail! err: {:#011x}", description, err + 128);
+      exit(1);
+    } else {
+      SPDLOG_INFO("{}, code: {:#011x}", description, err);
+    }
+
+    return false;
+  }
+  return true;
+}
+
+}  // namespace
+
 /**
  * @brief 打印设备信息
  *
@@ -30,27 +61,26 @@ static void PrintDeviceInfo(MV_CC_DEVICE_INFO *mv_dev_info) {
                     mv_dev_info->SpecialInfo.stUsb3VInfo.chSerialNumber));
 
     SPDLOG_INFO("Device Number: {}.",
-                reinterpret_cast<char *>(
-                    mv_dev_info->SpecialInfo.stUsb3VInfo.nDeviceNumber));
+                mv_dev_info->SpecialInfo.stUsb3VInfo.nDeviceNumber);
   } else {
     SPDLOG_WARN("Not supported.");
   }
 }
 
-void HikCamera::GrabPrepare() { std::memset(&raw_frame, 0, sizeof(raw_frame)); }
+void HikCamera::GrabPrepare() {
+  std::memset(&raw_frame_, 0, sizeof(raw_frame_));
+}
 
 void HikCamera::GrabLoop() {
-  int err = MV_OK;
-  err = MV_CC_GetImageBuffer(camera_handle_, &raw_frame, 1000);
-  if (err == MV_OK) {
-    SPDLOG_DEBUG("[GrabThread] FrameNum: {}.", raw_frame.stFrameInfo.nFrameNum);
-  } else {
-    SPDLOG_ERROR("[GrabThread] GetImageBuffer fail! err: {0:x}.", err);
+  if (HikCheck(MV_CC_GetImageBuffer(camera_handle_, &raw_frame_, 10000),
+               "[GrabThread] GetImageBuffer", false)) {
+    SPDLOG_DEBUG("[GrabThread] FrameNum: {}.",
+                 raw_frame_.stFrameInfo.nFrameNum);
   }
 
   cv::Mat raw_mat(
-      cv::Size(raw_frame.stFrameInfo.nWidth, raw_frame.stFrameInfo.nHeight),
-      CV_8UC1, raw_frame.pBufAddr);
+      cv::Size(raw_frame_.stFrameInfo.nWidth, raw_frame_.stFrameInfo.nHeight),
+      CV_8UC1, raw_frame_.pBufAddr);
 
   if (!raw_mat.empty()) cv::cvtColor(raw_mat, raw_mat, cv::COLOR_BayerRG2BGR);
 
@@ -59,16 +89,13 @@ void HikCamera::GrabLoop() {
   frame_stack_.push_front(raw_mat.clone());
   frame_signal_.Signal();
   SPDLOG_DEBUG("frame_stack_ size: {}", frame_stack_.size());
-  if (nullptr != raw_frame.pBufAddr) {
-    if ((err = MV_CC_FreeImageBuffer(camera_handle_, &raw_frame)) != MV_OK) {
-      SPDLOG_ERROR("[GrabThread] FreeImageBuffer fail! err: {0:x}.", err);
-    }
+  if (nullptr != raw_frame_.pBufAddr) {
+    HikCheck(MV_CC_FreeImageBuffer(camera_handle_, &raw_frame_),
+             "[GrabThread] FreeImageBuffer");
   }
 }
 
 bool HikCamera::OpenPrepare(unsigned int index) {
-  int err = MV_OK;
-
   SPDLOG_DEBUG("Open index: {}.", index);
 
   if (index >= mv_dev_list_.nDeviceNum) {
@@ -78,87 +105,42 @@ bool HikCamera::OpenPrepare(unsigned int index) {
     return false;
   }
 
-  if ((err = MV_CC_CreateHandle(&camera_handle_,
-                                mv_dev_list_.pDeviceInfo[0])) != MV_OK) {
-    SPDLOG_ERROR("CreateHandle fail! err: {0:x}.", (u_int8_t)err);
-    exit(-1);
-    return false;
-  }
+  HikCheck(MV_CC_CreateHandle(&camera_handle_, mv_dev_list_.pDeviceInfo[0]),
+           "CreateHandle");
 
-  if ((err = MV_CC_OpenDevice(camera_handle_)) != MV_OK) {
-    SPDLOG_ERROR("OpenDevice fail! err: {}.", (u_int8_t)err);
-    exit(-1);
-    return false;
-  }
-
-  if ((err = MV_CC_SetEnumValue(camera_handle_, "TriggerMode", 0)) != MV_OK) {
-    SPDLOG_ERROR("TriggerMode fail! err: {0:x}.", (u_int8_t)err);
-    exit(-1);
-    return false;
-  }
-
-  if ((err = MV_CC_SetEnumValue(camera_handle_, "PixelFormat",
-                                PixelType_Gvsp_BayerRG8)) != MV_OK) {
-    SPDLOG_ERROR("PixelFormat fail! err: {0:x}.", (u_int8_t)err);
-    exit(-1);
-    return false;
-  }
-
-  if ((err = MV_CC_SetEnumValue(camera_handle_, "AcquisitionMode", 2)) !=
-      MV_OK) {
-    SPDLOG_ERROR("AcquisitionMode fail! err: {0:x}.", (u_int8_t)err);
-    exit(-1);
-    return false;
-  }
+  HikCheck(MV_CC_OpenDevice(camera_handle_), "OpenDevice", false);
+  HikCheck(MV_CC_SetEnumValue(camera_handle_, "TriggerMode", 0), "TriggerMode");
+  HikCheck(MV_CC_SetEnumValue(camera_handle_, "PixelFormat",
+                              PixelType_Gvsp_BayerRG8),
+           "PixelFormat");
+  HikCheck(MV_CC_SetEnumValue(camera_handle_, "AcquisitionMode", 2),
+           "AcquisitionMode");
 
   MVCC_FLOATVALUE frame_rate;
 
-  if ((err = MV_CC_GetFloatValue(camera_handle_, "ResultingFrameRate",
-                                 &frame_rate)) != MV_OK) {
-    SPDLOG_ERROR("ResultingFrameRate fail! err: {0:x}.", (u_int8_t)err);
-    exit(-1);
-    return false;
-  } else {
+  if (HikCheck(MV_CC_GetFloatValue(camera_handle_, "ResultingFrameRate",
+                                   &frame_rate),
+               "ResultingFrameRate", false)) {
     SPDLOG_INFO("ResultingFrameRate: {}.", frame_rate.fCurValue);
   }
 
-  if ((err = MV_CC_SetEnumValue(camera_handle_, "ExposureAuto", 0)) != MV_OK) {
-    SPDLOG_ERROR("ExposureAuto closes fail! err: {0:x}.", (u_int8_t)err);
-    exit(-1);
-    return false;
+  HikCheck(MV_CC_SetEnumValue(camera_handle_, "ExposureAuto", 0),
+           "ExposureAuto closes");
+  HikCheck(MV_CC_SetEnumValue(camera_handle_, "ExposureMode", 0),
+           "ExposureMode");
+  HikCheck(MV_CC_SetFloatValue(camera_handle_, "ExposureTime", 1000.0),
+           "ExposureMode");
+
+  unsigned int version = MV_CC_GetSDKVersion();
+  SPDLOG_INFO("SDK version : {}", version);
+  if (version <= kSDK_VERSION) {
+    HikCheck((MV_CC_SetEnumValue(camera_handle_, "GammaSelector", 1)),
+             "GammaSelector");
+    HikCheck(MV_CC_SetBoolValue(camera_handle_, "GammaEnable", true),
+             "GammaEnable");
   }
 
-  if ((err = MV_CC_SetEnumValue(camera_handle_, "ExposureMode", 0)) != MV_OK) {
-    SPDLOG_ERROR("ExposureMode fail! err: {0:x}.", (u_int8_t)err);
-    exit(-1);
-    return false;
-  }
-
-  if ((err = MV_CC_SetFloatValue(camera_handle_, "ExposureTime", 1000.0)) !=
-      MV_OK) {
-    SPDLOG_ERROR("ExposureTime fail! err: {0:x}.", (uint8_t)err);
-    exit(-1);
-    return false;
-  }
-
-  if ((err = MV_CC_SetEnumValue(camera_handle_, "GammaSelector", 1)) != MV_OK) {
-    SPDLOG_ERROR("GammaSelector fail! err: {0:x}.", (uint8_t)err);
-    exit(-1);
-    return false;
-  }
-
-  if ((err = MV_CC_SetBoolValue(camera_handle_, "GammaEnable", true)) !=
-      MV_OK) {
-    SPDLOG_ERROR("GammaEnable fail! err: {0:x}.", (uint8_t)err);
-    exit(-1);
-    return false;
-  }
-
-  if ((err = MV_CC_StartGrabbing(camera_handle_)) != MV_OK) {
-    SPDLOG_ERROR("StartGrabbing fail! err: {0:x}.", (uint8_t)err);
-    exit(-1);
-    return false;
-  }
+  HikCheck(MV_CC_StartGrabbing(camera_handle_), "StartGrabbing");
   return true;
 }
 
@@ -167,15 +149,12 @@ bool HikCamera::OpenPrepare(unsigned int index) {
  *
  */
 void HikCamera::Prepare() {
-  int err = MV_OK;
   SPDLOG_DEBUG("Prepare.");
 
   std::memset(&mv_dev_list_, 0, sizeof(MV_CC_DEVICE_INFO_LIST));
-  err = MV_CC_EnumDevices(MV_GIGE_DEVICE | MV_USB_DEVICE, &mv_dev_list_);
-  if (err != MV_OK) {
-    SPDLOG_ERROR("EnumDevices fail! err: {0:x}.", (uint8_t)err);
-    exit(-1);
-  }
+
+  HikCheck(MV_CC_EnumDevices(MV_GIGE_DEVICE | MV_USB_DEVICE, &mv_dev_list_),
+           "EnumDevices");
 
   if (mv_dev_list_.nDeviceNum > 0) {
     for (unsigned int i = 0; i < mv_dev_list_.nDeviceNum; ++i) {
@@ -233,19 +212,9 @@ int HikCamera::Close() {
   grabing = false;
   grab_thread_.join();
 
-  int err = MV_OK;
-  if ((err = MV_CC_StopGrabbing(camera_handle_)) != MV_OK) {
-    SPDLOG_ERROR("StopGrabbing fail! err:{0:x}.", (uint8_t)err);
-    return err;
-  }
-  if ((err = MV_CC_CloseDevice(camera_handle_)) != MV_OK) {
-    SPDLOG_ERROR("CloseDevice fail! err:{0:x}.", (uint8_t)err);
-    return err;
-  }
-  if ((err = MV_CC_DestroyHandle(camera_handle_)) != MV_OK) {
-    SPDLOG_ERROR("DestroyHandle fail! err:{0:x}.", (uint8_t)err);
-    return err;
-  }
+  HikCheck(MV_CC_StopGrabbing(camera_handle_), "StopGrabbing");
+  HikCheck(MV_CC_CloseDevice(camera_handle_), "CloseDevice");
+  HikCheck(MV_CC_DestroyHandle(camera_handle_), "DestroyHandle");
   SPDLOG_DEBUG("Closed.");
 
   return MV_OK;

@@ -12,7 +12,7 @@ class HikCamera : public Camera {
  private:
   MV_CC_DEVICE_INFO_LIST mv_dev_list_;
   void *camera_handle_ = nullptr;
-  MV_FRAME_OUT raw_frame;
+  MV_FRAME_OUT raw_frame_;
 
   void GrabPrepare();
   void GrabLoop();

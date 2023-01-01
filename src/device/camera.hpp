@@ -78,11 +78,12 @@ class Camera {
       cv::resize(frame_stack_.front(), frame, cv::Size(frame_w_, frame_h_));
       frame_stack_.clear();
     } else {
-      //SPDLOG_ERROR("Empty frame stack!");
+      // SPDLOG_ERROR("Empty frame stack!");
       return false;
     }
     return true;
   }
+
   /**
    * @brief 关闭相机设备
    *
