@@ -2,6 +2,8 @@
 
 #include <string>
 
+#define RMU2023
+
 namespace component {
 
 struct Euler {

@@ -46,7 +46,7 @@ EKF::EKF(const Matx51d& Xe = Matx51d::zeros()) { InnerInit(Xe); }
 EKF::~EKF() { SPDLOG_TRACE("Destruted."); }
 
 void EKF::Init(const std::vector<double>& vec) {
-  if (method_ == Method::kUNKNOWN) method_ = Method::kEKF;
+  if (method_ == game::Method::kUNKNOWN) method_ = game::Method::kEKF;
   InnerInit(Matx51d(vec[0], vec[1], vec[2], vec[3], vec[4]));
 }
 

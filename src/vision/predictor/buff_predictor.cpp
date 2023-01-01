@@ -7,8 +7,6 @@
 
 using std::chrono::high_resolution_clock;
 
-#define RMU2022
-
 namespace {
 
 const double kRMUT_TIME = 90.;
@@ -40,7 +38,7 @@ static double PredictIntegralRotatedAngle(double t) {
   return 1.305 * kDELTA +
          0.785 / 1.884 * (cos(1.884 * t) - cos(1.884 * (t + kDELTA)));
 }
-#else
+#elif RMU2022
 /**
  * @brief 小符角速度 Omega = 10 RPM
  * \displaystyle{\omega = 10 \texttt{ RPM}} \\ \\
