@@ -30,7 +30,7 @@ enum class DataLength {
 /* 串口 */
 class Serial {
  private:
-  USB usb_;
+  Usb usb_;
   int dev_;
   std::mutex mutex_w_;
   std::mutex mutex_r_;
