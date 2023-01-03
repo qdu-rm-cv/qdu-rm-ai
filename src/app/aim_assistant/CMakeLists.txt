@@ -4,15 +4,17 @@ project(aim-assistant)
 add_executable(${PROJECT_NAME} main.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
-    device
-    object
-    detector
-    predictor
-    process
-    compensator
     behavior
+    compensator
+    device
+    process
     spdlog::spdlog
-    ${CERES_LIBRARIES}
+    ${Taim}_detector
+    ${Tbuff}_detector
+    ${Taim}_object
+    ${Tbuff}_object
+    ${Taim}_predictor
+    ${Tbuff}_predictor
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE

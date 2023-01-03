@@ -4,11 +4,11 @@ project(armor_demo)
 add_executable(${PROJECT_NAME} main.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
-    object
     classifier
-    detector
     device
     spdlog::spdlog
+    ${Taim}_detector
+    ${Taim}_object
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC

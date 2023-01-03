@@ -5,11 +5,10 @@ add_executable(${PROJECT_NAME} main.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
     device
-    object
-    detector
-    predictor
     spdlog::spdlog
-    ${CERES_LIBRARIES}
+    ${Tbuff}_detector
+    ${Tbuff}_object
+    ${Tbuff}_predictor
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE

@@ -5,12 +5,12 @@ add_executable(${PROJECT_NAME} main.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
     behavior
-    device
-    object
-    detector
-    predictor
     compensator
+    device
     spdlog::spdlog
+    ${Taim}_detector
+    ${Taim}_object
+    ${Taim}_predictor
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE

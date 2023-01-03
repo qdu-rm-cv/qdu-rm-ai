@@ -7,7 +7,9 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     device
     param
     component
-    detector
+    ${Taim}_detector
+    ${Tbuff}_detector
+    ${Tdart}_detector
     spdlog::spdlog
 )
 

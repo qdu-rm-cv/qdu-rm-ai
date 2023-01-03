@@ -4,13 +4,14 @@ project(auto-aim)
 add_executable(${PROJECT_NAME} main.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
-    device
-    object
-    detector
-    predictor
-    compensator
-    spdlog::spdlog
     behavior
+    compensator
+    classifier
+    device
+    spdlog::spdlog
+    ${Taim}_detector
+    ${Taim}_object
+    ${Taim}_predictor
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE

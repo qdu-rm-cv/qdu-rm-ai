@@ -71,7 +71,7 @@ endif()
 # ---------------------------------------------------------------------------------------
 # Building Options
 # ---------------------------------------------------------------------------------------
-message(STATUS "----------------------- Building Options ------------------------")
+message(STATUS "---------------------- Building Options ------------------------")
 
 find_package(behaviortree_cpp_v3 REQUIRED)
 find_package(Ceres 2 REQUIRED)
@@ -107,12 +107,27 @@ endif()
 # ---------------------------------------------------------------------------------------
 message(STATUS "----------------------- Packages Option ------------------------")
 
-set(BUILD_NN 0)
+set(BUILD_NN 1)
 message(STATUS "Build NN: ${BUILD_NN}")
 
 # ---------------------------------------------------------------------------------------
 # Source
 # ---------------------------------------------------------------------------------------
+message(STATUS "--------------------------- Source -----------------------------")
+
+set(Taim "task_aim")
+set(Tbuff "task_buff")
+set(Tdart "task_dart")
+set(Tengineer "task_engineer")
+set(Tsentry "task_sentry")
+set(Tradar "task_radar")
+message(STATUS "Build task: ${Taim}")
+message(STATUS "Build task: ${Tbuff}")
+message(STATUS "Build task: ${Tdart}")
+message(STATUS "Build task: ${Tengineer}")
+message(STATUS "Build task: ${Tsentry}")
+message(STATUS "Build task: ${Tradar}")
+
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # ---------------------------------------------------------------------------------------

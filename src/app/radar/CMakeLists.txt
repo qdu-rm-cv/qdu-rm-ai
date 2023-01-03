@@ -4,13 +4,11 @@ project(radar)
 add_executable(${PROJECT_NAME} main.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
-    device
-    object
-    detector
     behavior
-    predictor
     compensator
+    device
     spdlog::spdlog
+    ${Tradar}_detector
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
