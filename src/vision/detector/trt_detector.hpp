@@ -21,7 +21,7 @@ class TRTLogger : public nvinfer1::ILogger {
   TRTLogger() = default;
   ~TRTLogger() = default;
 
-  void log(Severity severity, const char *msg) override;
+  void log(Severity severity, const char *msg) noexcept override;
   int GetVerbosity();
 };
 

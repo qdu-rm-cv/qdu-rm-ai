@@ -21,11 +21,15 @@ template <typename T>
 void TRTDeleter::operator()(T *obj) const {
   if (obj) {
     SPDLOG_DEBUG("[TRTDeleter] destroy.");
+#if NV_TENSORRT_MAJOR > 7
+    delete obj;
+#else
     obj->destroy();
+#endif
   }
 }
 
-void TRTLogger::log(Severity severity, const char *msg) {
+void TRTLogger::log(Severity severity, const char *msg) noexcept {
   if (severity == Severity::kINTERNAL_ERROR) {
     spdlog::error(msg);
   } else if (severity == Severity::kERROR) {
@@ -271,18 +275,18 @@ bool TrtDetector::InitMemory() {
   dim_out_ = engine_->getBindingDimensions(idx_out_);
   nc = dim_out_.d[4] - 5;
 
-  for (int i = 0; i < engine_->getNbBindings(); ++i) {
+  for (int32_t i = 0; i < engine_->getNbBindings(); ++i) {
     Dims dim = engine_->getBindingDimensions(i);
 
     size_t volume = 1;
-    for (int j = 0; j < dim.nbDims; ++j) volume *= dim.d[j];
+    for (int32_t j = 0; j < dim.nbDims; ++j) volume *= dim.d[j];
     DataType type = engine_->getBindingDataType(i);
     switch (type) {
       case DataType::kFLOAT:
         volume *= sizeof(float);
         break;
       default:
-        SPDLOG_ERROR("[TrtDetector] Do not support input type: {}", type);
+        SPDLOG_ERROR("[TrtDetector] Do not support input type: {}", int(type));
         break;
     }
 

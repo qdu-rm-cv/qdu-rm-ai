@@ -19,7 +19,8 @@ if(BUILD_NN)
         ${Taim}_detector
         ${Tbuff}_detector
         ${Tdart}_detector
-        ${Tegineer}_detector
+        ${Tengineer}_detector
+        ${Tradar}_detector
         ${Taim}_object
         ${Tbuff}_object
         ${Tdart}_object
@@ -45,6 +46,7 @@ if(BUILD_NN)
         $<TARGET_PROPERTY:${Tbuff}_detector,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:${Tdart}_detector,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:${Tengineer}_detector,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:${Tradar}_detector,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:${Tbuff}_object,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:${Tdart}_object,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:${Tengineer}_object,INTERFACE_INCLUDE_DIRECTORIES>
