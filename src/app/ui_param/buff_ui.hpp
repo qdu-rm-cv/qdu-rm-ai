@@ -4,7 +4,6 @@
 #include "buff_detector.hpp"
 #include "buff_param.hpp"
 #include "hik_camera.hpp"
-#include "robot.hpp"
 
 class BuffUIParam : private App {
  private:

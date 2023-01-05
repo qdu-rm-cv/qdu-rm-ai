@@ -2,6 +2,7 @@
 
 #include <mutex>
 #include <string>
+#include <thread>
 
 #include "timer.hpp"
 #include "usb.hpp"

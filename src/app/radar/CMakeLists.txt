@@ -6,8 +6,9 @@ add_executable(${PROJECT_NAME} main.cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE
     behavior
     compensator
-    device
     spdlog::spdlog
+    ${Dcamera}
+    ${Dcontroller}
     ${Tradar}_detector
 )
 
@@ -17,5 +18,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 )
 
 add_dependencies(${PROJECT_NAME}
-    device
+    ${Dcamera}
+    ${Dcontroller}
 )

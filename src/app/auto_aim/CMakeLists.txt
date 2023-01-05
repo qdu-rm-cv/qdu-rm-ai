@@ -7,8 +7,9 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     behavior
     compensator
     classifier
-    device
     spdlog::spdlog
+    ${Dcamera}
+    ${Dcontroller}
     ${Taim}_detector
     ${Taim}_object
     ${Taim}_predictor
@@ -20,5 +21,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 )
 
 add_dependencies(${PROJECT_NAME}
-    device
+    ${Dcamera}
+    ${Dcontroller}
 )

@@ -128,6 +128,13 @@ message(STATUS "Build task: ${Tengineer}")
 message(STATUS "Build task: ${Tsentry}")
 message(STATUS "Build task: ${Tradar}")
 
+set(Dcamera "device_camera")
+set(Dcontroller "device_controller")
+set(Dservo "device_servo")
+message(STATUS "Build device: ${Dcamera}")
+message(STATUS "Build device: ${Dcontroller}")
+message(STATUS "Build device: ${Dservo}")
+
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # ---------------------------------------------------------------------------------------

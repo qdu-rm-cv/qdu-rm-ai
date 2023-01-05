@@ -6,9 +6,10 @@ add_executable(${PROJECT_NAME} main.cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE
     behavior
     compensator
-    device
     process
     spdlog::spdlog
+    ${Dcamera}
+    ${Dcontroller}
     ${Taim}_detector
     ${Tbuff}_detector
     ${Taim}_object
@@ -26,5 +27,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 )
 
 add_dependencies(${PROJECT_NAME}
-    device
+    ${Dcamera}
+    ${Dcontroller}
 )

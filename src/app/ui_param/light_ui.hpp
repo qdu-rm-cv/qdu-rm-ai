@@ -4,7 +4,6 @@
 #include "guidinglight_detector.hpp"
 #include "guidinglight_param.hpp"
 #include "hik_camera.hpp"
-#include "robot.hpp"
 
 class LightUIParam : private App {
  private:

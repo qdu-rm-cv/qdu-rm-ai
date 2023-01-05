@@ -4,13 +4,13 @@ project(ui-param)
 add_executable(${PROJECT_NAME} main.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
-    device
-    param
     component
+    param
+    spdlog::spdlog
+    ${Dcamera}
     ${Taim}_detector
     ${Tbuff}_detector
     ${Tdart}_detector
-    spdlog::spdlog
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
@@ -19,5 +19,5 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 )
 
 add_dependencies(${PROJECT_NAME}
-    device
+    ${Dcamera}
 )
