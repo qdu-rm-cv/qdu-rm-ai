@@ -43,7 +43,7 @@ void TRTLogger::log(Severity severity, const char *msg) noexcept {
   }
 }
 
-int TRTLogger::GetVerbosity() { return (int)Severity::kVERBOSE; }
+int TRTLogger::GetVerbosity() { return static_cast<int>(Severity::kVERBOSE); }
 
 }  // namespace TRT
 
@@ -130,8 +130,9 @@ bool TrtDetector::CreateEngine() {
   if (!builder) {
     SPDLOG_ERROR("[TrtDetector] createInferBuilder Fail.");
     return false;
-  } else
+  } else {
     SPDLOG_DEBUG("[TrtDetector] createInferBuilder OK.");
+  }
 
   builder->setMaxBatchSize(1);
 
@@ -144,15 +145,17 @@ bool TrtDetector::CreateEngine() {
   if (!network) {
     SPDLOG_ERROR("[TrtDetector] createNetworkV2 Fail.");
     return false;
-  } else
+  } else {
     SPDLOG_DEBUG("[TrtDetector] createNetworkV2 OK.");
+  }
 
   auto config = UniquePtr<IBuilderConfig>(builder->createBuilderConfig());
   if (!config) {
     SPDLOG_ERROR("[TrtDetector] createBuilderConfig Fail.");
     return false;
-  } else
+  } else {
     SPDLOG_DEBUG("[TrtDetector] createBuilderConfig OK.");
+  }
 
   config->setMaxWorkspaceSize(1 << 30);
 
@@ -161,16 +164,18 @@ bool TrtDetector::CreateEngine() {
   if (!parser) {
     SPDLOG_ERROR("[TrtDetector] createParser Fail.");
     return false;
-  } else
+  } else {
     SPDLOG_DEBUG("[TrtDetector] createParser OK.");
+  }
 
   auto parsed = parser->parseFromFile(onnx_file_path_.c_str(),
                                       static_cast<int>(logger_.GetVerbosity()));
   if (!parsed) {
     SPDLOG_ERROR("[TrtDetector] parseFromFile Fail.");
     return false;
-  } else
+  } else {
     SPDLOG_DEBUG("[TrtDetector] parseFromFile OK.");
+  }
 
   auto profile = builder->createOptimizationProfile();
   profile->setDimensions(network->getInput(0)->getName(),
@@ -184,9 +189,9 @@ bool TrtDetector::CreateEngine() {
   if (builder->platformHasFastFp16()) config->setFlag(BuilderFlag::kFP16);
   // if (builder->platformHasFastInt8()) config->setFlag(BuilderFlag::kINT8);
 
-  if (builder->getNbDLACores() == 0)
+  if (builder->getNbDLACores() == 0) {
     SPDLOG_WARN("[TrtDetector] The platform doesn't have any DLA cores.");
-  else {
+  } else {
     SPDLOG_INFO("[TrtDetector] Using DLA core 0.");
     config->setDefaultDeviceType(DeviceType::kDLA);
     config->setDLACore(0);
@@ -286,7 +291,8 @@ bool TrtDetector::InitMemory() {
         volume *= sizeof(float);
         break;
       default:
-        SPDLOG_ERROR("[TrtDetector] Do not support input type: {}", int(type));
+        SPDLOG_ERROR("[TrtDetector] Do not support input type: {}",
+                     static_cast<int>(type));
         break;
     }
 

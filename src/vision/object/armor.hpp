@@ -19,7 +19,7 @@ class Armor : public ImageObject, public PhysicObject {
  public:
   Armor();
   Armor(const LightBar &left_bar, const LightBar &right_bar);
-  Armor(const cv::RotatedRect &rect);
+  explicit Armor(const cv::RotatedRect &rect);
   ~Armor();
 
   game::Model GetModel() const;

@@ -12,7 +12,7 @@ class GuidingLight {
 
  public:
   GuidingLight();
-  GuidingLight(const cv::KeyPoint &key_point);
+  explicit GuidingLight(const cv::KeyPoint &key_point);
   ~GuidingLight();
 
   const cv::KeyPoint GetKeyPoint() const;

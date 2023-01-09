@@ -28,7 +28,7 @@ class OreCubeDetector : public Detector<OreCube, OreCubeDetectorParam> {
 
  public:
   OreCubeDetector();
-  OreCubeDetector(const std::string &params_path);
+  explicit OreCubeDetector(const std::string &params_path);
   ~OreCubeDetector();
 
   const tbb::concurrent_vector<OreCube> &Detect(const cv::Mat &frame);

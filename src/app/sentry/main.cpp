@@ -13,7 +13,7 @@ class SentryAim : private App {
   Compensator compensator_;
 
  public:
-  SentryAim(const std::string& log_path) : App(log_path) {
+  explicit SentryAim(const std::string& log_path) : App(log_path) {
     SPDLOG_WARN("***** Setting Up Auto Aiming System. *****");
 
     /* 初始化设备 */

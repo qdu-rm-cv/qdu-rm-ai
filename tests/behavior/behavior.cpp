@@ -24,10 +24,10 @@ static const char *const xml_tree_test = R"(
     </Fallback>
     </BehaviorTree>
 </root>
- 
+
 )";
 
-}
+}  // namespace
 
 TEST(TestBehavior, TestSimpleTree) {
   BT::BehaviorTreeFactory factory;

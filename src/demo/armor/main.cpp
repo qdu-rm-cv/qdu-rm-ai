@@ -15,7 +15,7 @@ class ArmorDemo : public Demo {
   ArmorDetector detector_;
 
  public:
-  ArmorDemo(const std::string& log_path) : Demo(log_path) {
+  explicit ArmorDemo(const std::string& log_path) : Demo(log_path) {
     SPDLOG_WARN("***** Setting Up Armor Detecting Demo. *****");
 
     /* 初始化 */

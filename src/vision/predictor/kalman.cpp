@@ -187,9 +187,9 @@ const cv::Point3d Kalman::Predict(const cv::Point3d& measurements_point) {
   else if (measurements_point == cv::Point3d(0., 0., 0.))
     error_frame_ += 1;
 
-  if (error_frame_ > 0 && error_frame_ < 5)
+  if (error_frame_ > 0 && error_frame_ < 5) {
     cur_measure_matx_ = last_predict_matx_.rowRange(0, 3);
-  else {
+  } else {
     cv::Mat measurements = cv::Mat_<double>::zeros(3, 1);
     measurements.at<double>(0, 0) = measurements_point.x;
     measurements.at<double>(0, 1) = measurements_point.y;
@@ -221,15 +221,15 @@ const cv::Mat& Kalman::Predict(const cv::Mat& measurements) {
     product *= measure_value[i];
   }
 
-  if (product == 0)
+  if (product == 0) {
     error_frame_ += 1;
-  else
+  } else {
     for (std::size_t i = 0; i < measure_value.size(); i++)
       if (abs(measure_value[i] - last_measure_value[i]) > edge) {
         error_frame_ += 1;
         break;
       }
-
+  }
   if (error_frame_ > 0 && error_frame_ < 5)
     cur_measure_matx_ = last_predict_matx_.rowRange(0, states_);
   else

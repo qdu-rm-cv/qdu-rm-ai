@@ -13,7 +13,7 @@ ArmorClassifier armor_classifier("../../../runtime/armor_classifier.onnx",
 game::Model Classify(const std::string& path) {
   cv::Mat f = cv::imread(path);
   Armor armor(cv::RotatedRect(cv::Point2f(0, 0), cv::Point2f(f.cols, 0),
-                              cv::Point2f(f.cols, f.rows)));  
+                              cv::Point2f(f.cols, f.rows)));
   armor_classifier.ClassifyModel(armor, f);
   return armor.GetModel();
 }

@@ -162,8 +162,9 @@ void HikCamera::Prepare() {
       MV_CC_DEVICE_INFO *dev_info = mv_dev_list_.pDeviceInfo[i];
       if (dev_info == nullptr) {
         SPDLOG_ERROR("Error Reading dev_info");
-      } else
+      } else {
         PrintDeviceInfo(dev_info);
+      }
     }
   } else {
     SPDLOG_ERROR("Find No Devices!");

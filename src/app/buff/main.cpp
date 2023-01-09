@@ -17,7 +17,7 @@ class BuffAim : private App {
   Behavior manager_;
 
  public:
-  BuffAim(const std::string& log_path)
+  explicit BuffAim(const std::string& log_path)
       : App(log_path, component::Logger::FMT::kFMT_THREAD) {
     SPDLOG_WARN("***** Setting Up Buff Aiming System. *****");
 

@@ -10,25 +10,25 @@ void GuidingLightDetector::InitDefaultParams(const std::string &params_path) {
   fs << "minThreshold" << 0;
   fs << "maxThreshold" << 100;
 
-  fs << "minRepeatability" << (int)2;
+  fs << "minRepeatability" << 2;
   fs << "minDistBetweenBlobs" << 10;
 
-  fs << "filterByColor" << (int)true;
-  fs << "blobColor" << (int)0;
+  fs << "filterByColor" << static_cast<int>(true);
+  fs << "blobColor" << 0;
 
-  fs << "filterByArea" << (int)true;
+  fs << "filterByArea" << static_cast<int>(true);
   fs << "minArea" << 200;
   fs << "maxArea" << 5000;
 
-  fs << "filterByCircularity" << (int)false;
+  fs << "filterByCircularity" << static_cast<int>(false);
   fs << "minCircularity" << 0.1f;
   fs << "maxCircularity" << std::numeric_limits<float>::max();
 
-  fs << "filterByInertia" << (int)true;
+  fs << "filterByInertia" << static_cast<int>(true);
   fs << "minInertiaRatio" << 0.2f;
   fs << "maxInertiaRatio" << std::numeric_limits<float>::max();
 
-  fs << "filterByConvexity" << (int)true;
+  fs << "filterByConvexity" << static_cast<int>(true);
   fs << "minConvexity" << 0.65f;
   fs << "maxConvexity" << std::numeric_limits<float>::max();
   SPDLOG_DEBUG("Inited params.");
@@ -57,8 +57,9 @@ void GuidingLightDetector::FindGuidingLight(const cv::Mat &frame) {
       targets_.emplace_back(light);
     }
     SPDLOG_DEBUG("Found keypoints");
-  } else
+  } else {
     SPDLOG_ERROR("None keypoints");
+  }
 
   duration_lights_.Calc("Find Lights");
 }

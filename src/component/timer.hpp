@@ -26,7 +26,7 @@ class Timer {
     return duration_;
   }
 
-  long int Count() const { return duration_.count(); }
+  int64_t Count() const { return duration_.count(); }
 };
 
 class Recorder {
@@ -44,7 +44,7 @@ class Recorder {
   }
 
  public:
-  Recorder(const std::string& name = "RecordThread", int fps = 0)
+  explicit Recorder(const std::string& name = "RecordThread", int fps = 0)
       : thread_name_(name), fps_(fps) {
     thread_record_ = std::thread(&Recorder::Print, this);
     SPDLOG_TRACE("Constructed.");

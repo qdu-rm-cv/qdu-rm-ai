@@ -5,6 +5,7 @@
 	"recommendations": [
 		"jeff-hykin.better-cpp-syntax", 		// 高亮C++标识符
 		"ms-vscode.cpptools", 					// Microsoft出品C++套件
+		"mine.cpplint", 						// cpplint 编码规范检查
 		"twxs.cmake",							// CMake
 		"ms-vscode.cmake-tools",				// CMake Tools套件
 		"cschlosser.doxdocgen",					// 快速注释生成
@@ -12,6 +13,7 @@
 		"davidanson.vscode-markdownlint",		// Markdown语法扩展
 		"aaron-bond.better-comments",			// 更多种类的高亮注释
 		"coenraads.bracket-pair-colorizer-2",	// 彩虹括号2
+		"shardulm94.trailing-spaces"			// 去除行尾多余空格
 		// "xyz.local-history",					// 本地历史记录
 		// "hediet.vscode-drawio",				// 内嵌的draw.io
 		// "guyutongxue.cpp-reference"			// VSC快速查找cppreference.com

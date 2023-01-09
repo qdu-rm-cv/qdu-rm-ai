@@ -11,26 +11,29 @@ bool GuidingLightParam::Read(const std::string &params_path) {
     parami_.minThreshold = fs["minThreshold"];
     parami_.maxThreshold = fs["maxThreshold"];
 
-    parami_.minRepeatability = int(fs["minRepeatability"]);
+    parami_.minRepeatability = static_cast<int>(fs["minRepeatability"]);
     parami_.minDistBetweenBlobs = fs["minDistBetweenBlobs"];
 
-    parami_.filterByColor = int(fs["filterByColor"]) != 0 ? true : false;
-    parami_.blobColor = int(fs["blobColor"]);
-    parami_.filterByArea = int(fs["filterByArea"]) != 0 ? true : false;
+    parami_.filterByColor =
+        static_cast<int>(fs["filterByColor"]) != 0 ? true : false;
+    parami_.blobColor = static_cast<int>(fs["blobColor"]);
+    parami_.filterByArea =
+        static_cast<int>(fs["filterByArea"]) != 0 ? true : false;
     parami_.minArea = fs["minArea"];
     parami_.maxArea = fs["maxArea"];
 
     parami_.filterByCircularity =
-        int(fs["filterByCircularity"]) != 0 ? true : false;
+        static_cast<int>(fs["filterByCircularity"]) != 0 ? true : false;
     parami_.minCircularity = fs["minCircularity"];
     parami_.maxCircularity = fs["maxCircularity"];
 
-    parami_.filterByInertia = int(fs["filterByInertia"]) != 0 ? true : false;
+    parami_.filterByInertia =
+        static_cast<int>(fs["filterByInertia"]) != 0 ? true : false;
     parami_.minInertiaRatio = fs["minInertiaRatio"];
     parami_.maxInertiaRatio = fs["maxInertiaRatio"];
 
     parami_.filterByConvexity =
-        int(fs["filterByConvexity"]) != 0 ? true : false;
+        static_cast<int>(fs["filterByConvexity"]) != 0 ? true : false;
     parami_.minConvexity = fs["minConvexity"];
     parami_.maxConvexity = fs["maxConvexity"];
     return true;

@@ -25,7 +25,7 @@ class AimAssitant {
 
  public:
   AimAssitant();
-  AimAssitant(game::Arm arm);
+  explicit AimAssitant(game::Arm arm);
   ~AimAssitant();
 
   void LoadParams(const std::string& armor_param, const std::string& buff_param,

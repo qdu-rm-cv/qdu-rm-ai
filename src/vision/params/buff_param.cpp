@@ -21,17 +21,19 @@ bool BuffParam::Read(const std::string &params_path) {
     parami_.binary_th = fs["binary_th"];
     parami_.contour_size_low_th = static_cast<int>(fs["contour_size_low_th"]);
 
-    parami_.rect_ratio_low_th = double(fs["rect_ratio_low_th"]) * 1000.;
-    parami_.rect_ratio_high_th = double(fs["rect_ratio_high_th"]) * 1000.;
+    parami_.rect_ratio_low_th =
+        static_cast<double>(fs["rect_ratio_low_th"]) * 1000.;
+    parami_.rect_ratio_high_th =
+        static_cast<double>(fs["rect_ratio_high_th"]) * 1000.;
 
     parami_.contour_center_area_low_th =
-        double(fs["contour_center_area_low_th"]);
+        static_cast<double>(fs["contour_center_area_low_th"]);
     parami_.contour_center_area_high_th =
-        double(fs["contour_center_area_high_th"]);
+        static_cast<double>(fs["contour_center_area_high_th"]);
     parami_.rect_center_ratio_low_th =
-        double(fs["rect_center_ratio_low_th"]) * 1000.;
+        static_cast<double>(fs["rect_center_ratio_low_th"]) * 1000.;
     parami_.rect_center_ratio_high_th =
-        double(fs["rect_center_ratio_high_th"]) * 1000.;
+        static_cast<double>(fs["rect_center_ratio_high_th"]) * 1000.;
     return true;
   } else {
     SPDLOG_ERROR("Can not load params.");

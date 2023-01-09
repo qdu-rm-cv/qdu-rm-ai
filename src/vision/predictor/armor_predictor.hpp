@@ -28,7 +28,7 @@ class ArmorPredictor : public Predictor<Armor, ArmorPredictParam, Kalman> {
 
  public:
   ArmorPredictor();
-  ArmorPredictor(const std::string &param);
+  explicit ArmorPredictor(const std::string &param);
   ~ArmorPredictor();
 
   void SetArmor(const Armor &armor);

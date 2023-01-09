@@ -54,7 +54,7 @@ class Serial {
    *
    * @param dev_path 具体要读写的串口设备
    */
-  Serial(const std::string& dev_path);
+  explicit Serial(const std::string& dev_path);
 
   /**
    * @brief Destroy the Serial object

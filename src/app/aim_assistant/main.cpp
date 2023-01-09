@@ -17,7 +17,7 @@ class AutomaticAim : public App {
   game::Arm arm_ = game::Arm::kUNKNOWN;
 
  public:
-  AutomaticAim(const std::string& log_path) : App(log_path) {
+  explicit AutomaticAim(const std::string& log_path) : App(log_path) {
     SPDLOG_WARN("***** Setting Up Auto Aiming System. *****");
     cam_.Open(0);
     cam_.Setup(480, 640);

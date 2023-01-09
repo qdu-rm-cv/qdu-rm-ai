@@ -3,12 +3,12 @@ namespace component {
 
 namespace Logger {
 
-const static std::string fmt_default("%+");
-const static std::string fmt_filelogger(
+static const std::string fmt_default("%+");
+static const std::string fmt_filelogger(
     "[%Y-%m-%d %T.%3!u] %^[%l] [%!]%$ [%s:%#] %v");
-const static std::string fmt_funcname(
+static const std::string fmt_funcname(
     "[%Y-%m-%d %T.%3!u] %^[%l]%$ [%s:%#] \033[34m[%!]\033[0m %v");
-const static std::string fmt_thread(
+static const std::string fmt_thread(
     "[%Y-%m-%d %T.%3!u] (id:%t) %^[%l]%$ [%s:%#] [%!] %v");
 
 const std::string& ToFormatString(FMT fmt) {

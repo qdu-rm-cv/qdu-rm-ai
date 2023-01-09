@@ -62,7 +62,7 @@ class BuffPredictor : public Predictor<Armor, BuffPredictorParam, Kalman> {
    *
    * @param param 参数文件路径
    */
-  BuffPredictor(const std::string &param);
+  explicit BuffPredictor(const std::string &param);
 
   /**
    * @brief Destroy the BuffPredictor object

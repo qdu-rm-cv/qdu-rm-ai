@@ -36,7 +36,7 @@ class Demo : private App {
   }
 
  public:
-  Demo(const std::string& log_path) : App(log_path) {
+  explicit Demo(const std::string& log_path) : App(log_path) {
     SPDLOG_TRACE("Constructed Demo.");
   }
   Demo(const std::string& log_path, const std::string& video_path,
@@ -54,8 +54,9 @@ class Demo : private App {
   void Open(const std::string& video_path, const std::string& writer_path) {
     if (Prepare(video_path, writer_path)) {
       SPDLOG_DEBUG("open device success.");
-    } else
+    } else {
       SPDLOG_WARN("False opened.");
+    }
   }
 
   const cv::Mat Read() {

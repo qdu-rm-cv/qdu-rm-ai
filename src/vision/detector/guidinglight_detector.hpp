@@ -19,7 +19,7 @@ class GuidingLightDetector
 
  public:
   GuidingLightDetector();
-  GuidingLightDetector(const std::string &params_path);
+  explicit GuidingLightDetector(const std::string &params_path);
   ~GuidingLightDetector();
 
   void ResetByParam(cv::SimpleBlobDetector::Params param);

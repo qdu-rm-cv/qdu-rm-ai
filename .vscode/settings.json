@@ -1,0 +1,108 @@
+{
+    "better-comments.tags": [
+        {
+            "tag": "!",
+            "color": "#FF2D00",
+            "strikethrough": false,
+            "underline": false,
+            "backgroundColor": "transparent",
+            "bold": false,
+            "italic": false
+        },
+        {
+            "tag": "?",
+            "color": "#3498DB",
+            "strikethrough": false,
+            "underline": false,
+            "backgroundColor": "transparent",
+            "bold": false,
+            "italic": false
+        },
+        {
+            "tag": "//",
+            "color": "#474747",
+            "strikethrough": true,
+            "underline": false,
+            "backgroundColor": "transparent",
+            "bold": false,
+            "italic": false
+        },
+        {
+            "tag": "todo",
+            "color": "#FF8C00",
+            "strikethrough": false,
+            "underline": false,
+            "backgroundColor": "transparent",
+            "bold": false,
+            "italic": false
+        },
+        {
+            "tag": "*",
+            "color": "#98C379",
+            "strikethrough": false,
+            "underline": false,
+            "backgroundColor": "transparent",
+            "bold": false,
+            "italic": false
+        },
+        {
+            "tag": "Deprecated",
+            "color": "#C38613",
+            "strikethrough": false,
+            "underline": false,
+            "backgroundColor": "transparent",
+            "bold": true,
+            "italic": false
+        },
+        {
+            "tag": "DEP",
+            "color": "#C38613",
+            "strikethrough": false,
+            "underline": false,
+            "backgroundColor": "transparent",
+            "bold": true,
+            "italic": false
+        }
+    ],
+    "better-comments.highlightPlainText": true,
+    "[cpp]": {
+        "editor.defaultFormatter": "xaver.clang-format"
+    },
+    "cpplint.headers": [
+        "h++",
+        "cuh",
+        "hxx",
+        "hpp",
+        "h"
+    ],
+    "cpplint.filters": [
+        "-build/c++11",
+        "-build/header_guard",
+        "-build/include_subdir",
+        "-build/include_what_you_use",
+        "-build/namespaces",
+        "-runtime/reference",
+        "-runtime/string",
+        "-legal/copyright",
+    ],
+    "cpplint.lineLength": 80,
+    "C_Cpp.inactiveRegionOpacity": null,
+    "C_Cpp.formatting": "clangFormat",
+    "clang-format.language.cpp.fallbackStyle": "Google",
+    "clang-format.language.cpp.style": "Google",
+    "clang-format.language.c.fallbackStyle": "Google",
+    "clang-format.language.c.style": "Google",
+    "clang-format.language.cuda.fallbackStyle": "Google",
+    "clang-format.language.cuda.style": "Google",
+    "clang-format.fallbackStyle": "Google",
+    "clang-format.style": "Google",
+    "python.formatting.provider": "yapf",
+    "python.formatting.yapfArgs": [
+        "--style={based_on_style: yapf, indent_width: 4, column_limit: 100}"
+    ],
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": true,
+    "python.linting.lintOnSave": true,
+    "python.linting.pylintArgs": [],
+    "pylint.logLevel": "debug",
+}

@@ -65,7 +65,7 @@ class Dart : private App {
   void UpdateFeedback();
 
  public:
-  Dart(const std::string &log_path) : App(log_path) {
+  explicit Dart(const std::string &log_path) : App(log_path) {
     SPDLOG_WARN("***** Setting Up Dart Control system. *****");
 
     /* 初始化设备 */

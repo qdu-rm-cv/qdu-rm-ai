@@ -11,7 +11,7 @@ namespace {
 
 const double kRMUT_TIME = 90.;
 const double kRMUC_TIME = 420.;
-const double kDELTA = 3;  //总延迟时间
+const double kDELTA = 3;  // 总延迟时间
 
 }  // namespace
 
@@ -106,18 +106,19 @@ void BuffPredictor::MatchDirection() {
     }
 
     if (sum > 0)
-      direction_ = component::Direction::kCCW;  //逆時針
+      direction_ = component::Direction::kCCW;  // 逆时针
     else if (sum == 0)
       direction_ = component::Direction::kUNKNOWN;
     else
-      direction_ = component::Direction::kCW;  //順時針
+      direction_ = component::Direction::kCW;  // 顺时针
 
     circumference_.emplace_back(buff_.GetTarget().ImageCenter());
     SPDLOG_WARN(" sum is {}", sum);
   } else if (circumference_.size() < 30) {
     circumference_.emplace_back(buff_.GetTarget().ImageCenter());
-  } else
+  } else {
     circumference_.erase(circumference_.begin());
+  }
   SPDLOG_WARN("Buff's Direction is {}",
               component::DirectionToString(direction_));
   duration_direction_.Calc("Predict Direction");

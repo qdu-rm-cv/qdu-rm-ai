@@ -49,7 +49,7 @@ class EKF : public Filter {
 
  public:
   EKF();
-  EKF(const Matx51d& Xe);
+  explicit EKF(const Matx51d& Xe);
   ~EKF();
 
   void Init(const std::vector<double>& vec);

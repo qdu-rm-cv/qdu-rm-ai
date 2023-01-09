@@ -23,7 +23,8 @@ TEST(TestVision, TestOreCubeDetector) {
       cv::waitKey(0);
       cap.release();
       return;
-    } else if (key == ' ')
+    } else if (key == ' ') {
       cv::waitKey(0);
+    }
   }
 }

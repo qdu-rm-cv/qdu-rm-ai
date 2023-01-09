@@ -8,7 +8,7 @@ class Compensator {
  private:
   double distance_;
   cv::Mat cam_mat_, distor_coff_;
-  double gun_cam_distance_;  //枪口到镜头的距离
+  double gun_cam_distance_; /* 枪口到镜头的距离 */
   game::Arm arm_;
 
   void SolveAngles(Armor& armor, const component::Euler& euler);

@@ -58,8 +58,9 @@ void Serial::Open(const std::string& dev_path = "") {
   if (dev_ < 0) {
     SPDLOG_ERROR("Can't open Serial device.");
     exit(-1);
-  } else
+  } else {
     Config();
+  }
 }
 
 /**
@@ -98,9 +99,9 @@ bool Serial::Config(bool parity, StopBits stop_bit, DataLength data_length,
     return false;
   }
 
-  if (parity)
+  if (parity) {
     tty_cfg.c_cflag |= PARENB;
-  else {
+  } else {
     tty_cfg.c_cflag &= ~PARENB;
     tty_cfg.c_iflag &= ~INPCK;
   }
@@ -208,8 +209,7 @@ void Serial::TimeOutCheck() {
   timer_.Start();
   while (time_continue_) {
     timer_.Calc();
-    if (timer_.Count() > 20)  // 20 ms
-    {
+    if (timer_.Count() > 20) {  // 20 ms
       SPDLOG_ERROR("serial timeout: {}, will exit -1", timer_.Count());
       this->Close();
       exit(-1);
