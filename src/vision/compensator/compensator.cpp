@@ -32,7 +32,7 @@ Compensator::Compensator() { SPDLOG_TRACE("Constructed."); }
 Compensator::Compensator(const std::string& cam_mat_path,
                          const game::Arm& arm) {
   SPDLOG_TRACE("Constructed.");
-  // TODO : 和机械、兵种相关，后期放到namespace
+  // TODO(RX.Jiang) : 和机械、兵种相关，后期放到namespace
   SetArm(arm);
   LoadCameraMat(cam_mat_path);
 }

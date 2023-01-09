@@ -70,4 +70,4 @@ class NoAmmo : public BT::ConditionNode {
 
 void RegisterNode(BT::BehaviorTreeFactory &factory);
 
-// TODO : 完善补充行为树模块
+// TODO(YZ.Hou, ZX.Song) : 完善补充行为树模块

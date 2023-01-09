@@ -12,4 +12,4 @@ class Param {
   virtual void Write(const std::string &params_path) = 0;
 };
 
-// TODO : PredictorParam
+// TODO(C.Meng) : PredictorParam

@@ -30,7 +30,7 @@ void SnipeDetector::FindArmor(const cv::Mat &frame) {
 
   (void)frame;
 
-  // TODO :Realize
+  // TODO(BL.Feng) : Realize
   // Formed an armor then please use method `SetModel(game::Model::kOUTPOST);`
   duration_armors_.Calc("Find Armors");
   targets_.emplace_back(Armor());

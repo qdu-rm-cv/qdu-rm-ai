@@ -226,6 +226,6 @@ int HikCamera::Close() {
  *
  */
 void Calibrate() {
-  // TODO
+  // TODO(GY.Wang,BL.Feng) : calibration
   return;
 }
