@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(sentry)
+project(exec_sentry)
 
 add_executable(${PROJECT_NAME} main.cpp)
 

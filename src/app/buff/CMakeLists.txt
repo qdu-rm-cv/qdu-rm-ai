@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(buff-aim)
+project(exec_buff)
 
 add_executable(${PROJECT_NAME} main.cpp)
 

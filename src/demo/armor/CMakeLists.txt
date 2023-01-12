@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(armor_demo)
+project(demo_armor)
 
 add_executable(${PROJECT_NAME} main.cpp)
 

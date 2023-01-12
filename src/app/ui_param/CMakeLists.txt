@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(ui-param)
+project(exec_ui_param)
 
 add_executable(${PROJECT_NAME} main.cpp)
 

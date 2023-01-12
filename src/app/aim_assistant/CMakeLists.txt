@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(aim-assistant)
+project(exec_aim_assistant)
 
 add_executable(${PROJECT_NAME} main.cpp)
 

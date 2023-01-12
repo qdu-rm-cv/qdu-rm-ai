@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(camera_demo)
+project(demo_camera)
 
 add_executable(${PROJECT_NAME} main.cpp)
 

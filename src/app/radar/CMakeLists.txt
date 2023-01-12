@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(radar)
+project(exec_radar)
 
 add_executable(${PROJECT_NAME} main.cpp)
 
