@@ -43,7 +43,7 @@ TEST(TestBehavior, TestWithoutTree) {
   component::Logger::SetLogger();
   Behavior manager(false, false, false);
   manager.Update(300, 400, 200);
-  component::Euler elur = {1, 1, 1};
+  component::Euler elur(1, 1, 1);
   for (int i = 0; i < 5; i++) {
     manager.Aim(elur);
     manager.Move(i);

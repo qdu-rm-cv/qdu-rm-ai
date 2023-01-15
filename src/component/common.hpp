@@ -8,6 +8,9 @@ namespace component {
 
 struct Euler {
   double yaw, pitch, roll;
+
+  explicit Euler(double yaw = 0, double pitch = 0, double roll = 0);
+  const std::string ToString();
 };
 
 enum class Direction {
@@ -35,7 +38,7 @@ enum class AimMethod {
 std::string DirectionToString(Direction direction);
 std::string BuffStateToString(BuffState state);
 std::string AimMethodToString(AimMethod method);
-[[deprecated("The ui approach is recommended")]] AimMethod StringToAimMethod(
+[[deprecated("The gtk-ui is recommended")]] AimMethod StringToAimMethod(
     std::string name);
 
 }  // namespace component

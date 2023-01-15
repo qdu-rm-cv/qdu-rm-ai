@@ -4,7 +4,16 @@
 #include <cctype>
 #include <string>
 
+#include "spdlog/fmt/bundled/core.h"
+
 namespace component {
+
+Euler::Euler(double yaw, double pitch, double roll)
+    : yaw(yaw), pitch(pitch), roll(roll) {}
+
+const std::string Euler::ToString() {
+  return fmt::format("yaw : {}, pitch : {}, roll : {}", yaw, pitch, roll);
+}
 
 std::string DirectionToString(Direction direction) {
   switch (direction) {
@@ -53,7 +62,7 @@ std::string AimMethodToString(AimMethod method) {
   }
 }
 
-[[deprecated("The ui approach is recommended")]] AimMethod StringToAimMethod(
+[[deprecated("The gtk-ui is recommended")]] AimMethod StringToAimMethod(
     std::string name) {
   std::transform(name.begin(), name.end(), name.begin(),
                  [](unsigned char c) { return std::tolower(c); });
