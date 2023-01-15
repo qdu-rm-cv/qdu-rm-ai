@@ -4,9 +4,9 @@ project(exec_auto_aim)
 add_executable(${PROJECT_NAME} main.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
-    behavior
-    compensator
-    classifier
+    module_behavior
+    module_compensator
+    module_classifier
     spdlog::spdlog
     ${Dcamera}
     ${Dcontroller}

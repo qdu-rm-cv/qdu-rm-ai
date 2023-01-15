@@ -4,22 +4,22 @@ project(predictor)
 # ---------------------------------------------------------------------------------------
 # predictor_base
 # ---------------------------------------------------------------------------------------
-file(GLOB ${PROJECT_NAME}_SRC
+file(GLOB module_${PROJECT_NAME}_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/ekf.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/kalman.cpp"
 )
 
-add_library(${PROJECT_NAME}_base STATIC ${${PROJECT_NAME}_SRC})
+add_library(module_${PROJECT_NAME}_base STATIC ${module_${PROJECT_NAME}_SRC})
 
-target_link_libraries(${PROJECT_NAME}_base PUBLIC
+target_link_libraries(module_${PROJECT_NAME}_base PUBLIC
     ${CERES_LIBRARIES}
     ${OpenCV_LIBS}
-    component
+    module_component
     spdlog::spdlog
     tbb
 )
 
-target_include_directories(${PROJECT_NAME}_base PUBLIC
+target_include_directories(module_${PROJECT_NAME}_base PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${EIGEN3_INCLUDE_DIR}
     ${CERES_INCLUDE_DIRS}
@@ -35,9 +35,9 @@ file(GLOB ${Taim}_${PROJECT_NAME}_SRC
 add_library(${Taim}_${PROJECT_NAME} STATIC ${${Taim}_${PROJECT_NAME}_SRC})
 
 target_link_libraries(${Taim}_${PROJECT_NAME} PUBLIC
-    ${PROJECT_NAME}_base
+    module_${PROJECT_NAME}_base
     ${OpenCV_LIBS}
-    component
+    module_component
     spdlog::spdlog
     tbb
     ${Taim}_detector
@@ -58,9 +58,9 @@ file(GLOB ${Tbuff}_${PROJECT_NAME}_SRC
 add_library(${Tbuff}_${PROJECT_NAME} STATIC ${${Tbuff}_${PROJECT_NAME}_SRC})
 
 target_link_libraries(${Tbuff}_${PROJECT_NAME} PUBLIC
-    ${PROJECT_NAME}_base
+    module_${PROJECT_NAME}_base
     ${OpenCV_LIBS}
-    component
+    module_component
     spdlog::spdlog
     tbb
     ${Tbuff}_detector

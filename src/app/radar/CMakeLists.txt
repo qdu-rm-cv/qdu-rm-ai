@@ -4,8 +4,8 @@ project(exec_radar)
 add_executable(${PROJECT_NAME} main.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
-    behavior
-    compensator
+    module_behavior
+    module_compensator
     spdlog::spdlog
     ${Dcamera}
     ${Dcontroller}

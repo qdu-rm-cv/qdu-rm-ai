@@ -9,8 +9,8 @@ if(BUILD_NN)
     add_executable(${PROJECT_NAME} ${${PROJECT_NAME}_SOURCES})
 
     target_link_libraries(${PROJECT_NAME} PRIVATE
-        classifier
-        compensator
+        module_classifier
+        module_compensator
         cudart
         gtest
         gtest_main
@@ -40,8 +40,8 @@ if(BUILD_NN)
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CERES_INCLUDE_DIRS}
         ${EIGEN3_INCLUDE_DIR}
-        $<TARGET_PROPERTY:classifier,INTERFACE_INCLUDE_DIRECTORIES>
-        $<TARGET_PROPERTY:compensator,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:module_classifier,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:module_compensator,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:${Taim}_detector,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:${Tbuff}_detector,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:${Tdart}_detector,INTERFACE_INCLUDE_DIRECTORIES>
@@ -61,8 +61,8 @@ elseif(NOT BUILD_NN)
     add_executable(${PROJECT_NAME} ${${PROJECT_NAME}_SOURCES})
 
     target_link_libraries(${PROJECT_NAME} PRIVATE
-        classifier
-        compensator
+        module_classifier
+        module_compensator
         gtest
         gtest_main
         ${Taim}_detector
@@ -80,8 +80,8 @@ elseif(NOT BUILD_NN)
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CERES_INCLUDE_DIRS}
         ${EIGEN3_INCLUDE_DIR}
-        $<TARGET_PROPERTY:classifier,INTERFACE_INCLUDE_DIRECTORIES>
-        $<TARGET_PROPERTY:compensator,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:module_classifier,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:module_compensator,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:${Taim}_detector,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:${Tbuff}_detector,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:${Tdart}_object,INTERFACE_INCLUDE_DIRECTORIES>

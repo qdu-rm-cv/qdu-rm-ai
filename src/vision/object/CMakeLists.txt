@@ -4,18 +4,18 @@ project(object)
 # ---------------------------------------------------------------------------------------
 # object_base
 # ---------------------------------------------------------------------------------------
-file(GLOB ${PROJECT_NAME}_base_SRC "${CMAKE_CURRENT_SOURCE_DIR}/object.cpp")
+file(GLOB module_${PROJECT_NAME}_base_SRC "${CMAKE_CURRENT_SOURCE_DIR}/object.cpp")
 
-add_library(${PROJECT_NAME}_base STATIC ${${PROJECT_NAME}_base_SRC})
+add_library(module_${PROJECT_NAME}_base STATIC ${module_${PROJECT_NAME}_base_SRC})
 
-target_link_libraries(${PROJECT_NAME}_base PUBLIC
+target_link_libraries(module_${PROJECT_NAME}_base PUBLIC
     ${OpenCV_LIBS}
     tbb
     spdlog::spdlog
-    component
+    module_component
 )
 
-target_include_directories(${PROJECT_NAME}_base PUBLIC
+target_include_directories(module_${PROJECT_NAME}_base PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
@@ -30,11 +30,11 @@ file(GLOB ${Taim}_${PROJECT_NAME}_SRC
 add_library(${Taim}_${PROJECT_NAME} STATIC ${${Taim}_${PROJECT_NAME}_SRC})
 
 target_link_libraries(${Taim}_${PROJECT_NAME} PUBLIC
-    ${PROJECT_NAME}_base
+    module_${PROJECT_NAME}_base
     ${OpenCV_LIBS}
     tbb
     spdlog::spdlog
-    component
+    module_component
 )
 
 target_include_directories(${Taim}_${PROJECT_NAME} PUBLIC
@@ -55,7 +55,7 @@ target_link_libraries(${Tbuff}_${PROJECT_NAME} PUBLIC
     ${OpenCV_LIBS}
     tbb
     spdlog::spdlog
-    component
+    module_component
 )
 
 target_include_directories(${Tbuff}_${PROJECT_NAME} PUBLIC
@@ -72,11 +72,11 @@ file(GLOB ${Tdart}_${PROJECT_NAME}_SRC
 add_library(${Tdart}_${PROJECT_NAME} STATIC ${${Tdart}_${PROJECT_NAME}_SRC})
 
 target_link_libraries(${Tdart}_${PROJECT_NAME} PUBLIC
-    ${PROJECT_NAME}_base
+    module_${PROJECT_NAME}_base
     ${OpenCV_LIBS}
     tbb
     spdlog::spdlog
-    component
+    module_component
 )
 
 target_include_directories(${Tdart}_${PROJECT_NAME} PUBLIC
@@ -93,11 +93,11 @@ file(GLOB ${Tengineer}_${PROJECT_NAME}_SRC
 add_library(${Tengineer}_${PROJECT_NAME} STATIC ${${Tengineer}_${PROJECT_NAME}_SRC})
 
 target_link_libraries(${Tengineer}_${PROJECT_NAME} PUBLIC
-    ${PROJECT_NAME}_base
+    module_${PROJECT_NAME}_base
     ${OpenCV_LIBS}
     tbb
     spdlog::spdlog
-    component
+    module_component
 )
 target_include_directories(${Tengineer}_${PROJECT_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}

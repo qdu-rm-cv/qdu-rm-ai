@@ -4,8 +4,8 @@ project(exec_buff)
 add_executable(${PROJECT_NAME} main.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
-    behavior
-    compensator
+    module_behavior
+    module_compensator
     spdlog::spdlog
     ${Dcamera}
     ${Dcontroller}
@@ -17,7 +17,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/..
-    $<TARGET_PROPERTY:behavior,INTERFACE_INCLUDE_DIRECTORIES>
+    $<TARGET_PROPERTY:module_behavior,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
 add_compile_options(-g)

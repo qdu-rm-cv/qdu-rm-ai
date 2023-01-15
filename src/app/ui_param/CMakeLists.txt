@@ -4,8 +4,8 @@ project(exec_ui_param)
 add_executable(${PROJECT_NAME} main.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
-    component
-    param
+    module_component
+    module_param
     spdlog::spdlog
     ${Dcamera}
     ${Taim}_detector

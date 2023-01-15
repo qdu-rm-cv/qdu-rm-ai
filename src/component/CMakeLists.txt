@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(component)
+project(module_component)
 
 configure_file(build_type.hpp.in ${CMAKE_BINARY_DIR}/generated/build_type.hpp)
 

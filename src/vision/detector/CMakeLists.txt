@@ -18,11 +18,11 @@ if(BUILD_NN)
 
     target_link_libraries(${Tradar}_${PROJECT_NAME} PUBLIC
         ${OpenCV_LIBS}
-        component
+        module_component
         cudart
         nvinfer
         nvonnxparser
-        param
+        module_param
         spdlog::spdlog
         tbb
         ${Taim}_object
@@ -54,8 +54,8 @@ add_library(${Taim}_${PROJECT_NAME} STATIC ${${Taim}_${PROJECT_NAME}_SRC})
 
 target_link_libraries(${Taim}_${PROJECT_NAME} PUBLIC
     ${OpenCV_LIBS}
-    component
-    param
+    module_component
+    module_param
     spdlog::spdlog
     tbb
     ${Taim}_object
@@ -76,8 +76,8 @@ add_library(${Tbuff}_${PROJECT_NAME} STATIC ${${Tbuff}_${PROJECT_NAME}_SRC})
 
 target_link_libraries(${Tbuff}_${PROJECT_NAME} PUBLIC
     ${OpenCV_LIBS}
-    component
-    param
+    module_component
+    module_param
     spdlog::spdlog
     tbb
     ${Tbuff}_object
@@ -98,8 +98,8 @@ add_library(${Tdart}_${PROJECT_NAME} STATIC ${${Tdart}_${PROJECT_NAME}_SRC})
 
 target_link_libraries(${Tdart}_${PROJECT_NAME} PUBLIC
     ${OpenCV_LIBS}
-    component
-    param
+    module_component
+    module_param
     spdlog::spdlog
     tbb
     ${Tdart}_object
@@ -120,8 +120,8 @@ add_library(${Tengineer}_${PROJECT_NAME} STATIC ${${Tengineer}_${PROJECT_NAME}_S
 
 target_link_libraries(${Tengineer}_${PROJECT_NAME} PUBLIC
     ${OpenCV_LIBS}
-    component
-    param
+    module_component
+    module_param
     spdlog::spdlog
     tbb
     ${Tengineer}_object

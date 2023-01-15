@@ -4,9 +4,9 @@ project(exec_aim_assistant)
 add_executable(${PROJECT_NAME} main.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
-    behavior
-    compensator
-    process
+    module_behavior
+    module_compensator
+    module_process
     spdlog::spdlog
     ${Dcamera}
     ${Dcontroller}
@@ -23,7 +23,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/..
     ${EIGEN3_INCLUDE_DIR}
     ${CERES_INCLUDE_DIRS}
-    $<TARGET_PROPERTY:behavior,INTERFACE_INCLUDE_DIRECTORIES>
+    $<TARGET_PROPERTY:module_behavior,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
 add_dependencies(${PROJECT_NAME}

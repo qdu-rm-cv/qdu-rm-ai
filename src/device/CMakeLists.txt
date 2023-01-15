@@ -13,7 +13,7 @@ add_library(${Dcamera} STATIC ${${Dcamera}_SRC})
 
 target_link_libraries(${Dcamera}
     ${OpenCV_LIBS}
-    component
+    module_component
     MvCameraControl
     spdlog::spdlog
     Threads::Threads
@@ -30,7 +30,7 @@ target_include_directories(${Dcamera} PUBLIC
     /opt/MVS/include
 )
 
-add_dependencies(${Dcamera} component)
+add_dependencies(${Dcamera} module_component)
 
 # ---------------------------------------------------------------------------------------
 # controller
@@ -46,7 +46,7 @@ add_library(${Dcontroller} STATIC ${${Dcontroller}_SRC})
 
 target_link_libraries(${Dcontroller}
     ${OpenCV_LIBS}
-    component
+    module_component
     spdlog::spdlog
     Threads::Threads
     usbp-1
@@ -57,7 +57,7 @@ target_include_directories(${Dcontroller} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/../../third_party/qdu-rm-protocol/
 )
 
-add_dependencies(${Dcontroller} component)
+add_dependencies(${Dcontroller} module_component)
 
 # ---------------------------------------------------------------------------------------
 # servo
@@ -70,11 +70,11 @@ add_library(${Dservo} STATIC ${${Dservo}_SRC})
 
 target_link_libraries(${Dservo}
     spdlog::spdlog
-    component
+    module_component
 )
 
 target_include_directories(${Dservo} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-add_dependencies(${Dservo} component)
+add_dependencies(${Dservo} module_component)

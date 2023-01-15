@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(compensator)
+project(module_compensator)
 
 file(GLOB ${PROJECT_NAME}_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
@@ -11,7 +11,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     ${OpenCV_LIBS}
     tbb
     spdlog::spdlog
-    component
+    module_component
     task_aim_object
 )
 
