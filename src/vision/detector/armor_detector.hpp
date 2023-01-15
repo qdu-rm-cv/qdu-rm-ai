@@ -2,7 +2,6 @@
 
 #include "armor.hpp"
 #include "armor_param.hpp"
-#include "common.hpp"
 #include "detector.hpp"
 #include "light_bar.hpp"
 #include "timer.hpp"

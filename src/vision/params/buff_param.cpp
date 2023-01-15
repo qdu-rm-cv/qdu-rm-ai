@@ -1,5 +1,7 @@
 #include "buff_param.hpp"
 
+#include "opencv2/core/persistence.hpp"
+
 BuffDetectorParam<double> BuffParam::TransformToDouble() {
   paramd_.binary_th = parami_.binary_th;
   paramd_.contour_size_low_th = parami_.contour_size_low_th;

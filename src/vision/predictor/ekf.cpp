@@ -33,15 +33,12 @@ std::vector<ceres::Jet<double, 5>> ConvertFromCoordToEuler(
 
 void EKF::InnerInit(const Matx51d& Xe) {
   cv::cv2eigen(Xe, EXe);
-  this->EXe = EXe;
   EP = EMatx55d::Identity();
   EQ = EMatx55d::Identity();
   ER = EMatx33d::Identity();
 }
 
-EKF::EKF() { SPDLOG_TRACE("Constructed."); }
-
-EKF::EKF(const Matx51d& Xe = Matx51d::zeros()) { InnerInit(Xe); }
+EKF::EKF(const Matx51d& Xe) { InnerInit(Xe); }
 
 EKF::~EKF() { SPDLOG_TRACE("Destruted."); }
 

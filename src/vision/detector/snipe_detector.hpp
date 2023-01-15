@@ -1,7 +1,6 @@
 #pragma once
 
 #include "armor.hpp"
-#include "common.hpp"
 #include "detector.hpp"
 
 struct SnipeDetectorParam {

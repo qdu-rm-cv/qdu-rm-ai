@@ -1,6 +1,5 @@
 #pragma once
 
-#include "common.hpp"
 #include "detector.hpp"
 #include "ore_cube.hpp"
 

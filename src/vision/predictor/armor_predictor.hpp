@@ -5,7 +5,6 @@
 
 #include "armor.hpp"
 #include "armor_detector.hpp"
-#include "common.hpp"
 #include "kalman.hpp"
 #include "predictor.hpp"
 #include "timer.hpp"

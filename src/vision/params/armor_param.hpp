@@ -1,7 +1,6 @@
 #pragma once
 #include <string>
 
-#include "opencv2/opencv.hpp"
 #include "param.hpp"
 #include "spdlog/spdlog.h"
 

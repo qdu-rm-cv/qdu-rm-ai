@@ -1,6 +1,5 @@
 #pragma once
 
-#include "common.hpp"
 #include "detector.hpp"
 #include "guiding_light.hpp"
 

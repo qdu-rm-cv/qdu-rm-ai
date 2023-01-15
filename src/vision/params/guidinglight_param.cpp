@@ -1,8 +1,5 @@
 #include "guidinglight_param.hpp"
 
-#include "opencv2/opencv.hpp"
-#include "spdlog/spdlog.h"
-
 bool GuidingLightParam::Read(const std::string &params_path) {
   cv::FileStorage fs(params_path,
                      cv::FileStorage::READ | cv::FileStorage::FORMAT_JSON);
