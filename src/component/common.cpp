@@ -53,7 +53,8 @@ std::string AimMethodToString(AimMethod method) {
   }
 }
 
-AimMethod StringToAimMethod(std::string name) {
+[[deprecated("The ui approach is recommended")]] AimMethod StringToAimMethod(
+    std::string name) {
   std::transform(name.begin(), name.end(), name.begin(),
                  [](unsigned char c) { return std::tolower(c); });
   if (!name.compare("armor") || !name.compare("autoaim") ||

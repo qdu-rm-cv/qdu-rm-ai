@@ -35,7 +35,8 @@ enum class AimMethod {
 std::string DirectionToString(Direction direction);
 std::string BuffStateToString(BuffState state);
 std::string AimMethodToString(AimMethod method);
-AimMethod StringToAimMethod(std::string name);
+[[deprecated("The ui approach is recommended")]] AimMethod StringToAimMethod(
+    std::string name);
 
 }  // namespace component
 

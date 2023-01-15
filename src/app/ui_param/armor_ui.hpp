@@ -1,22 +1,18 @@
 #pragma once
 
-#include "app.hpp"
 #include "armor_detector.hpp"
 #include "armor_param.hpp"
-#include "hik_camera.hpp"
-#include "raspi_camera.hpp"
+#include "ui.hpp"
 
-class ArmorUIParam : private App {
+class ArmorUIParam : private UI {
  private:
-  HikCamera cam_;
   ArmorDetector detector_;
   ArmorParam armor_param_;
-  std::string param_path_, window_handle_;
 
  public:
   ArmorUIParam(const std::string& log_path, const std::string& param_path,
                const std::string& window = "ui_setting")
-      : App(log_path), param_path_(param_path), window_handle_(window) {
+      : UI(log_path, param_path, window) {
     SPDLOG_WARN("***** Setting Up ArmorUIParam System. *****");
 
     /* 初始化设备 */

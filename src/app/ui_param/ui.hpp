@@ -1,30 +1,22 @@
-// #pragma once
+#pragma once
 
-// #include "app.hpp"
-// #include "detector.hpp"
-// #include "hik_camera.hpp"
-// #include "opencv2/opencv.hpp"
-// #include "param.hpp"
+#include "app.hpp"
+#include "hik_camera.hpp"
+#include "opencv2/opencv.hpp"
 
-// template <typename D, typename P>
-// class UI {
-//  private:
-//   HikCamera cam_;
-//   Detector detector_;
-//   Param param_;
-//   std::string param_path_, window_handle_;
+class UI : private App {
+ public:
+  HikCamera cam_;
+  std::string param_path_, window_handle_;
 
-//  public:
-//   UI(const std::string& log_path, const std::string& param_path,
-//      const std::string& window = "ui_setting")
-//       : App(log_path), param_path_(param_path), window_handle_(window) {
-//     SPDLOG_WARN("***** Setting Up BuffUIParam System. *****");
+  UI(const std::string& log_path, const std::string& param_path,
+     const std::string& window = "ui_setting")
+      : App(log_path), param_path_(param_path), window_handle_(window) {
+    /* 初始化设备 */
+    cam_.Open(0);
+    cam_.Setup(640, 480);
+  }
+  ~UI() {}
 
-//     /* 初始化设备 */
-//     cam_.Open(0);
-//     cam_.Setup(640, 480);
-//     param_.Read(param_path_);
-//     detector_.SetTeam(game::Team::kRED);
-//   }
-//   ~UI();
-// };
+  virtual void Run() = 0;
+};
