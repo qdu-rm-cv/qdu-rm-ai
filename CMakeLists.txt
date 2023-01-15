@@ -93,13 +93,13 @@ message(STATUS "spdlog version: ${spdlog_VERSION}")
 message(STATUS "TBB version: ${TBB_VERSION}")
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    add_compile_definitions(SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_DEBUG)
+    set(BUILD_TYPE LEVEL_DEBUG)
 elseif(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-    add_compile_definitions(SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_DEBUG)
-elseif(CMAKE_BUILD_TYPE STREQUAL "Realase")
-    add_compile_definitions(SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_INFO)
+    set(BUILD_TYPE LEVEL_DEBUG)
+elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
+    set(BUILD_TYPE LEVEL_INFO)
 elseif(CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
-    add_compile_definitions(SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_INFO)
+    set(BUILD_TYPE LEVEL_INFO)
 endif()
 
 # ---------------------------------------------------------------------------------------
@@ -107,7 +107,7 @@ endif()
 # ---------------------------------------------------------------------------------------
 message(STATUS "----------------------- Packages Option ------------------------")
 
-set(BUILD_NN 1)
+set(BUILD_NN 0)
 message(STATUS "Build NN: ${BUILD_NN}")
 
 # ---------------------------------------------------------------------------------------
@@ -160,7 +160,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
     message(STATUS "Install to: ${CMAKE_INSTALL_BINDIR}")
 
     install(
-        TARGETS auto-aim
+        TARGETS exec_auto_aim
         EXPORT auto-aim
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -168,7 +168,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
     )
 
     install(
-        TARGETS sentry
+        TARGETS exec_sentry
         EXPORT sentry
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -176,7 +176,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
     )
 
     install(
-        TARGETS buff
+        TARGETS exec_buff
         EXPORT buff
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}

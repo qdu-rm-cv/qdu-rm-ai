@@ -1,0 +1,20 @@
+#ifndef __GENERATED_BUILD_TYPE_HPP__
+#define __GENERATED_BUILD_TYPE_HPP__
+
+#ifndef LEVEL_DEBUG
+#define LEVEL_DEBUG 1
+#endif
+
+#ifndef LEVEL_INFO
+#define LEVEL_INFO 2
+#endif
+
+#ifndef BUILD_TYPE
+#define BUILD_TYPE @BUILD_TYPE@
+#endif
+
+static unsigned int GetBuildType() {
+  return static_cast<unsigned int>(BUILD_TYPE);
+}
+
+#endif  //  __GENERATED_BUILD_TYPE_HPP__

@@ -33,11 +33,12 @@ class Recorder {
  private:
   std::thread thread_record_;
   std::string thread_name_;
-  int fps_;
+  int fps_, count_;
 
   void Print() {
-    while (true) {
+    while (count_ <= 10) {
       std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+      if (fps_ == 0) count_++;
       SPDLOG_CRITICAL("[{}] FPS : {}", thread_name_, fps_);
       fps_ = 0;
     }
@@ -46,6 +47,7 @@ class Recorder {
  public:
   explicit Recorder(const std::string& name = "RecordThread", int fps = 0)
       : thread_name_(name), fps_(fps) {
+    count_ = 0;
     thread_record_ = std::thread(&Recorder::Print, this);
     SPDLOG_TRACE("Constructed.");
   }

@@ -86,7 +86,7 @@
         "-legal/copyright",
     ],
     "cpplint.lineLength": 80,
-    "C_Cpp.inactiveRegionOpacity": null,
+    "C_Cpp.inactiveRegionOpacity": 0.4,
     "C_Cpp.formatting": "clangFormat",
     "clang-format.language.cpp.fallbackStyle": "Google",
     "clang-format.language.cpp.style": "Google",
@@ -167,6 +167,8 @@
         "mutex": "cpp",
         "shared_mutex": "cpp",
         "typeindex": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "unordered_set": "cpp",
+        "future": "cpp"
     },
 }
