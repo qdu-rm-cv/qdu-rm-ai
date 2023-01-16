@@ -29,8 +29,16 @@
 #define BUILD_TYPE @BUILD_TYPE@
 #endif
 
-static unsigned int GetBuildType() {
-  return static_cast<unsigned int>(BUILD_TYPE);
+namespace component {
+
+namespace logger {
+
+static __attribute__((unused)) int GetBuildType() {
+  return static_cast<int>(BUILD_TYPE);
 }
+
+}  // namespace logger
+
+}  // namespace component
 
 #endif  //  __GENERATED_BUILD_TYPE_HPP__

@@ -40,7 +40,7 @@ TEST(TestBehavior, TestSimpleTree) {
 }
 
 TEST(TestBehavior, TestWithoutTree) {
-  component::Logger::SetLogger();
+  component::logger::SetLogger();
   Behavior manager(false, false, false);
   manager.Update(300, 400, 200);
   component::Euler elur(1, 1, 1);

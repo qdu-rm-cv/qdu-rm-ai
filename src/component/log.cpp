@@ -10,7 +10,7 @@ int GetLoggerNum() { return logger_num++; }
 
 namespace component {
 
-namespace Logger {
+namespace logger {
 
 /*
  * %+ :         default log pattern
@@ -89,6 +89,10 @@ void SetLogger(const std::string& path, FMT fmt,
   SPDLOG_DEBUG("{} Logger is setted.", logger_name);
 }
 
-}  // namespace Logger
+std::string GetLevelString() {
+  return std::string(spdlog::level::to_string_view(spdlog::get_level()).data());
+}
+
+}  // namespace logger
 
 }  // namespace component

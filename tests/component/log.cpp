@@ -18,9 +18,10 @@ TEST(TestComponent, TestLog) {
 }
 
 TEST(TestComponent, TestSetLogger) {
-  component::Logger::SetLogger("log/test.log",
-                               component::Logger::FMT::kFMT_DEFAULT,
+  component::logger::SetLogger("log/test.log",
+                               component::logger::FMT::kFMT_DEFAULT,
                                spdlog::level::debug);
   SPDLOG_DEBUG("debug message");
   SPDLOG_INFO("info message");
+  SPDLOG_INFO("active level : {}", component::logger::GetLevelString());
 }

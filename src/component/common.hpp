@@ -130,7 +130,7 @@ namespace algo {
 
 double RelativeDifference(double a, double b);
 
-template <typename T = int>
-const T& GetRandomValue(const T& min = 0, const T& max = 10);
+int GetIntRandomValue(int min = 0, int max = 10);
+double GetRealRandomValue(double min = 0, double max = 1);
 
 }  // namespace algo

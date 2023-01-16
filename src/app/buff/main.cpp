@@ -18,7 +18,7 @@ class BuffAim : private App {
 
  public:
   explicit BuffAim(const std::string& log_path)
-      : App(log_path, component::Logger::FMT::kFMT_THREAD) {
+      : App(log_path, component::logger::FMT::kFMT_THREAD) {
     SPDLOG_WARN("***** Setting Up Buff Aiming System. *****");
 
     /* 初始化设备 */

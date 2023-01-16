@@ -23,7 +23,7 @@ const std::string kPARAM = "../../../runtime/RMUT2021_Buff.json";
 }  // namespace
 
 TEST(TestVision, TestEKF) {
-  component::Logger::SetLogger();
+  component::logger::SetLogger();
   EKF filter;
   SPDLOG_WARN("Filter");
   cv::Mat predict_mat;

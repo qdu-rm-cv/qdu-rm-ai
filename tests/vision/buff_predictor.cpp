@@ -15,7 +15,7 @@ const std::string kPARAM_PREDICT("../../../runtime/RMUT2022_Buff_Pre.json");
 }  // namespace
 
 TEST(TestVision, TestKalmanPredictor) {
-  component::Logger::SetLogger();
+  component::logger::SetLogger();
   cv::Mat frame;
   BuffDetector detector(kPARAM_DETECT, game::Team::kBLUE);
   BuffPredictor predictor(kPARAM_PREDICT);

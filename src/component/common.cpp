@@ -6,6 +6,12 @@
 
 #include "spdlog/fmt/bundled/core.h"
 
+namespace {
+
+static std::random_device r;
+static std::default_random_engine engine(r());
+
+}  // namespace
 namespace component {
 
 Euler::Euler(double yaw, double pitch, double roll)
@@ -242,10 +248,15 @@ double RelativeDifference(double a, double b) {
   return diff / base;
 }
 
-template <typename T>
-const T& GetRandomValue(const T& min, const T& max) {
-  static std::default_random_engine engine(time(NULL));
-  static std::uniform_real_distribution<T> distributer(min, max);
+int GetIntRandomValue(int min, int max) {
+  if (min > max) std::swap(min, max);
+  std::uniform_int_distribution<int> distributer(min, max);
+  return distributer(engine);
+}
+
+double GetRealRandomValue(double min, double max) {
+  if (min > max) std::swap(min, max);
+  static std::uniform_real_distribution<double> distributer(min, max);
   return distributer(engine);
 }
 

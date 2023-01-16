@@ -13,7 +13,7 @@
 
 namespace component {
 
-namespace Logger {
+namespace logger {
 
 enum class FMT {
   kFMT_DEFAULT,
@@ -26,6 +26,8 @@ void SetLogger(
     const std::string& path = "log/log.log", FMT fmt = FMT::kFMT_TEST,
     spdlog::level::level_enum level = spdlog::level::level_enum::debug);
 
-}  // namespace Logger
+std::string GetLevelString();
+
+}  // namespace logger
 
 }  // namespace component
