@@ -18,8 +18,9 @@ const int kB_NUM = 3;
 
 const int kB_H = 52;
 const int kW_O = 0;
-const int kW_W = 100;
+const int kW_W = 100; /* 窗口宽度，建议偶数 */
 constexpr int kW_H = kB_H * kB_NUM;
+
 const int kF_FACE = cv::FONT_HERSHEY_COMPLEX;
 const double kF_SCALE = 0.7;
 const int kF_THICK = 1;
@@ -42,7 +43,6 @@ int main(int argc, char const* argv[]) {
   CreateButton(black, "Armor", 1);
   CreateButton(black, "Buff", 2);
   CreateButton(black, "Light", 3);
-  CreateButton(black, "A", 4);
 
   cv::imshow(kWINDOW, black);
   cv::setMouseCallback(kWINDOW, MouseCallback);
@@ -92,8 +92,8 @@ void CreateButton(cv::Mat frame, const std::string& name, const int& pos) {
     return;
   }
 
-  int top = (pos - 1) * kB_H + 3;
-  int bottom = pos * kB_H - 3;
+  int top = (pos - 1) * kB_H + 3; /* 收缩边框，故使top += 3 */
+  int bottom = pos * kB_H - 3;    /* 收缩边框，故使bottom -= 3 */
 
   int baseline;
   cv::Size size = cv::getTextSize(name, kF_FACE, kF_SCALE, kF_THICK, &baseline);

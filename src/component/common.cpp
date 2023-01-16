@@ -242,4 +242,11 @@ double RelativeDifference(double a, double b) {
   return diff / base;
 }
 
+template <typename T>
+const T& GetRandomValue(const T& min, const T& max) {
+  static std::default_random_engine engine(time(NULL));
+  static std::uniform_real_distribution<T> distributer(min, max);
+  return distributer(engine);
+}
+
 }  // namespace algo

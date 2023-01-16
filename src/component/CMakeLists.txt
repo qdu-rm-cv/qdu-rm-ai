@@ -3,7 +3,6 @@ project(module_component)
 
 configure_file(build_type.hpp.in ${CMAKE_BINARY_DIR}/generated/build_type.hpp)
 
-# include_directories()
 file(GLOB ${PROJECT_NAME}_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
 )

@@ -1,7 +1,5 @@
 #include "behavior.hpp"
 
-#include <random>
-
 #include "spdlog/spdlog.h"
 
 Behavior::Behavior() {
@@ -54,11 +52,8 @@ void Behavior::Aim(component::Euler aiming_eulr) {
 }
 
 void Behavior::Move(float v) {
-  static std::default_random_engine engine(time(NULL));
-  static std::uniform_real_distribution<float> distributer(3.0f, 5.0f);
-
   data_.chassis_move_vec.vy =
-      (v == 0 ? 1 : v / std::abs(v)) * distributer(engine);
+      (v == 0 ? 1 : v / std::abs(v)) * algo::GetRandomValue<float>(3, 5);
   if (status_.low_hp || status_.bullet_empty) {
     data_.chassis_move_vec.vy *= 2;
   }
@@ -67,6 +62,7 @@ void Behavior::Move(float v) {
   else
     data_.chassis_move_vec.wz = M_PI / 3;
 }
+
 void Behavior::SetNotice(game::Alert alert) {
   if (alert.enemy_buff) data_.notice |= AI_NOTICE_BUFF;
   if (alert.enemy_snipe) data_.notice |= AI_NOTICE_SNIPE;

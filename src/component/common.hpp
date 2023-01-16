@@ -1,5 +1,6 @@
 #pragma once
 
+#include <random>
 #include <string>
 
 #define RMU2023
@@ -128,5 +129,8 @@ bool HasBigArmor(Model model);
 namespace algo {
 
 double RelativeDifference(double a, double b);
+
+template <typename T = int>
+const T& GetRandomValue(const T& min = 0, const T& max = 10);
 
 }  // namespace algo
