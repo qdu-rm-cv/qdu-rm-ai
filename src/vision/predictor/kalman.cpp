@@ -113,7 +113,8 @@ Kalman::Kalman(int states, int measurements) {
 Kalman::~Kalman() { SPDLOG_TRACE("Destructed."); }
 
 void Kalman::Init(const std::vector<double>& vec) {
-  if (method_ == game::Method::kUNKNOWN) method_ = game::Method::kKF;
+  if (method_ == component::FilterMethod::kUNKNOWN)
+    method_ = component::FilterMethod::kKF;
   SPDLOG_WARN("{}, {}", vec[0], vec[1]);
   InnerInit(static_cast<int>(vec[0]), static_cast<int>(vec[1]));
 }

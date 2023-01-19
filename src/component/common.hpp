@@ -13,6 +13,33 @@
 #define TypeName(var) \
   std::string(abi::__cxa_demangle(typeid(var).name(), 0, 0, 0))
 #endif
+
+namespace component {
+
+struct Euler {
+  double pitch, roll, yaw;
+
+  explicit Euler(double pitch = 0, double roll = 0, double yaw = 0);
+};
+
+enum class Direction {
+  kUNKNOWN,
+  kCW,
+  kCCW,
+};
+
+enum class FilterMethod {
+  kUNKNOWN,
+  kKF,
+  kEKF,
+};
+
+std::string ToString(const Euler &elur);
+std::string ToString(const component::Direction &direction);
+std::string ToString(const component::FilterMethod &m);
+
+}  // namespace component
+
 namespace game {
 
 struct Alert {
@@ -33,11 +60,31 @@ struct Alert {
   }
 };
 
-enum class Team {
+enum class AimMethod {
   kUNKNOWN,
-  kDEAD,
-  kBLUE,
-  kRED,
+  kARMOR,
+  kBUFF,
+  kORECUBE,
+  kSNIPE,
+  kLIGHT,
+};
+
+enum class Arm {
+  kUNKNOWN,
+  kINFANTRY,
+  kHERO,
+  kENGINEER,
+  kDRONE,
+  kSENTRY,
+  kDART,
+  kRADAR,
+};
+
+enum class BuffState {
+  kUNKNOWN,
+  kSMALL,
+  kBIG,
+  kINVINCIBLE,
 };
 
 enum class Model {
@@ -50,17 +97,6 @@ enum class Model {
   kBASE,
   kOUTPOST,
   kBUFF,
-};
-
-enum class Arm {
-  kUNKNOWN,
-  kINFANTRY,
-  kHERO,
-  kENGINEER,
-  kDRONE,
-  kSENTRY,
-  kDART,
-  kRADAR,
 };
 
 enum class Race {
@@ -77,62 +113,31 @@ enum class RFID {
   kSNIPE,
 };
 
-enum class Method {
+enum class Team {
   kUNKNOWN,
-  kKF,
-  kEKF,
+  kDEAD,
+  kBLUE,
+  kRED,
 };
 
+std::string ToString(const game::AimMethod &method);
+std::string ToString(const game::Arm &arm);
+std::string ToString(const game::BuffState &state);
+std::string ToString(const game::Model &model);
+std::string ToString(const game::Race &race);
+std::string ToString(const game::RFID &rfid);
+std::string ToString(const game::Team &team);
+
+std::string ToString(const component::Direction &direction);
+std::string ToString(const component::FilterMethod &m);
+
 Model StringToModel(std::string name);
+[[deprecated("The gtk-ui is recommended")]] game::AimMethod StringToAimMethod(
+    std::string name);
 
 bool HasBigArmor(Model model);
 
 }  // namespace game
-
-namespace component {
-
-struct Euler {
-  double pitch, roll, yaw;
-
-  explicit Euler(double pitch = 0, double roll = 0, double yaw = 0);
-};
-
-enum class Direction {
-  kUNKNOWN,
-  kCW,
-  kCCW,
-};
-
-enum class BuffState {
-  kUNKNOWN,
-  kSMALL,
-  kBIG,
-  kINVINCIBLE,
-};
-
-enum class AimMethod {
-  kUNKNOWN,
-  kARMOR,
-  kBUFF,
-  kORECUBE,
-  kSNIPE,
-  kLIGHT,
-};
-
-std::string ToString(const Euler &elur);
-std::string ToString(const Direction &direction);
-std::string ToString(const BuffState &state);
-std::string ToString(const AimMethod &method);
-std::string ToString(const game::Team &team);
-std::string ToString(const game::Model &model);
-std::string ToString(const game::Arm &arm);
-std::string ToString(const game::Race &race);
-std::string ToString(const game::RFID &rfid);
-std::string ToString(const game::Method &m);
-[[deprecated("The gtk-ui is recommended")]] AimMethod StringToAimMethod(
-    std::string name);
-
-}  // namespace component
 
 namespace algo {
 

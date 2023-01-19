@@ -19,7 +19,7 @@ struct BuffPredictorParam {
 class BuffPredictor : public Predictor<Armor, BuffPredictorParam, Kalman> {
  private:
   game::Race race_;
-  component::BuffState state_;
+  game::BuffState state_;
 
   Buff buff_;
   std::chrono::system_clock::time_point end_time_;
@@ -86,16 +86,16 @@ class BuffPredictor : public Predictor<Armor, BuffPredictorParam, Kalman> {
   /**
    * @brief Get the State object
    *
-   * @return component::BuffState& 当前能量机关旋转状态
+   * @return game::BuffState& 当前能量机关旋转状态
    */
-  component::BuffState &GetState();
+  game::BuffState &GetState();
 
   /**
    * @brief Set the State object
    *
    * @param state 当前能量机关旋转状态
    */
-  void SetState(component::BuffState state);
+  void SetState(game::BuffState state);
 
   /**
    * @brief Get the Time object

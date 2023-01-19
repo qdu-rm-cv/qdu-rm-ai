@@ -55,8 +55,8 @@ static double PredictIntegralRotatedAngle(double t) {
 void BuffPredictor::InitDefaultParams(const std::string &params_path) {
   cv::FileStorage fs(params_path,
                      cv::FileStorage::WRITE | cv::FileStorage::FORMAT_JSON);
-  SPDLOG_WARN("filter method: {}", component::ToString(filter_.method_));
-  if (filter_.method_ != game::Method::kUNKNOWN) {
+  SPDLOG_WARN("filter method: {}", game::ToString(filter_.method_));
+  if (filter_.method_ != component::FilterMethod::kUNKNOWN) {
     fs << "delay_time" << 0.1542;
     fs << "error_frame" << 5;
   }
@@ -119,7 +119,7 @@ void BuffPredictor::MatchDirection() {
   } else {
     circumference_.erase(circumference_.begin());
   }
-  SPDLOG_WARN("Buff's Direction is {}", component::ToString(direction_));
+  SPDLOG_WARN("Buff's Direction is {}", game::ToString(direction_));
   duration_direction_.Calc("Predict Direction");
 }
 
@@ -159,13 +159,13 @@ void BuffPredictor::MatchPredict() {
     return;
   }
   if (component::Direction::kUNKNOWN == direction_) return;
-  component::BuffState state = GetState();
+  game::BuffState state = GetState();
   double theta = 0;
-  if (state == component::BuffState::kSMALL) {
+  if (state == game::BuffState::kSMALL) {
     // theta = PredictIntegralRotatedAngle(2);
     theta = 10;
     theta = theta / 180 * CV_PI;
-  } else if (state == component::BuffState::kBIG) {
+  } else if (state == game::BuffState::kBIG) {
     theta = std::abs(
         CalRotatedAngle(filter_.Predict(buff_.GetTarget().ImageCenter()),
                         buff_.GetCenter()) -
@@ -175,7 +175,7 @@ void BuffPredictor::MatchPredict() {
   Armor armor = RotateArmor(theta);
   armor.SetModel(game::Model::kHERO);
   predicts_.emplace_back(armor);
-  SPDLOG_WARN("Buff has been predicted. {}", component::ToString(direction_));
+  SPDLOG_WARN("Buff has been predicted. {}", game::ToString(direction_));
 
   duration_predict_.Calc("Match Predict");
 }
@@ -209,18 +209,18 @@ BuffPredictor::BuffPredictor(const std::string &param) {
   SPDLOG_WARN("Start construct");
 #if 0
   //* 1. filter init
-  if (filter_.method_ == Method::kUNKNOWN) {
+  if (filter_.method_ == FilterMethod::kUNKNOWN) {
     if (params_.is_EKF)
-      filter_.method_ = Method::kEKF;
+      filter_.method_ = FilterMethod::kEKF;
     else if (params_.is_KF)
-      filter_.method_ = Method::kKF;
+      filter_.method_ = FilterMethod::kKF;
   }
   SPDLOG_DEBUG("Filter method : {}", filter_.method_);
   std::vector<double> init_vec;
-  if (filter_.method_ == Method::kKF) {
+  if (filter_.method_ == FilterMethod::kKF) {
     init_vec.push_back(4.);
     init_vec.push_back(2.);
-  } else if (filter_.method_ == Method::kEKF) {
+  } else if (filter_.method_ == FilterMethod::kEKF) {
     for (std::size_t i = 0; i < 5; i++) init_vec.push_back(0.);
   }
   filter_.Init(init_vec);
@@ -240,7 +240,7 @@ BuffPredictor::BuffPredictor(const std::string &param) {
   SPDLOG_INFO("Race and end_time init");
 
   //* 3rd. buff init
-  state_ = component::BuffState::kUNKNOWN;
+  state_ = game::BuffState::kUNKNOWN;
   buff_ = Buff();
   circumference_.clear();
   SPDLOG_INFO("Buff init");
@@ -275,32 +275,30 @@ void BuffPredictor::ChangeDirection(bool direction) {
   } else {
     direction_ = component::Direction::kCCW;
   }
-  SPDLOG_CRITICAL("Direction changed, now : {}",
-                  component::ToString(direction_));
+  SPDLOG_CRITICAL("Direction changed, now : {}", game::ToString(direction_));
 }
 
 /**
  * @brief Get the State object
  *
- * @return component::BuffState& 当前能量机关旋转状态
+ * @return game::BuffState& 当前能量机关旋转状态
  */
-component::BuffState &BuffPredictor::GetState() {
-  SPDLOG_DEBUG("{}, {}", component::ToString(race_),
-               component::ToString(state_));
+game::BuffState &BuffPredictor::GetState() {
+  SPDLOG_DEBUG("{}, {}", game::ToString(race_), game::ToString(state_));
 
   if (race_ == game::Race::kRMUT) {
-    state_ = component::BuffState::kBIG;
+    state_ = game::BuffState::kBIG;
   } else if (race_ == game::Race::kRMUC) {
     double t = GetTime();
     if (t < 1 * 60 || (t >= 3 * 60 && t < 4 * 60))
-      state_ = component::BuffState::kINVINCIBLE;
+      state_ = game::BuffState::kINVINCIBLE;
     else if (t >= 1 * 60 && t < 3 * 60)
-      state_ = component::BuffState::kSMALL;
+      state_ = game::BuffState::kSMALL;
     else if (t >= 4 * 60 && t < 7 * 60)
-      state_ = component::BuffState::kBIG;
+      state_ = game::BuffState::kBIG;
   }
 
-  SPDLOG_DEBUG("Now state : {}", component::ToString(state_));
+  SPDLOG_DEBUG("Now state : {}", game::ToString(state_));
   return state_;
 }
 
@@ -309,7 +307,7 @@ component::BuffState &BuffPredictor::GetState() {
  *
  * @param state 当前能量机关旋转状态
  */
-void BuffPredictor::SetState(component::BuffState state) {
+void BuffPredictor::SetState(game::BuffState state) {
   state_ = state;
   SPDLOG_DEBUG("State has been set.");
 }
@@ -363,7 +361,7 @@ void BuffPredictor::SetTime(double time) {
  */
 void BuffPredictor::SetRace(game::Race race) {
   race_ = race;
-  SPDLOG_DEBUG("Race type : {}", component::ToString(race));
+  SPDLOG_DEBUG("Race type : {}", game::ToString(race));
 }
 
 /**
@@ -411,11 +409,10 @@ void BuffPredictor::VisualizePrediction(const cv::Mat &output, int add_lable) {
     std::string label;
     if (direction_ == component::Direction::kUNKNOWN) {
       label = cv::format("Direction : %s in %ld ms.",
-                         component::ToString(direction_).c_str(),
+                         game::ToString(direction_).c_str(),
                          duration_direction_.Count());
     } else {
-      label = cv::format("Direction : %s.",
-                         component::ToString(direction_).c_str());
+      label = cv::format("Direction : %s.", game::ToString(direction_).c_str());
     }
     draw::VisualizeLabel(output, label, 5);
 

@@ -10,7 +10,7 @@ class Filter {
   bool predict_condition_;
 
  public:
-  game::Method method_ = game::Method::kUNKNOWN;
+  component::FilterMethod method_ = component::FilterMethod::kUNKNOWN;
   unsigned int measurements_, states_;
 
   virtual void Init(const std::vector<double>& vec) = 0;

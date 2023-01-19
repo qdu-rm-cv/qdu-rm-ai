@@ -25,7 +25,7 @@ const int kF_FACE = cv::FONT_HERSHEY_COMPLEX;
 const double kF_SCALE = 0.7;
 const int kF_THICK = 1;
 
-component::AimMethod method = component::AimMethod::kUNKNOWN;
+game::AimMethod method = game::AimMethod::kUNKNOWN;
 
 }  // namespace
 
@@ -48,13 +48,13 @@ int main(int argc, char const* argv[]) {
   cv::setMouseCallback(kWINDOW, MouseCallback);
   cv::waitKey(0);
 
-  if (method == component::AimMethod::kARMOR) {
+  if (method == game::AimMethod::kARMOR) {
     ArmorUIParam ui_param(kLOG, kPARAMARMOR);
     ui_param.Run();
-  } else if (method == component::AimMethod::kBUFF) {
+  } else if (method == game::AimMethod::kBUFF) {
     BuffUIParam ui_param(kLOG, kPARAMBUFF);
     ui_param.Run();
-  } else if (method == component::AimMethod::kLIGHT) {
+  } else if (method == game::AimMethod::kLIGHT) {
     LightUIParam ui_param(kLOG, kPARAMLIGHT);
     ui_param.Run();
   }
@@ -67,21 +67,20 @@ void MouseCallback(int event, int x, int y, int, void*) {
     SPDLOG_INFO("x:{}, y:{}, {} th button", x, y, (y / kB_H) + 1);
     switch (y / kB_H) {
       case 0:
-        method = component::AimMethod::kARMOR;
+        method = game::AimMethod::kARMOR;
         break;
       case 1:
-        method = component::AimMethod::kBUFF;
+        method = game::AimMethod::kBUFF;
         break;
       case 2:
-        method = component::AimMethod::kLIGHT;
+        method = game::AimMethod::kLIGHT;
         break;
       default:
-        method = component::AimMethod::kUNKNOWN;
+        method = game::AimMethod::kUNKNOWN;
         break;
     }
 
-    SPDLOG_INFO("{} now, press any key to continue...",
-                component::ToString(method));
+    SPDLOG_INFO("{} now, press any key to continue...", game::ToString(method));
   }
   return;
 }

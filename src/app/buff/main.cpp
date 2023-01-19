@@ -63,7 +63,7 @@ class BuffAim : private App {
         SPDLOG_WARN("size : {}", armors.size());
         // auto armor = buffs.front().GetTarget();
         compensator_.Apply(armor, frame, robot_.GetBalletSpeed(),
-                           robot_.GetEuler(), component::AimMethod::kBUFF);
+                           robot_.GetEuler(), game::AimMethod::kBUFF);
         manager_.Aim(armor.GetAimEuler());
         robot_.Pack(manager_.GetData(), 9999);
 

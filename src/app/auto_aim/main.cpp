@@ -66,7 +66,7 @@ class AutoAim : private App {
         classifier_.ClassifyModel(armor, frame);
       }
       compensator_.Apply(armors, frame, robot_.GetBalletSpeed(),
-                         robot_.GetEuler(), component::AimMethod::kARMOR);
+                         robot_.GetEuler(), game::AimMethod::kARMOR);
       manager_.Aim(armors.front().GetAimEuler());
       robot_.Pack(manager_.GetData(), 9999);
       SPDLOG_WARN("pack");
