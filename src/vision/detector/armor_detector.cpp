@@ -73,7 +73,7 @@ void ArmorDetector::FindLightBars(const cv::Mat &frame) {
   cv::split(frame, channels);
 
   if (enemy_team_ == game::Team::kUNKNOWN) {
-    SPDLOG_ERROR("enemy_team_ is {}", game::TeamToString(enemy_team_));
+    SPDLOG_ERROR("enemy_team_ is {}", component::ToString(enemy_team_));
     return;
   }
 

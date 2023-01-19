@@ -49,7 +49,7 @@ SnipeDetector::~SnipeDetector() { SPDLOG_TRACE("Destructed."); }
 
 void SnipeDetector::SetEnemyTeam(game::Team enemy_team) {
   enemy_team_ = enemy_team;
-  SPDLOG_DEBUG("{}", game::TeamToString(enemy_team));
+  SPDLOG_DEBUG("{}", component::ToString(enemy_team));
 }
 
 const tbb::concurrent_vector<Armor> &SnipeDetector::Detect(

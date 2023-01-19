@@ -110,9 +110,9 @@ game::Race Robot::GetRace() {
   else if (ref_.race == AI_RACE_RMUT)
     return game::Race::kRMUT;
   else if (ref_.race == AI_RACE_RMUL1)
-    return game::Race::kRMUL1;
+    return game::Race::kRMUL1V1;
   else if (ref_.race == AI_RACE_RMUL3)
-    return game::Race::kRMUL3;
+    return game::Race::kRMUL3V3;
   return game::Race::kUNKNOWN;
 }
 

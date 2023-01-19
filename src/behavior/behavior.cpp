@@ -53,7 +53,8 @@ void Behavior::Aim(component::Euler aiming_eulr) {
 
 void Behavior::Move(float v) {
   data_.chassis_move_vec.vy =
-      (v == 0 ? 1 : v / std::abs(v)) * algo::GetRandomValue<float>(3, 5);
+      (v == 0 ? 1 : v / std::abs(v)) *
+      static_cast<float>(algo::GetRealRandomValue(3, 5));
   if (status_.low_hp || status_.bullet_empty) {
     data_.chassis_move_vec.vy *= 2;
   }

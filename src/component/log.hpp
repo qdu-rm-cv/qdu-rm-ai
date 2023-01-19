@@ -4,9 +4,6 @@
 #include <string>
 
 #include "build_type.hpp"
-
-#define SPDLOG_ACTIVE_LEVEL BUILD_TYPE
-
 #include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/spdlog.h"

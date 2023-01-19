@@ -55,7 +55,7 @@ static double PredictIntegralRotatedAngle(double t) {
 void BuffPredictor::InitDefaultParams(const std::string &params_path) {
   cv::FileStorage fs(params_path,
                      cv::FileStorage::WRITE | cv::FileStorage::FORMAT_JSON);
-  SPDLOG_WARN("filter method: {}", MethodToString(filter_.method_));
+  SPDLOG_WARN("filter method: {}", component::ToString(filter_.method_));
   if (filter_.method_ != game::Method::kUNKNOWN) {
     fs << "delay_time" << 0.1542;
     fs << "error_frame" << 5;
@@ -119,8 +119,7 @@ void BuffPredictor::MatchDirection() {
   } else {
     circumference_.erase(circumference_.begin());
   }
-  SPDLOG_WARN("Buff's Direction is {}",
-              component::DirectionToString(direction_));
+  SPDLOG_WARN("Buff's Direction is {}", component::ToString(direction_));
   duration_direction_.Calc("Predict Direction");
 }
 
@@ -176,8 +175,7 @@ void BuffPredictor::MatchPredict() {
   Armor armor = RotateArmor(theta);
   armor.SetModel(game::Model::kHERO);
   predicts_.emplace_back(armor);
-  SPDLOG_WARN("Buff has been predicted. {}",
-              component::DirectionToString(direction_));
+  SPDLOG_WARN("Buff has been predicted. {}", component::ToString(direction_));
 
   duration_predict_.Calc("Match Predict");
 }
@@ -278,7 +276,7 @@ void BuffPredictor::ChangeDirection(bool direction) {
     direction_ = component::Direction::kCCW;
   }
   SPDLOG_CRITICAL("Direction changed, now : {}",
-                  component::DirectionToString(direction_));
+                  component::ToString(direction_));
 }
 
 /**
@@ -287,8 +285,8 @@ void BuffPredictor::ChangeDirection(bool direction) {
  * @return component::BuffState& 当前能量机关旋转状态
  */
 component::BuffState &BuffPredictor::GetState() {
-  SPDLOG_DEBUG("{}, {}", game::RaceToString(race_),
-               component::BuffStateToString(state_));
+  SPDLOG_DEBUG("{}, {}", component::ToString(race_),
+               component::ToString(state_));
 
   if (race_ == game::Race::kRMUT) {
     state_ = component::BuffState::kBIG;
@@ -302,7 +300,7 @@ component::BuffState &BuffPredictor::GetState() {
       state_ = component::BuffState::kBIG;
   }
 
-  SPDLOG_DEBUG("Now state : {}", component::BuffStateToString(state_));
+  SPDLOG_DEBUG("Now state : {}", component::ToString(state_));
   return state_;
 }
 
@@ -365,7 +363,7 @@ void BuffPredictor::SetTime(double time) {
  */
 void BuffPredictor::SetRace(game::Race race) {
   race_ = race;
-  SPDLOG_DEBUG("Race type : {}", game::RaceToString(race));
+  SPDLOG_DEBUG("Race type : {}", component::ToString(race));
 }
 
 /**
@@ -413,11 +411,11 @@ void BuffPredictor::VisualizePrediction(const cv::Mat &output, int add_lable) {
     std::string label;
     if (direction_ == component::Direction::kUNKNOWN) {
       label = cv::format("Direction : %s in %ld ms.",
-                         component::DirectionToString(direction_).c_str(),
+                         component::ToString(direction_).c_str(),
                          duration_direction_.Count());
     } else {
       label = cv::format("Direction : %s.",
-                         component::DirectionToString(direction_).c_str());
+                         component::ToString(direction_).c_str());
     }
     draw::VisualizeLabel(output, label, 5);
 

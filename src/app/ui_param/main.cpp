@@ -81,7 +81,7 @@ void MouseCallback(int event, int x, int y, int, void*) {
     }
 
     SPDLOG_INFO("{} now, press any key to continue...",
-                component::AimMethodToString(method));
+                component::ToString(method));
   }
   return;
 }

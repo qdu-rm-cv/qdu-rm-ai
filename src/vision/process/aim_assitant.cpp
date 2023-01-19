@@ -77,13 +77,13 @@ void AimAssitant::SetRFID(game::RFID rfid) {
   } else if (arm_ == game::Arm::kSENTRY) {
     method_ = component::AimMethod::kARMOR;
   }
-  SPDLOG_INFO("Now Arms : {}, AimMethod : {}", game::ArmToString(arm_),
-              component::AimMethodToString(method_));
+  SPDLOG_INFO("Now Arms : {}, AimMethod : {}", component::ToString(arm_),
+              component::ToString(method_));
 }
 
 void AimAssitant::SetArm(game::Arm arm) {
   arm_ = arm;
-  SPDLOG_DEBUG("Arm : {}", game::ArmToString(arm_));
+  SPDLOG_DEBUG("Arm : {}", component::ToString(arm_));
 }
 
 void AimAssitant::SetRace(game::Race race) { b_predictor_.SetRace(race); }
@@ -91,7 +91,7 @@ void AimAssitant::SetRace(game::Race race) { b_predictor_.SetRace(race); }
 void AimAssitant::SetTime(double time) { b_predictor_.SetTime(time); }
 
 component::AimMethod AimAssitant::GetMethod() {
-  SPDLOG_DEBUG("{}", component::AimMethodToString(method_));
+  SPDLOG_DEBUG("{}", component::ToString(method_));
   return method_;
 }
 

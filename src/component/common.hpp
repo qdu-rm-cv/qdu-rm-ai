@@ -5,45 +5,14 @@
 
 #define RMU2023
 
-namespace component {
+#ifndef EnumName
+#define EnumName(var) (std::string(#var))
+#endif
 
-struct Euler {
-  double yaw, pitch, roll;
-
-  explicit Euler(double yaw = 0, double pitch = 0, double roll = 0);
-  const std::string ToString();
-};
-
-enum class Direction {
-  kUNKNOWN,
-  kCW,
-  kCCW,
-};
-
-enum class BuffState {
-  kUNKNOWN,
-  kSMALL,
-  kBIG,
-  kINVINCIBLE,
-};
-
-enum class AimMethod {
-  kUNKNOWN,
-  kARMOR,
-  kBUFF,
-  kORECUBE,
-  kSNIPE,
-  kLIGHT,
-};
-
-std::string DirectionToString(Direction direction);
-std::string BuffStateToString(BuffState state);
-std::string AimMethodToString(AimMethod method);
-[[deprecated("The gtk-ui is recommended")]] AimMethod StringToAimMethod(
-    std::string name);
-
-}  // namespace component
-
+#ifndef TypeName
+#define TypeName(var) \
+  std::string(abi::__cxa_demangle(typeid(var).name(), 0, 0, 0))
+#endif
 namespace game {
 
 struct Alert {
@@ -98,8 +67,8 @@ enum class Race {
   kUNKNOWN,
   kRMUC,
   kRMUT,
-  kRMUL1,
-  kRMUL3,
+  kRMUL1V1,
+  kRMUL3V3,
 };
 
 enum class RFID {
@@ -114,17 +83,56 @@ enum class Method {
   kEKF,
 };
 
-std::string TeamToString(Team team);
-std::string ModelToString(Model model);
-std::string ArmToString(Arm arm);
-std::string RaceToString(Race race);
-std::string RFIDToString(RFID rfid);
-std::string MethodToString(const Method& m);
 Model StringToModel(std::string name);
 
 bool HasBigArmor(Model model);
 
 }  // namespace game
+
+namespace component {
+
+struct Euler {
+  double pitch, roll, yaw;
+
+  explicit Euler(double pitch = 0, double roll = 0, double yaw = 0);
+};
+
+enum class Direction {
+  kUNKNOWN,
+  kCW,
+  kCCW,
+};
+
+enum class BuffState {
+  kUNKNOWN,
+  kSMALL,
+  kBIG,
+  kINVINCIBLE,
+};
+
+enum class AimMethod {
+  kUNKNOWN,
+  kARMOR,
+  kBUFF,
+  kORECUBE,
+  kSNIPE,
+  kLIGHT,
+};
+
+std::string ToString(const Euler &elur);
+std::string ToString(const Direction &direction);
+std::string ToString(const BuffState &state);
+std::string ToString(const AimMethod &method);
+std::string ToString(const game::Team &team);
+std::string ToString(const game::Model &model);
+std::string ToString(const game::Arm &arm);
+std::string ToString(const game::Race &race);
+std::string ToString(const game::RFID &rfid);
+std::string ToString(const game::Method &m);
+[[deprecated("The gtk-ui is recommended")]] AimMethod StringToAimMethod(
+    std::string name);
+
+}  // namespace component
 
 namespace algo {
 

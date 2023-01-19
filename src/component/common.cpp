@@ -1,27 +1,63 @@
 #include "common.hpp"
 
+#include <cxxabi.h>
+
 #include <algorithm>
 #include <cctype>
 #include <string>
 
 #include "spdlog/fmt/bundled/core.h"
 
-namespace {
+namespace game {
 
-static std::random_device r;
-static std::default_random_engine engine(r());
-
-}  // namespace
-namespace component {
-
-Euler::Euler(double yaw, double pitch, double roll)
-    : yaw(yaw), pitch(pitch), roll(roll) {}
-
-const std::string Euler::ToString() {
-  return fmt::format("yaw : {}, pitch : {}, roll : {}", yaw, pitch, roll);
+Model StringToModel(std::string name) {
+  std::transform(name.begin(), name.end(), name.begin(),
+                 [](unsigned char c) { return std::tolower(c); });
+  if (!name.compare("infantry") || !name.compare("3") || !name.compare("4") ||
+      !name.compare("5")) {
+    return Model::kINFANTRY;
+  }
+  if (!name.compare("hero") || !name.compare("1")) {
+    return Model::kHERO;
+  }
+  if (!name.compare("engineer") || !name.compare("2")) {
+    return Model::kENGINEER;
+  }
+  if (!name.compare("drone")) {
+    return Model::kDRONE;
+  }
+  if (!name.compare("sentry")) {
+    return Model::kSENTRY;
+  }
+  if (!name.compare("base")) {
+    return Model::kBASE;
+  }
+  if (!name.compare("outpost")) {
+    return Model::kOUTPOST;
+  }
+  if (!name.compare("buff")) {
+    return Model::kBUFF;
+  }
+  return Model::kUNKNOWN;
 }
 
-std::string DirectionToString(Direction direction) {
+bool HasBigArmor(Model model) {
+  return (model == Model::kHERO || model == Model::kSENTRY);
+}
+
+}  // namespace game
+
+namespace component {
+
+Euler::Euler(double pitch, double roll, double yaw)
+    : pitch(pitch), roll(roll), yaw(yaw) {}
+
+std::string ToString(const Euler& e) {
+  return fmt::format("pitch : {}, roll : {}， yaw : {}", e.pitch, e.roll,
+                     e.yaw);
+}
+
+std::string ToString(const Direction& direction) {
   switch (direction) {
     case Direction::kUNKNOWN:
       return std::string("Unknown");
@@ -34,7 +70,7 @@ std::string DirectionToString(Direction direction) {
   }
 }
 
-std::string BuffStateToString(BuffState state) {
+std::string ToString(const BuffState& state) {
   switch (state) {
     case BuffState::kUNKNOWN:
       return std::string("Unknown");
@@ -49,7 +85,7 @@ std::string BuffStateToString(BuffState state) {
   }
 }
 
-std::string AimMethodToString(AimMethod method) {
+std::string ToString(const AimMethod& method) {
   switch (method) {
     case AimMethod::kUNKNOWN:
       return std::string("Unknown");
@@ -63,6 +99,112 @@ std::string AimMethodToString(AimMethod method) {
       return std::string("Use Snipe Detector");
     case AimMethod::kLIGHT:
       return std::string("Use GuidingLight Detector");
+    default:
+      return std::string("Unknown");
+  }
+}
+
+std::string ToString(const game::Team& team) {
+  switch (team) {
+    case game::Team::kUNKNOWN:
+      return std::string("Unknown");
+    case game::Team::kDEAD:
+      return std::string("Dead");
+    case game::Team::kBLUE:
+      return std::string("Blue");
+    case game::Team::kRED:
+      return std::string("Red");
+    default:
+      return std::string("Unknown");
+  }
+}
+
+std::string ToString(const game::Model& model) {
+  switch (model) {
+    case game::Model::kUNKNOWN:
+      return std::string("Unknown");
+    case game::Model::kINFANTRY:
+      return std::string("Infantry");
+    case game::Model::kHERO:
+      return std::string("Hero");
+    case game::Model::kENGINEER:
+      return std::string("Engineer");
+    case game::Model::kDRONE:
+      return std::string("Drone");
+    case game::Model::kSENTRY:
+      return std::string("Sentry");
+    case game::Model::kBASE:
+      return std::string("Base");
+    case game::Model::kOUTPOST:
+      return std::string("Outpost");
+    case game::Model::kBUFF:
+      return std::string("Buff");
+    default:
+      return std::string("Unknown");
+  }
+}
+
+std::string ToString(const game::Arm& arm) {
+  switch (arm) {
+    case game::Arm::kUNKNOWN:
+      return std::string("Unknown");
+    case game::Arm::kINFANTRY:
+      return std::string("Infantry");
+    case game::Arm::kHERO:
+      return std::string("Hero");
+    case game::Arm::kENGINEER:
+      return std::string("Engineer");
+    case game::Arm::kDRONE:
+      return std::string("Drone");
+    case game::Arm::kSENTRY:
+      return std::string("Sentry");
+    case game::Arm::kDART:
+      return std::string("Dart");
+    case game::Arm::kRADAR:
+      return std::string("Radar");
+    default:
+      return std::string("Unknown");
+  }
+}
+
+std::string ToString(const game::Race& race) {
+  switch (race) {
+    case game::Race::kUNKNOWN:
+      return std::string("Unknown");
+    case game::Race::kRMUC:
+      return std::string("RMUC");
+    case game::Race::kRMUT:
+      return std::string("RMUT");
+    case game::Race::kRMUL1V1:
+      return std::string("RMUL 1v1");
+    case game::Race::kRMUL3V3:
+      return std::string("RMUL 3v3");
+    default:
+      return std::string("Unknown");
+  }
+}
+
+std::string ToString(const game::RFID& rfid) {
+  switch (rfid) {
+    case game::RFID::kUNKNOWN:
+      return std::string("Unknown");
+    case game::RFID::kBUFF:
+      return std::string("Buff activation point");
+    case game::RFID::kSNIPE:
+      return std::string("Snipe point");
+    default:
+      return std::string("Unknown");
+  }
+}
+
+std::string ToString(const game::Method& m) {
+  switch (m) {
+    case game::Method::kUNKNOWN:
+      return std::string("Unknown");
+    case game::Method::kEKF:
+      return std::string("Extend kalman filter");
+    case game::Method::kKF:
+      return std::string("Kalman filter");
     default:
       return std::string("Unknown");
   }
@@ -97,150 +239,10 @@ std::string AimMethodToString(AimMethod method) {
 
 }  // namespace component
 
-namespace game {
-
-std::string TeamToString(Team team) {
-  switch (team) {
-    case Team::kUNKNOWN:
-      return std::string("Unknown");
-    case Team::kDEAD:
-      return std::string("Dead");
-    case Team::kBLUE:
-      return std::string("Blue");
-    case Team::kRED:
-      return std::string("Red");
-    default:
-      return std::string("Unknown");
-  }
-}
-
-std::string ModelToString(Model model) {
-  switch (model) {
-    case Model::kUNKNOWN:
-      return std::string("Unknown");
-    case Model::kINFANTRY:
-      return std::string("Infantry");
-    case Model::kHERO:
-      return std::string("Hero");
-    case Model::kENGINEER:
-      return std::string("Engineer");
-    case Model::kDRONE:
-      return std::string("Drone");
-    case Model::kSENTRY:
-      return std::string("Sentry");
-    case Model::kBASE:
-      return std::string("Base");
-    case Model::kOUTPOST:
-      return std::string("Outpost");
-    case Model::kBUFF:
-      return std::string("Buff");
-    default:
-      return std::string("Unknown");
-  }
-}
-
-std::string ArmToString(Arm arm) {
-  switch (arm) {
-    case Arm::kUNKNOWN:
-      return std::string("Unknown");
-    case Arm::kINFANTRY:
-      return std::string("Infantry");
-    case Arm::kHERO:
-      return std::string("Hero");
-    case Arm::kENGINEER:
-      return std::string("Engineer");
-    case Arm::kDRONE:
-      return std::string("Drone");
-    case Arm::kSENTRY:
-      return std::string("Sentry");
-    case Arm::kDART:
-      return std::string("Dart");
-    case Arm::kRADAR:
-      return std::string("Radar");
-    default:
-      return std::string("Unknown");
-  }
-}
-
-std::string RaceToString(Race race) {
-  switch (race) {
-    case Race::kUNKNOWN:
-      return std::string("Unknown");
-    case Race::kRMUC:
-      return std::string("RMUC");
-    case Race::kRMUT:
-      return std::string("RMUT");
-    case Race::kRMUL1:
-      return std::string("RMUL 1v1");
-    case Race::kRMUL3:
-      return std::string("RMUL 3v3");
-    default:
-      return std::string("Unknown");
-  }
-}
-
-std::string RFIDToString(RFID rfid) {
-  switch (rfid) {
-    case RFID::kUNKNOWN:
-      return std::string("Unknown");
-    case RFID::kBUFF:
-      return std::string("Buff activation point");
-    case RFID::kSNIPE:
-      return std::string("Snipe point");
-    default:
-      return std::string("Unknown");
-  }
-}
-
-Model StringToModel(std::string name) {
-  std::transform(name.begin(), name.end(), name.begin(),
-                 [](unsigned char c) { return std::tolower(c); });
-  if (!name.compare("infantry") || !name.compare("3") || !name.compare("4") ||
-      !name.compare("5")) {
-    return Model::kINFANTRY;
-  }
-  if (!name.compare("hero") || !name.compare("1")) {
-    return Model::kHERO;
-  }
-  if (!name.compare("engineer") || !name.compare("2")) {
-    return Model::kENGINEER;
-  }
-  if (!name.compare("drone")) {
-    return Model::kDRONE;
-  }
-  if (!name.compare("sentry")) {
-    return Model::kSENTRY;
-  }
-  if (!name.compare("base")) {
-    return Model::kBASE;
-  }
-  if (!name.compare("outpost")) {
-    return Model::kOUTPOST;
-  }
-  if (!name.compare("buff")) {
-    return Model::kBUFF;
-  }
-  return Model::kUNKNOWN;
-}
-
-std::string MethodToString(const Method& m) {
-  switch (m) {
-    case Method::kEKF:
-      return std::string("Extend kalman filter");
-    case Method::kKF:
-      return std::string("Kalman filter");
-    default:
-      return std::string("Unknown");
-  }
-}
-
-bool HasBigArmor(Model model) {
-  return (model == Model::kHERO || model == Model::kSENTRY);
-}
-
-}  // namespace game
-
 namespace algo {
+
+static std::random_device r;
+static std::default_random_engine engine(r());
 
 double RelativeDifference(double a, double b) {
   double diff = std::abs(a - b);
