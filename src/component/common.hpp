@@ -1,11 +1,25 @@
 #pragma once
 
+#include <random>
 #include <string>
+
+#define RMU2023
+
+#ifndef EnumName
+#define EnumName(var) (std::string(#var))
+#endif
+
+#ifndef TypeName
+#define TypeName(var) \
+  std::string(abi::__cxa_demangle(typeid(var).name(), 0, 0, 0))
+#endif
 
 namespace component {
 
 struct Euler {
-  double yaw, pitch, roll;
+  double pitch, roll, yaw;
+
+  explicit Euler(double pitch = 0, double roll = 0, double yaw = 0);
 };
 
 enum class Direction {
@@ -14,26 +28,15 @@ enum class Direction {
   kCCW,
 };
 
-enum class BuffState {
+enum class FilterMethod {
   kUNKNOWN,
-  kSMALL,
-  kBIG,
-  kINVINCIBLE,
+  kKF,
+  kEKF,
 };
 
-enum class AimMethod {
-  kUNKNOWN,
-  kARMOR,
-  kBUFF,
-  kORECUBE,
-  kSNIPE,
-  kLIGHT,
-};
-
-std::string DirectionToString(Direction direction);
-std::string BuffStateToString(BuffState state);
-std::string AimMethodToString(AimMethod method);
-AimMethod StringToAimMethod(std::string name);
+std::string ToString(const Euler &elur);
+std::string ToString(const component::Direction &direction);
+std::string ToString(const component::FilterMethod &m);
 
 }  // namespace component
 
@@ -57,11 +60,31 @@ struct Alert {
   }
 };
 
-enum class Team {
+enum class AimMethod {
   kUNKNOWN,
-  kDEAD,
-  kBLUE,
-  kRED,
+  kARMOR,
+  kBUFF,
+  kORECUBE,
+  kSNIPE,
+  kLIGHT,
+};
+
+enum class Arm {
+  kUNKNOWN,
+  kINFANTRY,
+  kHERO,
+  kENGINEER,
+  kDRONE,
+  kSENTRY,
+  kDART,
+  kRADAR,
+};
+
+enum class BuffState {
+  kUNKNOWN,
+  kSMALL,
+  kBIG,
+  kINVINCIBLE,
 };
 
 enum class Model {
@@ -76,23 +99,12 @@ enum class Model {
   kBUFF,
 };
 
-enum class Arm {
-  kUNKNOWN,
-  kINFANTRY,
-  kHERO,
-  kENGINEER,
-  kDRONE,
-  kSENTRY,
-  kDART,
-  kRADAR,
-};
-
 enum class Race {
   kUNKNOWN,
   kRMUC,
   kRMUT,
-  kRMUL1,
-  kRMUL3,
+  kRMUL1V1,
+  kRMUL3V3,
 };
 
 enum class RFID {
@@ -101,19 +113,27 @@ enum class RFID {
   kSNIPE,
 };
 
-enum class Method {
+enum class Team {
   kUNKNOWN,
-  kKF,
-  kEKF,
+  kDEAD,
+  kBLUE,
+  kRED,
 };
 
-std::string TeamToString(Team team);
-std::string ModelToString(Model model);
-std::string ArmToString(Arm arm);
-std::string RaceToString(Race race);
-std::string RFIDToString(RFID rfid);
-std::string MethodToString(const Method& m);
+std::string ToString(const game::AimMethod &method);
+std::string ToString(const game::Arm &arm);
+std::string ToString(const game::BuffState &state);
+std::string ToString(const game::Model &model);
+std::string ToString(const game::Race &race);
+std::string ToString(const game::RFID &rfid);
+std::string ToString(const game::Team &team);
+
+std::string ToString(const component::Direction &direction);
+std::string ToString(const component::FilterMethod &m);
+
 Model StringToModel(std::string name);
+[[deprecated("The gtk-ui is recommended")]] game::AimMethod StringToAimMethod(
+    std::string name);
 
 bool HasBigArmor(Model model);
 
@@ -122,5 +142,8 @@ bool HasBigArmor(Model model);
 namespace algo {
 
 double RelativeDifference(double a, double b);
+
+int GetIntRandomValue(int min = 0, int max = 10);
+double GetRealRandomValue(double min = 0, double max = 1);
 
 }  // namespace algo

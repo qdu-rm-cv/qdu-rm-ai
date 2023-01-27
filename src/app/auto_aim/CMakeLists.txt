@@ -1,16 +1,18 @@
 cmake_minimum_required(VERSION 3.12)
-project(auto-aim)
+project(exec_auto_aim)
 
 add_executable(${PROJECT_NAME} main.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
-    device
-    object
-    detector
-    predictor
-    compensator
+    module_behavior
+    module_compensator
+    module_classifier
     spdlog::spdlog
-    behavior
+    ${Dcamera}
+    ${Dcontroller}
+    ${Taim}_detector
+    ${Taim}_object
+    ${Taim}_predictor
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
@@ -19,5 +21,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 )
 
 add_dependencies(${PROJECT_NAME}
-    device
+    ${Dcamera}
+    ${Dcontroller}
 )

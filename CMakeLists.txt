@@ -4,8 +4,8 @@ endif()
 
 cmake_minimum_required(VERSION 3.12)
 
-project(qdu_rm_ai
-    DESCRIPTION "AI for Robomaster"
+project(qdu-rm-ai
+    DESCRIPTION "QDU AI for Robomaster"
     VERSION 0.1.0
     LANGUAGES CXX
 )
@@ -71,10 +71,12 @@ endif()
 # ---------------------------------------------------------------------------------------
 # Building Options
 # ---------------------------------------------------------------------------------------
-message(STATUS "----------------------- Building Options ------------------------")
+message(STATUS "---------------------- Building Options ------------------------")
 
 find_package(behaviortree_cpp_v3 REQUIRED)
+find_package(Ceres 2 REQUIRED)
 find_package(CUDA)
+find_package(Eigen3 REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(Threads REQUIRED)
@@ -83,41 +85,56 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(usbp REQUIRED libusbp-1)
 
 message(STATUS "BehaviorTreeV3 version: ${BehaviorTreeV3_VERSION}")
+message(STATUS "Ceres version: ${Ceres_VERSION}")
 message(STATUS "CUDA version: ${CUDA_VERSION}")
+message(STATUS "Eigen version: ${Eigen3_VERSION}")
 message(STATUS "OpenCV version: ${OpenCV_VERSION}")
 message(STATUS "spdlog version: ${spdlog_VERSION}")
 message(STATUS "TBB version: ${TBB_VERSION}")
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    add_compile_definitions(SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_DEBUG)
+    set(BUILD_TYPE LEVEL_DEBUG)
 elseif(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-    add_compile_definitions(SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_DEBUG)
-elseif(CMAKE_BUILD_TYPE STREQUAL "Realase")
-    add_compile_definitions(SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_INFO)
+    set(BUILD_TYPE LEVEL_DEBUG)
+elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
+    set(BUILD_TYPE LEVEL_INFO)
 elseif(CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
-    add_compile_definitions(SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_INFO)
+    set(BUILD_TYPE LEVEL_INFO)
 endif()
 
 # ---------------------------------------------------------------------------------------
-# Packages Options
+# Packages Option
 # ---------------------------------------------------------------------------------------
-message(STATUS "----------------------- Packages Options ------------------------")
+message(STATUS "----------------------- Packages Option ------------------------")
 
 set(BUILD_NN 0)
-set(BUILD_EKF 0)
 message(STATUS "Build NN: ${BUILD_NN}")
-message(STATUS "Build EKF: ${BUILD_EKF}")
-
-if(BUILD_EKF)
-    find_package(Eigen3 REQUIRED)
-    find_package(Ceres 2 REQUIRED)
-    message(STATUS "Eigen version: ${Eigen3_VERSION}")
-    message(STATUS "Ceres version: ${Ceres_VERSION}")
-endif()
 
 # ---------------------------------------------------------------------------------------
 # Source
 # ---------------------------------------------------------------------------------------
+message(STATUS "--------------------------- Source -----------------------------")
+
+set(Taim "task_aim")
+set(Tbuff "task_buff")
+set(Tdart "task_dart")
+set(Tengineer "task_engineer")
+set(Tsentry "task_sentry")
+set(Tradar "task_radar")
+message(STATUS "Build task: ${Taim}")
+message(STATUS "Build task: ${Tbuff}")
+message(STATUS "Build task: ${Tdart}")
+message(STATUS "Build task: ${Tengineer}")
+message(STATUS "Build task: ${Tsentry}")
+message(STATUS "Build task: ${Tradar}")
+
+set(Dcamera "device_camera")
+set(Dcontroller "device_controller")
+set(Dservo "device_servo")
+message(STATUS "Build device: ${Dcamera}")
+message(STATUS "Build device: ${Dcontroller}")
+message(STATUS "Build device: ${Dservo}")
+
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # ---------------------------------------------------------------------------------------
@@ -143,7 +160,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
     message(STATUS "Install to: ${CMAKE_INSTALL_BINDIR}")
 
     install(
-        TARGETS auto-aim
+        TARGETS exec_auto_aim
         EXPORT auto-aim
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -151,7 +168,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
     )
 
     install(
-        TARGETS sentry
+        TARGETS exec_sentry
         EXPORT sentry
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -159,7 +176,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
     )
 
     install(
-        TARGETS buff
+        TARGETS exec_buff
         EXPORT buff
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}

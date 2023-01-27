@@ -17,8 +17,8 @@ class BuffAim : private App {
   Behavior manager_;
 
  public:
-  BuffAim(const std::string& log_path)
-      : App(log_path, component::Logger::FMT::kFMT_THREAD) {
+  explicit BuffAim(const std::string& log_path)
+      : App(log_path, component::logger::FMT::kFMT_THREAD) {
     SPDLOG_WARN("***** Setting Up Buff Aiming System. *****");
 
     /* 初始化设备 */
@@ -63,7 +63,7 @@ class BuffAim : private App {
         SPDLOG_WARN("size : {}", armors.size());
         // auto armor = buffs.front().GetTarget();
         compensator_.Apply(armor, frame, robot_.GetBalletSpeed(),
-                           robot_.GetEuler(), component::AimMethod::kBUFF);
+                           robot_.GetEuler(), game::AimMethod::kBUFF);
         manager_.Aim(armor.GetAimEuler());
         robot_.Pack(manager_.GetData(), 9999);
 

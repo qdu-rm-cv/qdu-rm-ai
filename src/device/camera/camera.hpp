@@ -48,7 +48,7 @@ class Camera {
     frame_w_ = width;
     frame_h_ = height;
 
-    // TODO: 配置相机输入输出
+    // TODO(Somebody) : 配置相机输入输出
   }
 
   /**

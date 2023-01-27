@@ -1,5 +1,7 @@
 #include "armor_param.hpp"
 
+#include "opencv2/core/persistence.hpp"
+
 ArmorDetectorParam<double> ArmorParam::TransformToDouble() {
   paramd_.binary_th = parami_.binary_th;
   paramd_.contour_size_low_th = parami_.contour_size_low_th;
@@ -28,20 +30,29 @@ bool ArmorParam::Read(const std::string &params_path) {
     parami_.binary_th = fs["binary_th"];
     parami_.contour_size_low_th = fs["contour_size_low_th"];
 
-    parami_.contour_area_low_th = double(fs["contour_area_low_th"]) * 100000.;
-    parami_.contour_area_high_th = double(fs["contour_area_high_th"]) * 100000.;
-    parami_.bar_area_low_th = double(fs["bar_area_low_th"]) * 100000.;
-    parami_.bar_area_high_th = double(fs["bar_area_high_th"]) * 100000.;
-    parami_.angle_high_th = double(fs["angle_high_th"]) * 10.;
-    parami_.aspect_ratio_low_th = double(fs["aspect_ratio_low_th"]) * 10.;
-    parami_.aspect_ratio_high_th = double(fs["aspect_ratio_high_th"]) * 10.;
+    parami_.contour_area_low_th =
+        static_cast<double>(fs["contour_area_low_th"]) * 100000.;
+    parami_.contour_area_high_th =
+        static_cast<double>(fs["contour_area_high_th"]) * 100000.;
+    parami_.bar_area_low_th =
+        static_cast<double>(fs["bar_area_low_th"]) * 100000.;
+    parami_.bar_area_high_th =
+        static_cast<double>(fs["bar_area_high_th"]) * 100000.;
+    parami_.angle_high_th = static_cast<double>(fs["angle_high_th"]) * 10.;
+    parami_.aspect_ratio_low_th =
+        static_cast<double>(fs["aspect_ratio_low_th"]) * 10.;
+    parami_.aspect_ratio_high_th =
+        static_cast<double>(fs["aspect_ratio_high_th"]) * 10.;
 
-    parami_.angle_diff_th = double(fs["angle_diff_th"]) * 1000.;
-    parami_.length_diff_th = double(fs["length_diff_th"]) * 1000.;
-    parami_.height_diff_th = double(fs["height_diff_th"]) * 100000.;
-    parami_.area_diff_th = double(fs["area_diff_th"]) * 1000.;
-    parami_.center_dist_low_th = double(fs["center_dist_low_th"]) * 1000.;
-    parami_.center_dist_high_th = double(fs["center_dist_high_th"]) * 1000.;
+    parami_.angle_diff_th = static_cast<double>(fs["angle_diff_th"]) * 1000.;
+    parami_.length_diff_th = static_cast<double>(fs["length_diff_th"]) * 1000.;
+    parami_.height_diff_th =
+        static_cast<double>(fs["height_diff_th"]) * 100000.;
+    parami_.area_diff_th = static_cast<double>(fs["area_diff_th"]) * 1000.;
+    parami_.center_dist_low_th =
+        static_cast<double>(fs["center_dist_low_th"]) * 1000.;
+    parami_.center_dist_high_th =
+        static_cast<double>(fs["center_dist_high_th"]) * 1000.;
     return true;
   } else {
     SPDLOG_ERROR("Can not load params.");

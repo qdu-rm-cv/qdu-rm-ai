@@ -7,7 +7,7 @@
 TEST(TestNN, ExampleTest) { EXPECT_EQ(1, 1); }
 
 TEST(TestNN, TestTRT) {
-  component::Logger::SetLogger();
+  component::logger::SetLogger();
   TrtDetector detector(std::string("../../../runtime/best.onnx"));
   detector.TestInfer();
 }

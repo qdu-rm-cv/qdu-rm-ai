@@ -31,7 +31,7 @@ class Robot {
 
  public:
   Robot();
-  Robot(const std::string &dev_path);
+  explicit Robot(const std::string &dev_path);
   ~Robot();
 
   void Init(const std::string &dev_path);

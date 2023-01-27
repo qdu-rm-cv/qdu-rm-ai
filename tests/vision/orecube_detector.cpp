@@ -6,7 +6,7 @@
 #include "opencv2/opencv.hpp"
 
 TEST(TestVision, TestOreCubeDetector) {
-  component::Logger::SetLogger();
+  component::logger::SetLogger();
   OreCubeDetector detector("../../../runtime/RMUT2022_OreCube.json");
   cv::VideoCapture cap("../../../../cube01.avi");
   cv::Mat frame;
@@ -23,7 +23,8 @@ TEST(TestVision, TestOreCubeDetector) {
       cv::waitKey(0);
       cap.release();
       return;
-    } else if (key == ' ')
+    } else if (key == ' ') {
       cv::waitKey(0);
+    }
   }
 }

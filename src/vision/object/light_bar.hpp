@@ -13,7 +13,7 @@ class LightBar : public ImageObject, public PhysicObject {
 
  public:
   LightBar();
-  LightBar(const cv::RotatedRect& rect);
+  explicit LightBar(const cv::RotatedRect& rect);
   ~LightBar();
 
   double Area() const;

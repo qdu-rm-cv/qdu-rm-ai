@@ -32,7 +32,7 @@ Compensator::Compensator() { SPDLOG_TRACE("Constructed."); }
 Compensator::Compensator(const std::string& cam_mat_path,
                          const game::Arm& arm) {
   SPDLOG_TRACE("Constructed.");
-  // TODO : 和机械、兵种相关，后期放到namespace
+  // TODO(RX.Jiang) : 和机械、兵种相关，后期放到namespace
   SetArm(arm);
   LoadCameraMat(cam_mat_path);
 }
@@ -114,8 +114,7 @@ void Compensator::SolveAngles(Armor& armor, const component::Euler& euler) {
 
 void Compensator::Apply(tbb::concurrent_vector<Armor>& armors,
                         const cv::Mat& frame, const double ballet_speed,
-                        const component::Euler& euler,
-                        component::AimMethod method) {
+                        const component::Euler& euler, game::AimMethod method) {
   cv::Point2f frame_center(frame.cols / 2, frame.rows / 2);
   std::sort(armors.begin(), armors.end(),
             [frame_center](Armor& armor1, Armor& armor2) {
@@ -133,8 +132,7 @@ void Compensator::Apply(tbb::concurrent_vector<Armor>& armors,
 
 void Compensator::Apply(Armor& armor, const cv::Mat& frame,
                         const double ballet_speed,
-                        const component::Euler& euler,
-                        component::AimMethod method) {
+                        const component::Euler& euler, game::AimMethod method) {
   cv::Point2f frame_center(frame.cols / 2, frame.rows / 2);
 
   if (armor.GetModel() == game::Model::kUNKNOWN) {
@@ -152,9 +150,9 @@ void Compensator::VisualizeResult(tbb::concurrent_vector<Armor>& armors,
   }
 }
 void Compensator::CompensateGravity(Armor& armor, const double ballet_speed,
-                                    component::AimMethod method) {
+                                    game::AimMethod method) {
   component::Euler aiming_eulr = armor.GetAimEuler();
-  if (method == component::AimMethod::kARMOR) {
+  if (method == game::AimMethod::kARMOR) {
     double pitch = -aiming_eulr.pitch;
     double A = (distance_ * kG) / (ballet_speed * ballet_speed);
     double B = tan(pitch) / cos(pitch);

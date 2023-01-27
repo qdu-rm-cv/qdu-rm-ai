@@ -1,4 +1,5 @@
 #pragma once
+
 #include "common.hpp"
 #include "opencv2/opencv.hpp"
 #include "trt_detector.hpp"

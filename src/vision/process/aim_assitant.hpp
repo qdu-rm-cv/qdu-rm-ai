@@ -18,14 +18,14 @@ class AimAssitant {
   ArmorClassifier classifier_;
 
   tbb::concurrent_vector<Armor> armors_;
-  component::AimMethod method_ = component::AimMethod::kUNKNOWN;
+  game::AimMethod method_ = game::AimMethod::kUNKNOWN;
   game::Arm arm_ = game::Arm::kUNKNOWN;
 
   void Sort(const cv::Mat& frame);
 
  public:
   AimAssitant();
-  AimAssitant(game::Arm arm);
+  explicit AimAssitant(game::Arm arm);
   ~AimAssitant();
 
   void LoadParams(const std::string& armor_param, const std::string& buff_param,
@@ -41,7 +41,7 @@ class AimAssitant {
   void SetRace(game::Race race);
   void SetTime(double time);
 
-  component::AimMethod GetMethod();
+  game::AimMethod GetMethod();
 
   const tbb::concurrent_vector<Armor>& Aim(const cv::Mat& frame);
   void VisualizeResult(const cv::Mat& frame, int add_label = 1);

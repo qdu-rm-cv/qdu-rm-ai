@@ -1,16 +1,15 @@
 cmake_minimum_required(VERSION 3.12)
-project(radar)
+project(exec_radar)
 
 add_executable(${PROJECT_NAME} main.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
-    device
-    object
-    detector
-    behavior
-    predictor
-    compensator
+    module_behavior
+    module_compensator
     spdlog::spdlog
+    ${Dcamera}
+    ${Dcontroller}
+    ${Tradar}_detector
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
@@ -19,5 +18,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 )
 
 add_dependencies(${PROJECT_NAME}
-    device
+    ${Dcamera}
+    ${Dcontroller}
 )

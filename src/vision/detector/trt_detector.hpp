@@ -4,9 +4,10 @@
 #include <NvInferRuntimeCommon.h>
 
 #include <memory>
-#include <opencv2/opencv.hpp>
 #include <string>
 #include <vector>
+
+#include "opencv2/opencv.hpp"
 
 namespace TRT {
 
@@ -21,7 +22,7 @@ class TRTLogger : public nvinfer1::ILogger {
   TRTLogger() = default;
   ~TRTLogger() = default;
 
-  void log(Severity severity, const char *msg) override;
+  void log(Severity severity, const char *msg) noexcept override;
   int GetVerbosity();
 };
 

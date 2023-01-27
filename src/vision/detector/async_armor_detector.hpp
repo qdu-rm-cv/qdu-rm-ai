@@ -14,7 +14,7 @@ class ArmorDetectorAsync
   void Work(const size_t i);
 
  public:
-  ArmorDetectorAsync(const size_t thread_count);
+  explicit ArmorDetectorAsync(const size_t thread_count);
 
   ~ArmorDetectorAsync();
 

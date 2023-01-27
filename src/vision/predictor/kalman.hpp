@@ -1,4 +1,5 @@
 #pragma once
+
 #include "filter.hpp"
 
 class Kalman : public Filter {

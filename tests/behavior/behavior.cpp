@@ -24,10 +24,10 @@ static const char *const xml_tree_test = R"(
     </Fallback>
     </BehaviorTree>
 </root>
- 
+
 )";
 
-}
+}  // namespace
 
 TEST(TestBehavior, TestSimpleTree) {
   BT::BehaviorTreeFactory factory;
@@ -40,10 +40,10 @@ TEST(TestBehavior, TestSimpleTree) {
 }
 
 TEST(TestBehavior, TestWithoutTree) {
-  component::Logger::SetLogger();
+  component::logger::SetLogger();
   Behavior manager(false, false, false);
   manager.Update(300, 400, 200);
-  component::Euler elur = {1, 1, 1};
+  component::Euler elur(1, 1, 1);
   for (int i = 0; i < 5; i++) {
     manager.Aim(elur);
     manager.Move(i);

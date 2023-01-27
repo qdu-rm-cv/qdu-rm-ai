@@ -5,12 +5,11 @@
 
 #include "buff.hpp"
 #include "buff_detector.hpp"
-#include "common.hpp"
 #include "kalman.hpp"
 #include "opencv2/opencv.hpp"
 #include "predictor.hpp"
 
-// TODO : 修改参数，使KF可以上场使用
+// TODO(C.Meng) : 修改参数，使KF可以上场使用
 
 struct BuffPredictorParam {
   double delay_time;
@@ -20,7 +19,7 @@ struct BuffPredictorParam {
 class BuffPredictor : public Predictor<Armor, BuffPredictorParam, Kalman> {
  private:
   game::Race race_;
-  component::BuffState state_;
+  game::BuffState state_;
 
   Buff buff_;
   std::chrono::system_clock::time_point end_time_;
@@ -62,7 +61,7 @@ class BuffPredictor : public Predictor<Armor, BuffPredictorParam, Kalman> {
    *
    * @param param 参数文件路径
    */
-  BuffPredictor(const std::string &param);
+  explicit BuffPredictor(const std::string &param);
 
   /**
    * @brief Destroy the BuffPredictor object
@@ -87,16 +86,16 @@ class BuffPredictor : public Predictor<Armor, BuffPredictorParam, Kalman> {
   /**
    * @brief Get the State object
    *
-   * @return component::BuffState& 当前能量机关旋转状态
+   * @return game::BuffState& 当前能量机关旋转状态
    */
-  component::BuffState &GetState();
+  game::BuffState &GetState();
 
   /**
    * @brief Set the State object
    *
    * @param state 当前能量机关旋转状态
    */
-  void SetState(component::BuffState state);
+  void SetState(game::BuffState state);
 
   /**
    * @brief Get the Time object

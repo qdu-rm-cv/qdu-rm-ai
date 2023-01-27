@@ -3,7 +3,6 @@
 
 #include "armor_detector.hpp"
 #include "buff_detector.hpp"
-#include "buff_predictor.hpp"
 #include "gtest/gtest.h"
 #include "log.hpp"
 #include "opencv2/opencv.hpp"
@@ -16,7 +15,7 @@ const std::string kPARAM_PREDICT("../../../runtime/RMUT2022_Buff_Pre.json");
 }  // namespace
 
 TEST(TestVision, TestKalmanPredictor) {
-  component::Logger::SetLogger();
+  component::logger::SetLogger();
   cv::Mat frame;
   BuffDetector detector(kPARAM_DETECT, game::Team::kBLUE);
   BuffPredictor predictor(kPARAM_PREDICT);
@@ -46,8 +45,9 @@ TEST(TestVision, TestKalmanPredictor) {
       cv::waitKey(0);
       cap.release();
       return;
-    } else if (key == ' ')
+    } else if (key == ' ') {
       cv::waitKey(0);
+    }
   }
   cv::destroyAllWindows();
   cap.release();

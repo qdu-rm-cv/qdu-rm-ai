@@ -34,18 +34,18 @@
 ## 依赖 & 环境
 
 - 依赖
-  - [OpenCV](https://docs.opencv.org/4.5.1/d7/d9f/tutorial_linux_install.html)
-  - [BehavoirTree.CPP](https://github.com/BehaviorTree/BehaviorTree.CPP).
-  - [MVS SDK from HIKROBOT](https://www.hikrobotics.com/cn/machinevision/service/download?module=0).
-  - [spdlog](https://github.com/gabime/spdlog).
-  - [Google Test](https://github.com/google/googletest)
-  - [oneTBB](https://github.com/oneapi-src/oneTBB) or `libtbb-dev`
+  - [OpenCV (4.5.0 - 4.5.4)](https://docs.opencv.org/4.5.4/d7/d9f/tutorial_linux_install.html)
+  - [BehavoirTree.CPP (3.3.0 - 3.8.1)](https://github.com/BehaviorTree/BehaviorTree.CPP)
+  - [MVS SDK from HIKROBOT](https://www.hikrobotics.com/cn/machinevision/service/download?module=0)
+  - [spdlog (1.6.0 - 1.11.0)](https://github.com/gabime/spdlog)
+  - [Google Test (1.8.0 - 1.10.0)](https://github.com/google/googletest)
+  - [oneTBB (only tested 2020.1)](https://github.com/oneapi-src/oneTBB) or `libtbb-dev`
   - [libusbp](https://github.com/pololu/libusbp)
+  - [Eigen (highest 3.3.7)](https://eigen.tuxfamily.org/index.php?title=Main_Page)
+  - [Ceres-Solver (only tested 2.1.0)](http://ceres-solver.org/)
   - 可选
     - [CUDA](https://developer.nvidia.com/cuda-downloads)
     - [TensorRT](https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html)
-    - [Eigen](https://eigen.tuxfamily.org/index.php?title=Main_Page)
-    - [Ceres-Solver](http://ceres-solver.org/)
     - [ninja-build](https://ninja-build.org/manual.html) or `ninja-build`
 
 - 开发测试环境
@@ -56,7 +56,7 @@
 
 1. 安装依赖
     1. 根据上面链接安装相关依赖
-    2. 安装完成后运行`ldconfig`
+    2. 安装完成后运行`sudo ldconfig`
 
 2. 获得代码
 
@@ -64,7 +64,6 @@
     git clone --recursive https://github.com/qsheeeeen/qdu-rm-ai
     # or
     git clone --recursive https://gitee.com/qsheeeeen/qdu-rm-ai
-    
     ```
 
 3. 编译 & 安装

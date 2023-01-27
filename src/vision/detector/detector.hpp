@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "common.hpp"
 #include "opencv2/opencv.hpp"
 #include "spdlog/spdlog.h"
 #include "tbb/concurrent_vector.h"

@@ -16,7 +16,7 @@ class CameraDemo : public App {
   bool recording_;
 
  public:
-  CameraDemo(const std::string& log_path) : App(log_path) {
+  explicit CameraDemo(const std::string& log_path) : App(log_path) {
     SPDLOG_WARN("***** Setting Up Camera Demo System. *****");
 
     /* 初始化设备 */

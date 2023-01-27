@@ -8,14 +8,16 @@ file(GLOB ${PROJECT_NAME}_SOURCES
 add_executable(${PROJECT_NAME} ${${PROJECT_NAME}_SOURCES})
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
-    device
+    ${Dcamera}
+    ${Dcontroller}
     gtest
     gtest_main
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
-    $<TARGET_PROPERTY:device,INTERFACE_INCLUDE_DIRECTORIES>
+    $<TARGET_PROPERTY:${Dcamera},INTERFACE_INCLUDE_DIRECTORIES>
+    $<TARGET_PROPERTY:${Dcontroller},INTERFACE_INCLUDE_DIRECTORIES>
 )
 
 add_test(test_device test_device)

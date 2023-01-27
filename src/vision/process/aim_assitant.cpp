@@ -58,59 +58,59 @@ void AimAssitant::SetClassiferParam(const std::string model_path,
 
 void AimAssitant::SetRFID(game::RFID rfid) {
   if (arm_ == game::Arm::kUNKNOWN) {
-    method_ = component::AimMethod::kUNKNOWN;
+    method_ = game::AimMethod::kUNKNOWN;
     return;
   }
 
   if (arm_ == game::Arm::kHERO) {
     if (rfid == game::RFID::kSNIPE) {
-      method_ = component::AimMethod::kSNIPE;
+      method_ = game::AimMethod::kSNIPE;
     } else if (rfid == game::RFID::kUNKNOWN) {
-      method_ = component::AimMethod::kARMOR;
+      method_ = game::AimMethod::kARMOR;
     }
   } else if (arm_ == game::Arm::kINFANTRY) {
     if (rfid == game::RFID::kBUFF) {
-      method_ = component::AimMethod::kBUFF;
+      method_ = game::AimMethod::kBUFF;
     } else if (rfid == game::RFID::kUNKNOWN) {
-      method_ = component::AimMethod::kARMOR;
+      method_ = game::AimMethod::kARMOR;
     }
   } else if (arm_ == game::Arm::kSENTRY) {
-    method_ = component::AimMethod::kARMOR;
+    method_ = game::AimMethod::kARMOR;
   }
-  SPDLOG_INFO("Now Arms : {}, AimMethod : {}", game::ArmToString(arm_),
-              component::AimMethodToString(method_));
+  SPDLOG_INFO("Now Arms : {}, AimMethod : {}", game::ToString(arm_),
+              game::ToString(method_));
 }
 
 void AimAssitant::SetArm(game::Arm arm) {
   arm_ = arm;
-  SPDLOG_DEBUG("Arm : {}", game::ArmToString(arm_));
+  SPDLOG_DEBUG("Arm : {}", game::ToString(arm_));
 }
 
 void AimAssitant::SetRace(game::Race race) { b_predictor_.SetRace(race); }
 
 void AimAssitant::SetTime(double time) { b_predictor_.SetTime(time); }
 
-component::AimMethod AimAssitant::GetMethod() {
-  SPDLOG_DEBUG("{}", component::AimMethodToString(method_));
+game::AimMethod AimAssitant::GetMethod() {
+  SPDLOG_DEBUG("{}", game::ToString(method_));
   return method_;
 }
 
 const tbb::concurrent_vector<Armor>& AimAssitant::Aim(const cv::Mat& frame) {
   armors_.clear();
-  if (method_ == component::AimMethod::kUNKNOWN) {
-    method_ = component::AimMethod::kARMOR;
+  if (method_ == game::AimMethod::kUNKNOWN) {
+    method_ = game::AimMethod::kARMOR;
   }
 
-  if (method_ == component::AimMethod::kBUFF) {
+  if (method_ == game::AimMethod::kBUFF) {
     auto buffs = b_detector_.Detect(frame);
     b_predictor_.SetBuff(buffs.back());
     armors_ = b_predictor_.Predict();
   } else {
-    if (method_ == component::AimMethod::kARMOR) {
+    if (method_ == game::AimMethod::kARMOR) {
       armors_ = a_detector_.Detect(frame);
       for (auto& armor : armors_) classifier_.ClassifyModel(armor, frame);
       Sort(frame);
-    } else if (method_ == component::AimMethod::kSNIPE) {
+    } else if (method_ == game::AimMethod::kSNIPE) {
       armors_ = s_detector_.Detect(frame);
     }
 
@@ -121,13 +121,13 @@ const tbb::concurrent_vector<Armor>& AimAssitant::Aim(const cv::Mat& frame) {
 }
 
 void AimAssitant::VisualizeResult(const cv::Mat& frame, int add_label) {
-  if (method_ == component::AimMethod::kARMOR) {
+  if (method_ == game::AimMethod::kARMOR) {
     a_detector_.VisualizeResult(frame, add_label);
     a_predictor_.VisualizePrediction(frame, add_label);
-  } else if (method_ == component::AimMethod::kBUFF) {
+  } else if (method_ == game::AimMethod::kBUFF) {
     b_detector_.VisualizeResult(frame, add_label);
     b_predictor_.VisualizePrediction(frame, add_label);
-  } else if (method_ == component::AimMethod::kSNIPE) {
+  } else if (method_ == game::AimMethod::kSNIPE) {
     s_detector_.VisualizeResult(frame, add_label);
     a_predictor_.VisualizePrediction(frame, add_label);
   }

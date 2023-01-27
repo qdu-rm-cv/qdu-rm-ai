@@ -21,14 +21,15 @@ void Robot::ThreadRecv() {
     if (AI_ID_REF == id) {
       serial_.Recv(&ref, sizeof(ref));
 
-      if (crc16::CRC16_Verify((uint8_t *)&ref, sizeof(ref))) {
+      if (crc16::CRC16_Verify(reinterpret_cast<uint8_t *>(&ref), sizeof(ref))) {
         mutex_ref_.lock();
         std::memcpy(&ref_, &(ref.data), sizeof(ref_));
         mutex_ref_.unlock();
       }
     } else if (AI_ID_MCU == id) {
       serial_.Recv(&robot, sizeof(robot));
-      if (crc16::CRC16_Verify((uint8_t *)&robot, sizeof(robot))) {
+      if (crc16::CRC16_Verify(reinterpret_cast<uint8_t *>(&robot),
+                              sizeof(robot))) {
         mutex_mcu_.lock();
         recorder_.Record();
         std::memcpy(&mcu_, &(robot.data), sizeof(mcu_));
@@ -55,9 +56,10 @@ void Robot::ThreadTrans() {
     }
     mutex_command_.unlock();
     if (!is_empty) {
-      command.crc16 = crc16::CRC16_Calc((uint8_t *)&command.data,
-                                        sizeof(command.data), UINT16_MAX);
-      serial_.Trans((char *)&command, sizeof(command));
+      command.crc16 =
+          crc16::CRC16_Calc(reinterpret_cast<uint8_t *>(&command.data),
+                            sizeof(command.data), UINT16_MAX);
+      serial_.Trans(reinterpret_cast<char *>(&command), sizeof(command));
       // if (serial_.Trans((char *)&command, sizeof(command))) {
       //   mutex_command_.lock();
       //   while (!serial_.Reopen())
@@ -108,9 +110,9 @@ game::Race Robot::GetRace() {
   else if (ref_.race == AI_RACE_RMUT)
     return game::Race::kRMUT;
   else if (ref_.race == AI_RACE_RMUL1)
-    return game::Race::kRMUL1;
+    return game::Race::kRMUL1V1;
   else if (ref_.race == AI_RACE_RMUL3)
-    return game::Race::kRMUL3;
+    return game::Race::kRMUL3V3;
   return game::Race::kUNKNOWN;
 }
 
@@ -135,9 +137,10 @@ game::Arm Robot::GetArm() {
   for (int i = 0; i < 6; i++) {
     num += ((ref_.arm >> (i)) & 0x01);
   }
-  if (num != 1)
+  if (num != 1) {
     return game::Arm::kUNKNOWN;
-  else
+
+  } else {
     switch (ref_.arm & 0xFF) {
       case AI_ARM_INFANTRY:
         return game::Arm::kINFANTRY;
@@ -156,6 +159,7 @@ game::Arm Robot::GetArm() {
       default:
         return game::Arm::kUNKNOWN;
     }
+  }
 }
 
 component::Euler Robot::GetEuler() {
@@ -206,14 +210,12 @@ void Robot::Pack(Protocol_DownData_t &data, double distance) {
   euler.yaw = atan2f(siny_cosp, cosy_cosp);
 
   data.notice &= ~AI_NOTICE_FIRE;
-  if (fabs(euler.pitch - data.gimbal.pit) >= kFACTOR * distance)
-    ;
-  else if (fabs(euler.roll - data.gimbal.rol) >= kFACTOR * distance)
-    ;
-  else if (fabs(euler.yaw - data.gimbal.yaw) >= kFACTOR * distance)
-    ;
-  else
+  if (fabs(euler.pitch - data.gimbal.pit) >= kFACTOR * distance) {
+  } else if (fabs(euler.roll - data.gimbal.rol) >= kFACTOR * distance) {
+  } else if (fabs(euler.yaw - data.gimbal.yaw) >= kFACTOR * distance) {
+  } else {
     data.notice |= AI_NOTICE_FIRE;
+  }
 
   mutex_command_.lock();
   commandq_.emplace_back(data);

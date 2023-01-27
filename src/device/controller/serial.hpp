@@ -2,6 +2,7 @@
 
 #include <mutex>
 #include <string>
+#include <thread>
 
 #include "timer.hpp"
 #include "usb.hpp"
@@ -30,7 +31,7 @@ enum class DataLength {
 /* 串口 */
 class Serial {
  private:
-  USB usb_;
+  Usb usb_;
   int dev_;
   std::mutex mutex_w_;
   std::mutex mutex_r_;
@@ -53,7 +54,7 @@ class Serial {
    *
    * @param dev_path 具体要读写的串口设备
    */
-  Serial(const std::string& dev_path);
+  explicit Serial(const std::string& dev_path);
 
   /**
    * @brief Destroy the Serial object

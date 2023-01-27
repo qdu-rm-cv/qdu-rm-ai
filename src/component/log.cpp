@@ -1,14 +1,40 @@
 #include "log.hpp"
+
+namespace {
+
+static int logger_num = 0;
+
+int GetLoggerNum() { return logger_num++; }
+
+}  // namespace
+
 namespace component {
 
-namespace Logger {
+namespace logger {
 
-const static std::string fmt_default("%+");
-const static std::string fmt_filelogger(
+/*
+ * %+ :         default log pattern
+ * %Y-%m-%d :   date(yyyy-MM-dd)
+ * %T :         clock, equivalent to %H:%M:%S(hh:mm:ss)
+ * %3!u :       nanoseconds since previous message(3 bits)
+ * %l :         level(trace, debug, info, warn, error, critical)
+ * %L :         level(T, D, I, W, E, C)
+ * %! :         function name
+ * %s :         file name
+ * %# :         line number
+ * %v :         user text
+ * %t :         thread id
+ * %^[]%$ :     color start [] end
+ *
+ * see also : https://github.com/gabime/spdlog/wiki/3.-Custom-formatting
+ */
+
+static const std::string fmt_default("%+");
+static const std::string fmt_filelogger(
     "[%Y-%m-%d %T.%3!u] %^[%l] [%!]%$ [%s:%#] %v");
-const static std::string fmt_funcname(
+static const std::string fmt_funcname(
     "[%Y-%m-%d %T.%3!u] %^[%l]%$ [%s:%#] \033[34m[%!]\033[0m %v");
-const static std::string fmt_thread(
+static const std::string fmt_thread(
     "[%Y-%m-%d %T.%3!u] (id:%t) %^[%l]%$ [%s:%#] [%!] %v");
 
 const std::string& ToFormatString(FMT fmt) {
@@ -28,33 +54,45 @@ const std::string& ToFormatString(FMT fmt) {
 
 void SetLogger(const std::string& path, FMT fmt,
                spdlog::level::level_enum level) {
+  std::string logger_name = fmt::format("handle_{}", GetLoggerNum());
   std::string fmt_str = ToFormatString(fmt);
 
   auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
   console_sink->set_pattern(fmt_str);
+  console_sink->set_level(level);
+
   auto file_sink =
       std::make_shared<spdlog::sinks::basic_file_sink_mt>(path, true);
   file_sink->set_pattern(fmt_default);
+  file_sink->set_level(level);
 
-#if (SPDLOG_ACTIVE_LEVEL == SPDLOG_LEVEL_DEBUG)
+  std::vector<spdlog::sink_ptr> sinks{console_sink, file_sink};
+  auto logger = std::make_shared<spdlog::logger>(logger_name.c_str(),
+                                                 sinks.begin(), sinks.end());
+  spdlog::register_logger(logger);
+  spdlog::set_default_logger(logger);
+
+#if (BUILD_TYPE == SPDLOG_LEVEL_DEBUG)
   spdlog::flush_on(spdlog::level::debug);
   spdlog::set_level(spdlog::level::debug);
-#elif (SPDLOG_ACTIVE_LEVEL == SPDLOG_LEVEL_INFO)
+  logger->set_level(spdlog::level::debug);
+  logger->flush_on(spdlog::level::debug);
+#elif (BUILD_TYPE == SPDLOG_LEVEL_INFO)
   spdlog::flush_on(spdlog::level::info);
   spdlog::set_level(spdlog::level::info);
+  logger->set_level(spdlog::level::info);
+  logger->flush_on(spdlog::level::info);
 #endif
 
-  if (fmt != FMT::kFMT_FILE) {
-    file_sink->set_pattern(fmt_str);
-    spdlog::flush_on(level);
-    spdlog::set_level(level);
-  }
-
-  spdlog::set_default_logger(std::make_shared<spdlog::logger>(
-      "default", spdlog::sinks_init_list{console_sink, file_sink}));
-  SPDLOG_DEBUG("Logging setted.");
+  SPDLOG_TRACE("Format code : {}", fmt_str);
+  SPDLOG_DEBUG("file path : {}", path);
+  SPDLOG_DEBUG("{} Logger is setted.", logger_name);
 }
 
-}  // namespace Logger
+std::string GetLevelString() {
+  return std::string(spdlog::level::to_string_view(spdlog::get_level()).data());
+}
+
+}  // namespace logger
 
 }  // namespace component

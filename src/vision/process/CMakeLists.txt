@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(process)
+project(module_process)
 
 file(GLOB ${PROJECT_NAME}_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
@@ -7,41 +7,27 @@ file(GLOB ${PROJECT_NAME}_SOURCES
 
 add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_SOURCES})
 
-if(BUILD_EKF)
-    target_link_libraries(${PROJECT_NAME} PUBLIC
-        ${OpenCV_LIBS}
-        tbb
-        spdlog::spdlog
-        component
-        object
-        detector
-        predictor
-        param
-        classifier
-        ${CERES_LIBRARIES} 
-    )
-    
-    target_include_directories(${PROJECT_NAME} PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}
-        ${EIGEN3_INCLUDE_DIR}
-        ${CERES_INCLUDE_DIRS}
-    )
+target_link_libraries(${PROJECT_NAME} PUBLIC
+    ${OpenCV_LIBS}
+    module_classifier
+    module_component
+    module_param
+    spdlog::spdlog
+    tbb
+    ${Taim}_detector
+    ${Tbuff}_detector
+    ${Tdart}_detector
+    ${Tengineer}_detector
+    ${Taim}_object
+    ${Tbuff}_object
+    ${Tdart}_object
+    ${Tengineer}_object
+    ${Taim}_predictor
+    ${Tbuff}_predictor
+)
 
-else()
-    target_link_libraries(${PROJECT_NAME} PUBLIC
-        ${OpenCV_LIBS}
-        tbb
-        spdlog::spdlog
-        component
-        object
-        detector
-        predictor
-        param
-        classifier
-    )
-
-    target_include_directories(${PROJECT_NAME} PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}
-    )
-
-endif()
+target_include_directories(${PROJECT_NAME} PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${EIGEN3_INCLUDE_DIR}
+    ${CERES_INCLUDE_DIRS}
+)

@@ -16,7 +16,7 @@ class BuffDemo : public Demo {
   BuffPredictor predictor_;
 
  public:
-  BuffDemo(const std::string& log_path) : Demo(log_path) {
+  explicit BuffDemo(const std::string& log_path) : Demo(log_path) {
     SPDLOG_WARN("***** Setting Up Buff Aiming System. *****");
 
     /* 初始化设备 */

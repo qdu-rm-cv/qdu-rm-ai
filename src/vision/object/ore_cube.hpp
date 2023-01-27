@@ -15,7 +15,7 @@ class OreCube : public ImageObject, public PhysicObject {
  public:
   OreCube();
   OreCube(const cv::Point2f& center, float radius);
-  OreCube(const cv::RotatedRect& rect);
+  explicit OreCube(const cv::RotatedRect& rect);
   ~OreCube();
 
   component::Euler GetSelfEuler();

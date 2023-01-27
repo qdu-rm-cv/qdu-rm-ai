@@ -5,7 +5,6 @@
 
 #include "armor.hpp"
 #include "armor_detector.hpp"
-#include "common.hpp"
 #include "kalman.hpp"
 #include "predictor.hpp"
 #include "timer.hpp"
@@ -28,7 +27,7 @@ class ArmorPredictor : public Predictor<Armor, ArmorPredictParam, Kalman> {
 
  public:
   ArmorPredictor();
-  ArmorPredictor(const std::string &param);
+  explicit ArmorPredictor(const std::string &param);
   ~ArmorPredictor();
 
   void SetArmor(const Armor &armor);

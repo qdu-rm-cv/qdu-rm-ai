@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(behavior)
+project(module_behavior)
 
 file(GLOB ${PROJECT_NAME}_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
@@ -14,5 +14,5 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 
 target_include_directories(${PROJECT_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
-    $<TARGET_PROPERTY:device,INTERFACE_INCLUDE_DIRECTORIES>
+    $<TARGET_PROPERTY:${Dcontroller},INTERFACE_INCLUDE_DIRECTORIES>
 )

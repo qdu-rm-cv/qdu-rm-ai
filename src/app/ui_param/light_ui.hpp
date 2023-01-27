@@ -1,28 +1,20 @@
 #pragma once
 
-#include "app.hpp"
 #include "guidinglight_detector.hpp"
 #include "guidinglight_param.hpp"
-#include "hik_camera.hpp"
-#include "robot.hpp"
+#include "ui.hpp"
 
-class LightUIParam : private App {
+class LightUIParam : private UI {
  private:
-  HikCamera cam_;
   GuidingLightDetector detector_;
   GuidingLightParam guidinglight_param_;
-  std::string param_path_, window_handle_;
 
  public:
   LightUIParam(const std::string& log_path, const std::string& param_path,
                const std::string& window = "ui_setting")
-      : App(log_path), param_path_(param_path), window_handle_(window) {
+      : UI(log_path, param_path, window) {
     SPDLOG_WARN("***** Setting Up LightUIParam System. *****");
-
-    /* 初始化设备 */
-    cam_.Open(0);
-    cam_.Setup(640, 480);
-    guidinglight_param_.Read(param_path_);
+    guidinglight_param_.Read(param_path);
   }
 
   ~LightUIParam() {

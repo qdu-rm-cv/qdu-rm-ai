@@ -21,7 +21,7 @@ class AutoAim : private App {
   ArmorClassifier classifier_;
 
  public:
-  AutoAim(const std::string& log_path)
+  explicit AutoAim(const std::string& log_path)
       : App(log_path), detector_async_(ArmorDetectorAsync(2)) {
     SPDLOG_WARN("***** Setting Up Auto Aiming System. *****");
 
@@ -61,12 +61,12 @@ class AutoAim : private App {
 
       detector_async_.PutFrame(frame);
       if (!detector_async_.GetResult(armors)) continue;
-      
+
       for (auto armor : armors) {
         classifier_.ClassifyModel(armor, frame);
       }
       compensator_.Apply(armors, frame, robot_.GetBalletSpeed(),
-                         robot_.GetEuler(), component::AimMethod::kARMOR);
+                         robot_.GetEuler(), game::AimMethod::kARMOR);
       manager_.Aim(armors.front().GetAimEuler());
       robot_.Pack(manager_.GetData(), 9999);
       SPDLOG_WARN("pack");
@@ -105,7 +105,7 @@ class AutoAim : private App {
   component::Recorder recorder_ = component::Recorder("AutoAimThread");
 
  public:
-  AutoAim(const std::string& log_path) : App(log_path) {
+  explicit AutoAim(const std::string& log_path) : App(log_path) {
     SPDLOG_WARN("***** Setting Up Auto Aiming System. *****");
 
     /* 初始化设备 */

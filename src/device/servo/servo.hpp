@@ -21,7 +21,7 @@ class Servo {
    *
    * @param dev_path 具体要读写的舵机设备
    */
-  Servo(const std::string& dev_path);
+  explicit Servo(const std::string& dev_path);
 
   /**
    * @brief Destroy the Servo object
