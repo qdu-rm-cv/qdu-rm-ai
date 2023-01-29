@@ -102,8 +102,11 @@
     ],
     "python.linting.enabled": true,
     "python.linting.pylintEnabled": true,
+    "python.linting.pylintPath": "pylint",
     "python.linting.lintOnSave": true,
-    "python.linting.pylintArgs": [],
+    "python.linting.pylintArgs": [
+        "--disabled=C0116, C0114"
+    ],
     "pylint.logLevel": "debug",
     "files.associations": {
         "cctype": "cpp",

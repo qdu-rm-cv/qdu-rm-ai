@@ -5,7 +5,7 @@ endif()
 cmake_minimum_required(VERSION 3.12)
 
 project(qdu-rm-ai
-    DESCRIPTION "QDU AI for Robomaster"
+    DESCRIPTION "QDU AI for RoboMaster"
     VERSION 0.1.0
     LANGUAGES CXX
 )
