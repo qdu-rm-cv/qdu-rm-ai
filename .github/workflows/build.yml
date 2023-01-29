@@ -1,0 +1,62 @@
+name: build
+
+on:
+  push:
+    branches: [ "2023" ]
+  pull_request:
+    branches: [ "2023" ]
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
+    # You can convert this to a matrix build if you need cross-platform coverage.
+    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install Dependancy
+      run: git clone https://github.com/qdu-rm-cv/environment.git && cd environmet && sudo chmod 777 ./shell/* && ./shell/env_dep_install.sh
+
+    - name: Init submodule
+      run: cd ${{github.workspace}} && git submodule init && git submodule update
+      
+    - name: Build
+      # Build your program with the given configuration
+      run: python3 ./utils/project.py build && cd build && make -j ${nproc}
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build
+      run: cat generated/project.cat
+      # Execute tests defined by the CMake configuration.
+      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
+      # run: ctest -C ${{env.BUILD_TYPE}}
+      
+    - name: Create release
+      run:  echo "release_name=$(date +v%Y.%m.%d.vv%H.%M)" >> $GITHUB_ENV
+
+    - uses: actions/create-release@v1
+      id: create_release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+          tag_name: ${{ env.release_name }}
+          release_name: Release ${{ env.release_name }}
+          draft: false
+          prerelease: false
+
+    - name: Upload firmware
+      uses: actions/upload-release-asset@v1
+      id: upload-firmware
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{github.workspace}}/firmware.zip
+        asset_name: firmware.zip
+        asset_content_type: application/zip
