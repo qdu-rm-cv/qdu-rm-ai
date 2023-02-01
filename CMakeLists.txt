@@ -151,8 +151,8 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests)
 # Install
 # ---------------------------------------------------------------------------------------
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    set(CMAKE_INSTALL_LIBDIR lib)
-    set(CMAKE_INSTALL_BINDIR bin)
+    set(CMAKE_INSTALL_LIBDIR /usr/local/lib/RM)
+    set(CMAKE_INSTALL_BINDIR /usr/local/bin/RM)
     message(STATUS "------------------------ Install --------------------------------")
     message(STATUS "Generating install")
     message(STATUS "Install to: ${CMAKE_INSTALL_PREFIX}")

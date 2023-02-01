@@ -2,8 +2,8 @@
 
 ***Developing.***
 
-[Gitee](https://gitee.com/qsheeeeen/qdu-rm-ai)
-[Github](https://github.com/qsheeeeen/qdu-rm-ai)
+[Gitee](https://gitee.com/qdu-rm-2022/qdu-rm-ai)
+[Github](https://github.com/qdu-rm-cv/qdu-rm-ai)
 
 软件正处在开发初期，只完成了视觉的核心部分，其余部分正在开发中。
 
@@ -19,15 +19,15 @@
 
 ## 图片展示
 
-| ![YOLO识别效果](./image/test_yolo.jpg?raw=true "YOLO识别效果") |
+| ![YOLO识别效果](./assets/image/test_yolo.jpg?raw=true "YOLO识别效果") |
 |:--:|
 | *YOLO识别效果* |
 
-| ![装甲板匹配效果](./image/test_origin.png?raw=true "装甲板匹配效果") |
+| ![装甲板匹配效果](./assets/image/test_origin.png?raw=true "装甲板匹配效果") |
 |:--:|
 | *本算法识别效果* |
 
-| ![TensorRT加速效果](./image/compare.jpg?raw=true "TensorRT加速效果") |
+| ![TensorRT加速效果](./assets/image/compare.jpg?raw=true "TensorRT加速效果") |
 |:--:|
 | *TODO：TensorRT加速效果* |
 
@@ -61,10 +61,20 @@
 2. 获得代码
 
     ```sh
-    git clone --recursive https://github.com/qsheeeeen/qdu-rm-ai
+    git clone --recursive https://github.com/qdu-rm-cv/qdu-rm-ai
     # or
-    git clone --recursive https://gitee.com/qsheeeeen/qdu-rm-ai
+    git clone --recursive https://gitee.com/qdu-rm-2022/qdu-rm-ai
     ```
+
+    - 快速配置所需环境
+
+        ```sh
+        git clone https://github.com/qdu-rm-cv/environment
+        cd environment
+        sudo chmod 777 ./shell/*
+        ./shell/env_dep_install.sh
+        ./shell/code_dep_install.sh
+        ```
 
 3. 编译 & 安装
 
@@ -114,7 +124,7 @@
 
 | 文件夹 | 内容 | 备注 |
 | ---- | ---- | ---- |
-| image | 图片 | 包含效果展示、测设产物等 |
+| assets | 资源 | 包含文档、效果展示、测试产物等相关的图片 |
 | runtime | 运行环境 | 包含运行所需文件，和运行过程产生的文件 |
 | src | 源代码 |
 | tests | 测试代码 |
@@ -144,13 +154,13 @@
 
 ### 软件流程图
 
-| ![视觉程序框图](./image/视觉程序框图.png?raw=true "步兵嵌入式硬件框图") |
+| ![视觉程序框图](./assets/README.assets/视觉程序框图.png?raw=true "步兵嵌入式硬件框图") |
 |:--:|
 | *视觉程序框图* |
 
 ### 行为树演示
 
-| ![行为树演示](./image/行为树演示.png?raw=true "行为树演示") |
+| ![行为树演示](./assets/README.assets/行为树演示.png?raw=true "行为树演示") |
 |:--:|
 | *行为树演示* |
 
@@ -162,8 +172,9 @@
 
 2. 引入神经网络
     1. 使用基于pytorch的yolov5算法，训练得到的权重和模型导出到ONNX格式。
-    2. 在妙算平台使用TensorRT运行导出的模型。
-    3. 添加Int8运行
+    2. 在Jetson平台使用TensorRT运行导出的模型。
+    3. 在NUC平台使用OpenVINO。
+    4. 添加Int8运行
 
 3. 完成各种滤波器进行平滑化处理，并完成预测器
 

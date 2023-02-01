@@ -19,24 +19,24 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    
+
     - name: Install Dependancy
       run: git clone https://github.com/qdu-rm-cv/environment.git && cd environmet && sudo chmod 777 ./shell/* && ./shell/env_dep_install.sh
 
     - name: Init submodule
       run: cd ${{github.workspace}} && git submodule init && git submodule update
-      
+
     - name: Build
       # Build your program with the given configuration
       run: python3 ./utils/project.py build && cd build && make -j ${nproc}
 
     - name: Test
       working-directory: ${{github.workspace}}/build
-      run: cat generated/project.cat
+      run: cat generated/project.log
       # Execute tests defined by the CMake configuration.
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       # run: ctest -C ${{env.BUILD_TYPE}}
-      
+
     - name: Create release
       run:  echo "release_name=$(date +v%Y.%m.%d.vv%H.%M)" >> $GITHUB_ENV
 
