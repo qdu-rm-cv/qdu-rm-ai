@@ -39,8 +39,8 @@ TEST(TestVision, TestEKF) {
     cv::circle(img, pt, 3, draw::kBLUE, 2);
     cv::circle(img, predict_pt, 3, draw::kGREEN, 2);
 
-    cv::imshow("img", img);
-    cv::waitKey(0);
+    // cv::imshow("img", img);
+    // cv::waitKey(0);
   }
   cv::destroyWindow("img");
 }

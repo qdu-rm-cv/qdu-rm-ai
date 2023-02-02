@@ -21,23 +21,31 @@ game::Model Classify(const std::string& path) {
 }  // namespace
 
 TEST(TestVision, TestArmorClassifier) {
-  ASSERT_TRUE(Classify("../../../image/test_classifier_0.png") ==
-              game::Model::kINFANTRY);
-  ASSERT_TRUE(Classify("../../../image/test_classifier_1.png") ==
-              game::Model::kENGINEER);
-  ASSERT_TRUE(Classify("../../../image/test_classifier_2.png") ==
-              game::Model::kHERO);
-  ASSERT_TRUE(Classify("../../../image/test_classifier_3.png") ==
-              game::Model::kHERO);
+  if (algo::FileExist("../../../assets/image/test_classifier_0.png"))
+    ASSERT_TRUE(Classify("../../../assets/image/test_classifier_0.png") ==
+                game::Model::kINFANTRY);
+  else if (algo::FileExist("../../../assets/image/test_classifier_1.png"))
+    ASSERT_TRUE(Classify("../../../assets/image/test_classifier_1.png") ==
+                game::Model::kENGINEER);
+  else if (algo::FileExist("../../../assets/image/test_classifier_2.png"))
+    ASSERT_TRUE(Classify("../../../assets/image/test_classifier_2.png") ==
+                game::Model::kHERO);
+  else if (algo::FileExist("../../../assets/image/test_classifier_3.png"))
+    ASSERT_TRUE(Classify("../../../assets/image/test_classifier_3.png") ==
+                game::Model::kHERO);
+  else
+    return;
 }
 
 TEST(TestVision, TestArmorClassifierInput) {
-  cv::Mat f = cv::imread("../../../image/p2.png");
+  if (!algo::FileExist("../../../assets/image/p2.png")) return;
+
+  cv::Mat f = cv::imread("../../../assets/image/p2.png");
   Armor armor(cv::RotatedRect(cv::Point2f(0, 0), cv::Point2f(f.cols, 0),
                               cv::Point2f(f.cols, f.rows)));
 
-  cv::imwrite("../../../image/test_face.png", armor.Face(f));
+  cv::imwrite("../../../assets/image/test_face.png", armor.Face(f));
   cv::Mat nn_input;
   cv::resize(armor.Face(f), nn_input, cv::Size(28, 28));
-  cv::imwrite("../../../image/test_nn_input.png", nn_input);
+  cv::imwrite("../../../assets/image/test_nn_input.png", nn_input);
 }

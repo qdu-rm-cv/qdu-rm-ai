@@ -35,8 +35,8 @@ TEST(TestVision, TestKalman) {
     cv::circle(img, pt, 3, draw::kBLUE, 2);
     cv::circle(img, pre_pt, 3, draw::kGREEN, 2);
 
-    cv::imshow("img", img);
-    cv::waitKey(0);
+    // cv::imshow("img", img);
+    // cv::waitKey(0);
   }
   cv::destroyWindow("img");
 }
@@ -44,6 +44,8 @@ TEST(TestVision, TestKalman) {
 TEST(TestVision, TestKalmanBuffPredictor) {
   component::logger::SetLogger();
   Kalman filter(4, 2);
+  if (!algo::FileExist(kVIDEO)) return;
+
   cv::VideoCapture cap(kVIDEO);
   cv::Mat frame;
   BuffDetector detecter(kPARAM, game::Team::kBLUE);

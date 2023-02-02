@@ -4,9 +4,11 @@
 
 #include <algorithm>
 #include <cctype>
+#include <filesystem>
 #include <string>
 
 #include "spdlog/fmt/bundled/core.h"
+#include "spdlog/spdlog.h"
 
 namespace component {
 
@@ -266,6 +268,14 @@ double GetRealRandomValue(double min, double max) {
   if (min > max) std::swap(min, max);
   static std::uniform_real_distribution<double> distributer(min, max);
   return distributer(engine);
+}
+
+bool FileExist(const std::string& file_name) {
+  if (!std::filesystem::exists(file_name)) {
+    SPDLOG_ERROR("[{}] doesn't exist.", file_name);
+    return false;
+  }
+  return true;
 }
 
 }  // namespace algo

@@ -13,7 +13,7 @@ std::vector<ceres::Jet<double, 5>> LinerModel(
   x1[2] = x0[2] + delta_t * x0[3];  // 0.1
   x1[3] = x0[3];                    // 100
   x1[4] = x0[4];                    // 0.01
-  SPDLOG_WARN("LinerModel");
+  SPDLOG_DEBUG("LinerModel");
   return x1;
 }
 
@@ -63,7 +63,7 @@ const cv::Mat& EKF::Predict(const cv::Mat& measurements) {
 
   EP = EF * EP * EF.transpose() + EQ;
   cv::eigen2cv(EXp, Xp);
-  SPDLOG_WARN("Predicted");
+  SPDLOG_DEBUG("Predicted");
 
   return Xp;
 }
@@ -72,7 +72,9 @@ const cv::Mat& EKF::Update(const cv::Mat& measurements) {
   std::vector<ceres::Jet<double, 5>> EXp_auto_jet(5), EYp_auto_jet(3);
 
   EMatx31d Y;
-  cv::cv2eigen(Matx31d(measurements), Y);
+  Matx31d m(measurements.at<double>(0), measurements.at<double>(2),
+            measurements.at<double>(4));
+  cv::cv2eigen(m, Y);
 
   for (int i = 0; i < 5; i++) {
     EXp_auto_jet[i].a = EXp[i];
@@ -87,5 +89,7 @@ const cv::Mat& EKF::Update(const cv::Mat& measurements) {
   EXe = EXp + EK * (Y - EYp);
   EP = (EMatx55d::Identity() - EK * EH) * EP;
   cv::eigen2cv(EXe, Xe);
+
+  SPDLOG_DEBUG("Updated");
   return Xe;
 }

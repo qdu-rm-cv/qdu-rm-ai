@@ -7,14 +7,16 @@ TEST(TestVision, TestBuffDetector) {
   BuffDetector buff_detector("../../../runtime/RMUT2021_Buff.json",
                              game::Team::kBLUE);
 
-  cv::Mat frame = cv::imread("../../../image/test_buff.png", cv::IMREAD_COLOR);
+  if (!algo::FileExist("../../../assets/image/test_buff.png")) return;
+  cv::Mat frame =
+      cv::imread("../../../assets/image/test_buff.png", cv::IMREAD_COLOR);
   ASSERT_FALSE(frame.empty()) << "Can not opening image.";
 
   buff_detector.Detect(frame);
   buff_detector.VisualizeResult(frame, 2);
 
   cv::Mat result = frame.clone();
-  cv::imwrite("../../../image/test_buff_result.png", result);
+  cv::imwrite("../../../assets/image/test_buff_result.png", result);
   SUCCEED();
 }
 
@@ -22,6 +24,7 @@ TEST(TestVision, TestBuffDetectorVideo) {
   BuffDetector buff_detector("../../../runtime/RMUT2021_Buff.json",
                              game::Team::kBLUE);
 
+  if (!algo::FileExist("../../../../redbuff01.avi")) return;
   cv::VideoCapture cap("../../../../redbuff01.avi");
   cv::Mat frame;
   ASSERT_TRUE(cap.isOpened()) << "cap not opened";

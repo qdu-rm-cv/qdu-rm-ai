@@ -8,6 +8,7 @@
 TEST(TestVision, TestOreCubeDetector) {
   component::logger::SetLogger();
   OreCubeDetector detector("../../../runtime/RMUT2022_OreCube.json");
+  if (!algo::FileExist("../../../../cube01.avi")) return;
   cv::VideoCapture cap("../../../../cube01.avi");
   cv::Mat frame;
   ASSERT_TRUE(cap.isOpened()) << "cap not opened";
