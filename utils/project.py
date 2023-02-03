@@ -14,6 +14,9 @@ root = os.path.dirname(os.path.abspath(__file__))[0:-5]
 build_dir = os.path.join(root, 'build')
 log_fullname = f"{build_dir}/{LOG_FILE_NAME}"
 
+if not os.path.exists(build_dir):
+    os.mkdir(build_dir)
+
 COMMAND_CMAKE = f"/usr/bin/cmake --no-warn-unused-cli -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE " \
     f"-B{build_dir} -G Ninja -DCMAKE_C_COMPILER:FILEPATH=/usr/bin/gcc " \
     f"-DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/g++ -S{root} -DCMAKE_BUILD_TYPE:STRING="
@@ -27,7 +30,7 @@ formatter = logging.Formatter(fmt=LOG_FMT)
 stream_handler = logging.StreamHandler(sys.stdout)
 stream_handler.setLevel(logging.WARNING)
 stream_handler.setFormatter(formatter)
-file_handler = logging.FileHandler(log_fullname, mode='w+', encoding='utf-8')
+file_handler = logging.FileHandler(log_fullname, mode='a', encoding='utf-8')
 file_handler.setFormatter(formatter)
 file_handler.setLevel(logging.DEBUG)
 logger.addHandler(file_handler)
@@ -65,10 +68,8 @@ def refresh():
         os.system(f"mv {log_fullname} {root}")
         os.system(f"rm -rf {build_dir}")
     os.mkdir(build_dir)
-    if os.path.exists(f"{root}{LOG_FILE_NAME}"):
-        os.chdir(build_dir)
-        os.mkdir("generated")
-        os.system(f"mv {root}/project.log {build_dir}/generated")
+    if os.path.exists(f"{root}/{LOG_FILE_NAME}"):
+        os.system(f"mv {root}/{LOG_FILE_NAME} {log_fullname}")
     os.system(COMMAND_DEBUG)
     logger.info("[refresh] success")
 
@@ -128,7 +129,7 @@ def menu(command):
 
 if __name__ == '__main__':
     cmd = sys.argv
-    logger.info(f"<<user: {pwd.getpwuid(os.getuid())[0]}, command: {cmd[-1]}>>")
+    logger.info(f"[user: {pwd.getpwuid(os.getuid())[0]}, command: {cmd[-1]}]")
     if len(cmd) > 2:
         help()
     else:
