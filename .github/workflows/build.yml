@@ -21,18 +21,18 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Install Dependancy
-      run: git clone https://github.com/qdu-rm-cv/environment.git && cd environment && sudo chmod 777 ./shell/* && ./shell/env_dep_install.sh
+      run: cd ${{github.workspace}} && python3 ./utils/project.py env
 
     - name: Init submodule
-      run: cd ${{github.workspace}} && git submodule init && git submodule update
+      run: cd ${{github.workspace}} && python3 ./utils/project.py init
 
     - name: Build
       # Build your program with the given configuration
-      run: python3 ./utils/project.py build && cd build && make -j ${nproc}
+      run: cd ${{github.workspace}} && python3 ./utils/project.py build
 
     - name: Test
       working-directory: ${{github.workspace}}/build
-      run: cat generated/project.log
+      run: python3 ./utils/project.py test
       # Execute tests defined by the CMake configuration.
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       # run: ctest -C ${{env.BUILD_TYPE}}

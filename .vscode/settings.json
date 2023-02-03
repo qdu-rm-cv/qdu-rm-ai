@@ -173,6 +173,11 @@
         "variant": "cpp",
         "unordered_set": "cpp",
         "future": "cpp",
-        "*.in": "txt"
+        "*.in": "txt",
+        "compare": "cpp",
+        "valarray": "cpp"
     },
+    "githubPullRequests.ignoredPullRequestBranches": [
+        "2023"
+    ],
 }

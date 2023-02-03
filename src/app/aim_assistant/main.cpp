@@ -22,13 +22,14 @@ class AutomaticAim : public App {
     cam_.Open(0);
     cam_.Setup(480, 640);
 
-    assitant_.LoadParams(
-        "/runtime/RMUL2021_Armor.json", "/runtime/RMUT2021_Buff.json",
-        "/runtime/RMUT2022_Snipe.json", "/runtime/RMUT2022_Armor_Pre.json",
-        "/runtime/RMUT2022_Buff_Pre.json");
-    assitant_.SetClassiferParam("../../../runtime/armor_classifier.onnx",
-                                "../../../runtime/armor_classifier_lable.json",
-                                cv::Size(28, 28));
+    assitant_.LoadParams("../../../../runtime/RMUL2021_Armor.json",
+                         "../../../../runtime/RMUT2021_Buff.json",
+                         "../../../../runtime/RMUT2022_Snipe.json",
+                         "../../../../runtime/RMUT2022_Armor_Pre.json",
+                         "../../../../runtime/RMUT2022_Buff_Pre.json");
+    assitant_.SetClassiferParam(
+        "../../../../runtime/armor_classifier.onnx",
+        "../../../../runtime/armor_classifier_lable.json", cv::Size(28, 28));
 
     compensator_.LoadCameraMat("runtime/MV-CA016-10UC-6mm.json");
   }

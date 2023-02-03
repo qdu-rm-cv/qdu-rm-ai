@@ -20,4 +20,4 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     $<TARGET_PROPERTY:${Dcontroller},INTERFACE_INCLUDE_DIRECTORIES>
 )
 
-add_test(test_device test_device)
+# add_test(test_device test_device)

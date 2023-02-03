@@ -107,8 +107,32 @@ endif()
 # ---------------------------------------------------------------------------------------
 message(STATUS "----------------------- Packages Option ------------------------")
 
-set(BUILD_NN 0)
+option(BUILD_NN "build nn module" OFF)
+option(WITH_DEVICE "No device" OFF)
+option(WITH_UI "No UI" OFF)
+set(ROOT_PATH ${CMAKE_CURRENT_SOURCE_DIR})
+
+if(BUILD_NN)
+    set(BUILD_NN 1)
+else()
+    set(BUILD_NN 0)
+endif()
+
+if(WITH_DEVICE)
+    set(WITH_DEVICE 1)
+else()
+    set(WITH_DEVICE 0)
+endif()
+
+if(WITH_UI)
+    set(WITH_UI 1)
+else()
+    set(WITH_UI 0)
+endif()
+
 message(STATUS "Build NN: ${BUILD_NN}")
+message(STATUS "WITH_DEVICE: ${WITH_DEVICE}")
+message(STATUS "WITH_UI: ${WITH_UI}")
 
 # ---------------------------------------------------------------------------------------
 # Source

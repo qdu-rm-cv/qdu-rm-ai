@@ -249,6 +249,7 @@ bool HasBigArmor(Model model) {
 }  // namespace game
 
 namespace algo {
+
 static std::random_device r;
 static std::default_random_engine engine(r());
 

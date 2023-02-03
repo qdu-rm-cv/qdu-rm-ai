@@ -14,19 +14,20 @@ root = os.path.dirname(os.path.abspath(__file__))[0:-5]
 build_dir = os.path.join(root, 'build')
 log_fullname = f"{build_dir}/{LOG_FILE_NAME}"
 
-COMMAND = f"/usr/bin/cmake --no-warn-unused-cli -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE " \
+COMMAND_CMAKE = f"/usr/bin/cmake --no-warn-unused-cli -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE " \
     f"-B{build_dir} -G Ninja -DCMAKE_C_COMPILER:FILEPATH=/usr/bin/gcc " \
     f"-DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/g++ -S{root} -DCMAKE_BUILD_TYPE:STRING="
-DEBUG_COMMAND = COMMAND + "Debug"
-RELEASE_COMMAND = COMMAND + "Release"
-BUILD_COMMAND = f"/usr/bin/cmake --build {build_dir} --config Debug --target all --"
+COMMAND_DEBUG = COMMAND_CMAKE + "Debug"
+COMMAND_RELEASE = COMMAND_CMAKE + "Release"
+COMMAND_BUILD = f"/usr/bin/cmake --build {build_dir} --config Debug --target all --"
+COMMAND_TEST = f"/usr/bin/ctest -j14 -C Release -T test --output-on-failure --test-dir {build_dir}"
 
 logger = logging.getLogger("logger")
 formatter = logging.Formatter(fmt=LOG_FMT)
 stream_handler = logging.StreamHandler(sys.stdout)
 stream_handler.setLevel(logging.WARNING)
 stream_handler.setFormatter(formatter)
-file_handler = logging.FileHandler(log_fullname, mode='a', encoding='utf-8')
+file_handler = logging.FileHandler(log_fullname, mode='w+', encoding='utf-8')
 file_handler.setFormatter(formatter)
 file_handler.setLevel(logging.DEBUG)
 logger.addHandler(file_handler)
@@ -68,7 +69,7 @@ def refresh():
         os.chdir(build_dir)
         os.mkdir("generated")
         os.system(f"mv {root}/project.log {build_dir}/generated")
-    os.system(DEBUG_COMMAND)
+    os.system(COMMAND_DEBUG)
     logger.info("[refresh] success")
 
 
@@ -82,22 +83,26 @@ def init():
 
 def build():
     logger.info("[build] start")
-    os.system(RELEASE_COMMAND)
-    os.system(BUILD_COMMAND)
+    os.system(COMMAND_RELEASE)
+    os.system(COMMAND_BUILD)
     logger.info("[build] success")
 
 
 def test():
     logger.info("[test] start")
-    os.system("/usr/bin/ctest -j14 -C Debug -T test --output-on-failure")
+    os.system(COMMAND_TEST)
     logger.info("[test] success")
 
 
 def env():
     logger.info("[env] start")
-    os.system(f"git clone https://github.com/qdu-rm-cv/environment.git {root}/,,")
-    os.system(f"sudo chmod 777 {root}/../environment/shell/*")
-    os.system(f"{root}/../shell/env_dep_install.sh")
+    env_path = os.path.join(root, "../env")
+    if os.path.exists(f"{env_path}"):
+        os.system(f"rm -rf {env_path}")
+        print(f"{env_path} exist")
+    os.system(f"git clone https://github.com/qdu-rm-cv/environment.git {env_path}")
+    os.system(f"sudo chmod 777 {env_path}/shell/*")
+    os.system(f"{env_path}/shell/env_dep_install.sh")
     logger.info("[env] success")
     pass
 

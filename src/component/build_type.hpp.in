@@ -1,6 +1,8 @@
 #ifndef __GENERATED_BUILD_TYPE_HPP__
 #define __GENERATED_BUILD_TYPE_HPP__
 
+#include <string>
+
 #ifndef LEVEL_TRACE
 #define LEVEL_TRACE 0
 #endif
@@ -29,7 +31,24 @@
 #define BUILD_TYPE @BUILD_TYPE@
 #endif
 
+#ifndef BUILD_NN
+#define BUILD_NN @BUILD_NN@
+#endif
+
+#ifndef WITH_UI
+#define WITH_UI @WITH_UI@
+#endif
+
+#ifndef WITH_DEVICE
+#define WITH_DEVICE @WITH_DEVICE@
+#endif
+
 namespace component {
+
+const std::string kPATH_ROOT = "@ROOT_PATH@";
+const std::string kPATH_BUILD= "@ROOT_PATH@/build";
+const std::string kPATH_RUNTIME = "@ROOT_PATH@/runtime";
+const std::string kPATH_IMAGE = "@ROOT_PATH@/assets/image";
 
 namespace logger {
 
