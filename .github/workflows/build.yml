@@ -17,6 +17,10 @@ jobs:
     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
     runs-on: ubuntu-20.04
 
+    permissions:
+      actions: write
+      contents: write
+
     steps:
     - uses: actions/checkout@v3
 
@@ -37,26 +41,17 @@ jobs:
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       # run: ctest -C ${{env.BUILD_TYPE}}
 
+    - name: Pack runtime
+      run: cd ${{github.workspace}} && zip -r ${{github.workspace}}/runtime.zip ./runtime ./build/install
+
     - name: Create release
       run:  echo "release_name=$(date +v%Y.%m.%d.vv%H.%M)" >> $GITHUB_ENV
 
-    - uses: actions/create-release@v1
-      id: create_release
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Upload Release Asset
+      uses: softprops/action-gh-release@v1
       with:
-          tag_name: ${{ env.release_name }}
-          release_name: Release ${{ env.release_name }}
-          draft: false
-          prerelease: false
-
-    - name: Upload firmware
-      uses: actions/upload-release-asset@v1
-      id: upload-firmware
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{github.workspace}}/firmware.zip
-        asset_name: firmware.zip
-        asset_content_type: application/zip
+        tag_name: ${{env.release_name}}
+        name: Release ${{env.release_name}}
+        draft: false
+        prerelease: false
+        files: ${{github.workspace}}/runtime.zip

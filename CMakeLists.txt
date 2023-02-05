@@ -111,6 +111,7 @@ option(BUILD_NN "build nn module" OFF)
 option(WITH_DEVICE "No device" OFF)
 option(WITH_UI "No UI" OFF)
 set(ROOT_PATH ${CMAKE_CURRENT_SOURCE_DIR})
+include(${CMAKE_CURRENT_SOURCE_DIR}/utils/tools.cmake)
 
 if(BUILD_NN)
     set(BUILD_NN 1)
@@ -175,37 +176,30 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests)
 # Install
 # ---------------------------------------------------------------------------------------
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    set(CMAKE_INSTALL_LIBDIR /usr/local/lib/RM)
-    set(CMAKE_INSTALL_BINDIR /usr/local/bin/RM)
+    set(CMAKE_INSTALL_LIBDIR ${ROOT_PATH}/build/install/lib/)
+    set(CMAKE_INSTALL_BINDIR ${ROOT_PATH}/build/install/bin/)
+    set(CMAKE_INSTALL_INCLUDEDIR ${ROOT_PATH}/build/install/include/)
+
     message(STATUS "------------------------ Install --------------------------------")
     message(STATUS "Generating install")
     message(STATUS "Install to: ${CMAKE_INSTALL_PREFIX}")
     message(STATUS "Install to: ${CMAKE_INSTALL_LIBDIR}")
     message(STATUS "Install to: ${CMAKE_INSTALL_BINDIR}")
+    message(STATUS "Install to: ${CMAKE_INSTALL_INCLUDEDIR}")
 
-    install(
-        TARGETS exec_auto_aim
-        EXPORT auto-aim
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    )
-
-    install(
-        TARGETS exec_sentry
-        EXPORT sentry
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    )
-
-    install(
-        TARGETS exec_buff
-        EXPORT buff
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    )
+    exe_install(exec_aim_assistant)
+    exe_install(exec_auto_aim)
+    exe_install(exec_buff)
+    exe_install(exec_dart)
+    exe_install(exec_sentry)
+    exe_install(exec_ui_param)
+    test_install(test_vision)
+    test_install(test_device)
+    test_install(test_component)
+    test_install(test_behavior)
+    demo_install(demo_armor)
+    demo_install(demo_buff)
+    demo_install(demo_camera)
 endif()
 
 message(STATUS "-----------------------------------------------------------------")
