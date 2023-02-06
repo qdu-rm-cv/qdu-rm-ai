@@ -3,6 +3,8 @@
 #include <random>
 #include <string>
 
+#include "build_type.hpp"
+
 #define RMU2023
 
 #ifndef EnumName

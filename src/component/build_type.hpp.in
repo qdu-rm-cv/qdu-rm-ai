@@ -43,12 +43,21 @@
 #define WITH_DEVICE @WITH_DEVICE@
 #endif
 
-namespace component {
-
 const std::string kPATH_ROOT = "@ROOT_PATH@";
-const std::string kPATH_BUILD= "@ROOT_PATH@/build";
-const std::string kPATH_RUNTIME = "@ROOT_PATH@/runtime";
-const std::string kPATH_IMAGE = "@ROOT_PATH@/assets/image";
+
+/* clang-format off */
+#if (BUILD_TYPE == LEVEL_DEBUG)
+const std::string kPATH_BUILD = "@ROOT_PATH@/build/";
+const std::string kPATH_IMAGE = "@ROOT_PATH@/assets/image/";
+const std::string kPATH_RUNTIME = "@ROOT_PATH@/runtime/";
+#elif (BUILD_TYPE == LEVEL_INFO)
+const std::string kPATH_BUILD = "../../../../../build/";
+const std::string kPATH_IMAGE = "../../../../../assets/image/";
+const std::string kPATH_RUNTIME = "../../../../../runtime/";
+#endif
+/* clang-format on */
+
+namespace component {
 
 namespace logger {
 

@@ -170,7 +170,7 @@ message(STATUS "---------------------------- Test ------------------------------
 enable_testing()
 find_package(GTest REQUIRED)
 message(STATUS "Google test version: ${GTest_VERSION}")
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/apps/tests)
 
 # ---------------------------------------------------------------------------------------
 # Install
