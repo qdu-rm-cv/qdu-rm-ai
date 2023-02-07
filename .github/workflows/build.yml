@@ -2,9 +2,12 @@ name: build
 
 on:
   push:
-    branches: [ "2023" ]
+    branches: ["2023"]
+    tags:
+      - "v*.*.*"
+
   pull_request:
-    branches: [ "2023" ]
+    branches: ["2023"]
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
@@ -20,38 +23,39 @@ jobs:
     permissions:
       actions: write
       contents: write
+      pull-requests: write
 
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: Install Dependancy
-      run: cd ${{github.workspace}} && python3 ./utils/project.py env
+      - name: Install Dependancy
+        run: cd ${{github.workspace}} && python3 ./utils/project.py env
 
-    - name: Init submodule
-      run: cd ${{github.workspace}} && python3 ./utils/project.py init
+      - name: Init submodule
+        run: cd ${{github.workspace}} && python3 ./utils/project.py init
 
-    - name: Build
-      # Build your program with the given configuration
-      run: cd ${{github.workspace}} && python3 ./utils/project.py build
+      - name: Build
+        run: cd ${{github.workspace}} && python3 ./utils/project.py build
 
-    - name: Test
-      working-directory: ${{github.workspace}}/build
-      run: cd ${{github.workspace}} && python3 ./utils/project.py test
-      # Execute tests defined by the CMake configuration.
-      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-      # run: ctest -C ${{env.BUILD_TYPE}}
+      - name: Test
+        run: cd ${{github.workspace}} && python3 ./utils/project.py test
 
-    - name: Pack runtime
-      run: cd ${{github.workspace}} && zip -r ${{github.workspace}}/runtime.zip ./runtime ./build/install
+      - name: Pack runtime
+        run: cd ${{github.workspace}} && python3 ./utils/project.py pack
 
-    - name: Create release
-      run:  echo "release_name=$(date +v%Y.%m.%d.vv%H.%M)" >> $GITHUB_ENV
+      - uses: release-drafter/release-drafter@v5
+        id: create_draft
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Upload Release Asset
-      uses: softprops/action-gh-release@v1
-      with:
-        tag_name: ${{env.release_name}}
-        name: Release ${{env.release_name}}
-        draft: false
-        prerelease: false
-        files: ${{github.workspace}}/runtime.zip
+      # - name: Create release
+      #   run:  echo "release_name=$(date --date="8 hours" +v%Y.%m.%d.vv%H.%M)" >> $GITHUB_ENV
+
+      - name: Upload Release Asset
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{steps.create_draft.outputs.tag_name}}
+          name: Release ${{steps.create_draft.outputs.name}}
+          draft: false
+          prerelease: false
+          files: ${{github.workspace}}/Release.zip

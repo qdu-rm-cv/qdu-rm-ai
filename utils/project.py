@@ -23,6 +23,7 @@ COMMAND_CMAKE = f"/usr/bin/cmake --no-warn-unused-cli -DCMAKE_EXPORT_COMPILE_COM
 COMMAND_DEBUG = COMMAND_CMAKE + "Debug"
 COMMAND_RELEASE = COMMAND_CMAKE + "Release"
 COMMAND_BUILD = f"/usr/bin/cmake --build {build_dir} --config Debug --target all --"
+COMMAND_INSTALL = f"/usr/bin/cmake --build {build_dir} --config Release --target install --"
 COMMAND_TEST = f"/usr/bin/ctest -j14 -C Release -T test --output-on-failure --test-dir {build_dir}"
 
 logger = logging.getLogger("logger")
@@ -48,8 +49,9 @@ def help():
     print("-- version   : print version")
     print("-- env       : get environment quickly")
     print("-- init      : git submodule update --init --recursive")
-    print("-- build     : cd build && cmake ..")
+    print("-- pack      : pack install generation files")
     print("-- refresh   : rmdir 'build' dir and build")
+    print("-- build     : cd build && cmake ..")
     print("-- test      : run ctest")
     print("----------------------------------------------------------------")
     logger.info("[help] success")
@@ -59,40 +61,6 @@ def version():
     logger.info("[version] start")
     print(f"qdu-rm-ai --branch=2023 --version={VERSION}")
     logger.info("[version] success")
-
-
-def refresh():
-    logger.info("[refresh] start")
-    logger.debug(build_dir)
-    if os.path.exists(build_dir):
-        os.system(f"mv {log_fullname} {root}")
-        os.system(f"rm -rf {build_dir}")
-    os.mkdir(build_dir)
-    if os.path.exists(f"{root}/{LOG_FILE_NAME}"):
-        os.system(f"mv {root}/{LOG_FILE_NAME} {log_fullname}")
-    os.system(COMMAND_DEBUG)
-    logger.info("[refresh] success")
-
-
-def init():
-    logger.info("[init] start")
-    os.system("git submodule update --init --recursive")
-    # os.chdir(f"{root}/third_party/yolov5")
-    # os.system("pip3 install -r requirements.txt")
-    logger.warning("[init] success")
-
-
-def build():
-    logger.info("[build] start")
-    os.system(COMMAND_RELEASE)
-    os.system(COMMAND_BUILD)
-    logger.info("[build] success")
-
-
-def test():
-    logger.info("[test] start")
-    os.system(COMMAND_TEST)
-    logger.info("[test] success")
 
 
 def env():
@@ -108,6 +76,47 @@ def env():
     pass
 
 
+def init():
+    logger.info("[init] start")
+    os.system("git submodule update --init --recursive")
+    # os.chdir(f"{root}/third_party/yolov5")
+    # os.system("pip3 install -r requirements.txt")
+    logger.warning("[init] success")
+
+
+def pack():
+    logger.info("[pack] start")
+    os.system(COMMAND_INSTALL)
+    os.system(f"zip -r {root}/Release.zip {root}/runtime {build_dir}/install")
+    logger.info("[pack] success")
+
+
+def refresh():
+    logger.info("[refresh] start")
+    logger.debug(build_dir)
+    if os.path.exists(build_dir):
+        os.system(f"mv {log_fullname} {root}")
+        os.system(f"rm -rf {build_dir}")
+    os.mkdir(build_dir)
+    if os.path.exists(f"{root}/{LOG_FILE_NAME}"):
+        os.system(f"mv {root}/{LOG_FILE_NAME} {log_fullname}")
+    os.system(COMMAND_DEBUG)
+    logger.info("[refresh] success")
+
+
+def build():
+    logger.info("[build] start")
+    os.system(COMMAND_RELEASE)
+    os.system(COMMAND_BUILD)
+    logger.info("[build] success")
+
+
+def test():
+    logger.info("[test] start")
+    os.system(COMMAND_TEST)
+    logger.info("[test] success")
+
+
 def menu(command):
     if command in ["help", "--help", "-h", "-H", "--h", "--H", "-?", "--?"]:
         help()
@@ -117,12 +126,14 @@ def menu(command):
         env()
     elif command in ["init", "--init", "-i", "-I", "--i", "--I"]:
         init()
-    elif command in ["build", "--build", "-b", "-B", "--b", "--B"]:
-        build()
     elif command in ["refresh", "--refresh", "-r", "-R", "--r", "--R"]:
         refresh()
+    elif command in ["build", "--build", "-b", "-B", "--b", "--B"]:
+        build()
     elif command in ["test", "--test", "-t", "-T", "--t", "--T"]:
         test()
+    elif command in ["pack", "--pack", "-p", "-P", "--p", "--P"]:
+        pack()
     else:
         help()
 

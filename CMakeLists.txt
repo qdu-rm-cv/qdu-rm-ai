@@ -110,8 +110,6 @@ message(STATUS "----------------------- Packages Option ------------------------
 option(BUILD_NN "build nn module" OFF)
 option(WITH_DEVICE "No device" OFF)
 option(WITH_UI "No UI" OFF)
-set(ROOT_PATH ${CMAKE_CURRENT_SOURCE_DIR})
-include(${CMAKE_CURRENT_SOURCE_DIR}/utils/tools.cmake)
 
 if(BUILD_NN)
     set(BUILD_NN 1)
@@ -135,11 +133,21 @@ message(STATUS "Build NN: ${BUILD_NN}")
 message(STATUS "WITH_DEVICE: ${WITH_DEVICE}")
 message(STATUS "WITH_UI: ${WITH_UI}")
 
+set(ROOT_PATH ${CMAKE_CURRENT_SOURCE_DIR})
+set(CMAKE_INSTALL_LIBDIR ${ROOT_PATH}/build/install/lib/)
+set(CMAKE_INSTALL_BINDIR ${ROOT_PATH}/build/install/bin/)
+set(CMAKE_INSTALL_INCLUDEDIR ${ROOT_PATH}/build/install/include/)
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/utils/tools.cmake)
+
 # ---------------------------------------------------------------------------------------
 # Source
 # ---------------------------------------------------------------------------------------
 message(STATUS "--------------------------- Source -----------------------------")
 
+set(Dcamera "device_camera")
+set(Dcontroller "device_controller")
+set(Dservo "device_servo")
 set(Taim "task_aim")
 set(Tbuff "task_buff")
 set(Tdart "task_dart")
@@ -152,13 +160,6 @@ message(STATUS "Build task: ${Tdart}")
 message(STATUS "Build task: ${Tengineer}")
 message(STATUS "Build task: ${Tsentry}")
 message(STATUS "Build task: ${Tradar}")
-
-set(Dcamera "device_camera")
-set(Dcontroller "device_controller")
-set(Dservo "device_servo")
-message(STATUS "Build device: ${Dcamera}")
-message(STATUS "Build device: ${Dcontroller}")
-message(STATUS "Build device: ${Dservo}")
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src)
 
@@ -176,16 +177,11 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/apps/tests)
 # Install
 # ---------------------------------------------------------------------------------------
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    set(CMAKE_INSTALL_LIBDIR ${ROOT_PATH}/build/install/lib/)
-    set(CMAKE_INSTALL_BINDIR ${ROOT_PATH}/build/install/bin/)
-    set(CMAKE_INSTALL_INCLUDEDIR ${ROOT_PATH}/build/install/include/)
-
     message(STATUS "------------------------ Install --------------------------------")
     message(STATUS "Generating install")
-    message(STATUS "Install to: ${CMAKE_INSTALL_PREFIX}")
-    message(STATUS "Install to: ${CMAKE_INSTALL_LIBDIR}")
-    message(STATUS "Install to: ${CMAKE_INSTALL_BINDIR}")
-    message(STATUS "Install to: ${CMAKE_INSTALL_INCLUDEDIR}")
+    message(STATUS "LIBS    install to: ${CMAKE_INSTALL_LIBDIR}")
+    message(STATUS "BINS    install to: ${CMAKE_INSTALL_BINDIR}")
+    message(STATUS "HEADERS install to: ${CMAKE_INSTALL_INCLUDEDIR}")
 
     exe_install(exec_aim_assistant)
     exe_install(exec_auto_aim)
