@@ -35,12 +35,16 @@
 #define BUILD_NN @BUILD_NN@
 #endif
 
-#ifndef WITH_UI
-#define WITH_UI @WITH_UI@
+#ifndef WITH_CAMERA
+#define WITH_CAMERA @WITH_CAMERA@
 #endif
 
-#ifndef WITH_DEVICE
-#define WITH_DEVICE @WITH_DEVICE@
+#ifndef WITH_MCU
+#define WITH_MCU @WITH_MCU@
+#endif
+
+#ifndef WITH_UI
+#define WITH_UI @WITH_UI@
 #endif
 
 const std::string kPATH_ROOT = "@ROOT_PATH@";

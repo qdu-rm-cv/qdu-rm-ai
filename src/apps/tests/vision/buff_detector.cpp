@@ -32,8 +32,12 @@ TEST(TestVision, TestBuffDetectorVideo) {
     ASSERT_FALSE(frame.empty()) << "Can not opening image.";
     buff_detector.Detect(frame);
     buff_detector.VisualizeResult(frame, 5);
+#if WITH_UI
     cv::imshow("result", frame);
     cv::waitKey(1);
+#else
+    break;
+#endif
   }
   cap.release();
 }

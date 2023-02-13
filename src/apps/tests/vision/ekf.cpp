@@ -38,9 +38,14 @@ TEST(TestVision, TestEKF) {
     filter.Update(predict_mat);
     cv::circle(img, pt, 3, draw::kBLUE, 2);
     cv::circle(img, predict_pt, 3, draw::kGREEN, 2);
-
-    // cv::imshow("img", img);
-    // cv::waitKey(0);
+#if WITH_UI
+    cv::imshow("img", img);
+    cv::waitKey(0);
   }
+#else
+    continue;
+  }
+  cv::imwrite(kPATH_IMAGE + "TestEKF.png", img);
+#endif
   cv::destroyWindow("img");
 }

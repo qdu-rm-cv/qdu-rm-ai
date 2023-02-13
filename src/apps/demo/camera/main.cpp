@@ -34,6 +34,8 @@ class CameraDemo : public App {
 
   ~CameraDemo() {
     /* 关闭设备 */
+    cam_.Close();
+    writer_.release();
 
     SPDLOG_WARN("***** Shuted Down Buff Aiming System. *****");
   }

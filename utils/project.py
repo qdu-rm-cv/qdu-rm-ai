@@ -20,10 +20,11 @@ if not os.path.exists(build_dir):
 COMMAND_CMAKE = f"/usr/bin/cmake --no-warn-unused-cli -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE " \
     f"-B{build_dir} -G Ninja -DCMAKE_C_COMPILER:FILEPATH=/usr/bin/gcc " \
     f"-DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/g++ -S{root} -DCMAKE_BUILD_TYPE:STRING="
-COMMAND_DEBUG = COMMAND_CMAKE + "Debug"
-COMMAND_RELEASE = COMMAND_CMAKE + "Release"
-COMMAND_BUILD = f"/usr/bin/cmake --build {build_dir} --config Debug --target all --"
-COMMAND_INSTALL = f"/usr/bin/cmake --build {build_dir} --config Release --target install --"
+COMMAND_DEBUG = COMMAND_CMAKE + "Debug "
+COMMAND_RELEASE = COMMAND_CMAKE + "Release "
+COMMAND_SERVER = COMMAND_RELEASE + " -DWITH_UI=OFF -DWITH_MCU=OFF -DWITH_CAMERA=OFF"
+COMMAND_BUILD = f"/usr/bin/cmake --build {build_dir} --config Debug -j8 --target all --"
+COMMAND_INSTALL = f"/usr/bin/cmake --build {build_dir} --config Release -j8 --target install --"
 COMMAND_TEST = f"/usr/bin/ctest -j14 -C Release -T test --output-on-failure --test-dir {build_dir}"
 
 logger = logging.getLogger("logger")
@@ -86,6 +87,7 @@ def init():
 
 def pack():
     logger.info("[pack] start")
+    os.system(COMMAND_RELEASE)
     os.system(COMMAND_INSTALL)
     os.system(f"zip -r {root}/Release.zip {root}/runtime {build_dir}/install")
     logger.info("[pack] success")
@@ -106,7 +108,7 @@ def refresh():
 
 def build():
     logger.info("[build] start")
-    os.system(COMMAND_RELEASE)
+    os.system(COMMAND_SERVER)
     os.system(COMMAND_BUILD)
     logger.info("[build] success")
 

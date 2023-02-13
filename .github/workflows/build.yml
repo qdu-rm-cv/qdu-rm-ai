@@ -56,6 +56,5 @@ jobs:
         with:
           tag_name: ${{steps.create_draft.outputs.tag_name}}
           name: Release ${{steps.create_draft.outputs.name}}
-          draft: false
           prerelease: false
           files: ${{github.workspace}}/Release.zip

@@ -19,4 +19,5 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 )
 
 include_files(${CMAKE_CURRENT_SOURCE_DIR})
+include_files(${CMAKE_BINARY_DIR}/generated)
 lib_install(${PROJECT_NAME})

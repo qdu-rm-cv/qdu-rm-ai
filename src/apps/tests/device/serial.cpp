@@ -11,10 +11,12 @@ TEST(TestSerial, TestTrans) {
 }
 
 TEST(TestSerial, TestConfig) {
-  /* Serial _/dev/ttyTHS2_ is occupied by tests/robot.cpp */
-  /* Here should be _/dev/ttyTHS2_ */
+/* Serial _/dev/ttyTHS2_ is occupied by tests/robot.cpp */
+/* Here should be _/dev/ttyTHS2_ */
+#if WITH_MCU
   Serial com("/dev/ttyS0");
   ASSERT_TRUE(com.Config(true, StopBits::kSTOP_BITS_1, DataLength::kDATA_LEN_7,
                          true, BaudRate::kBAUD_RATE_460800))
       << "Can not config serial port.";
+#endif
 }

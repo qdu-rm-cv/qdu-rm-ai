@@ -47,9 +47,9 @@ TEST(TestVision, TestKalmanBuffPredictor) {
   if (!algo::FileExist(kVIDEO)) return;
 
   cv::VideoCapture cap(kVIDEO);
+  if (!cap.isOpened()) SPDLOG_WARN("{}", kVIDEO);
   cv::Mat frame;
   BuffDetector detecter(kPARAM, game::Team::kBLUE);
-  if (!cap.isOpened()) SPDLOG_WARN("{}", kVIDEO);
 
   while (true) {
     cap >> frame;
@@ -58,6 +58,7 @@ TEST(TestVision, TestKalmanBuffPredictor) {
     cv::Point2d pt = filter.Predict(target_center);
     cv::circle(frame, target_center, 3, draw::kGREEN, -1);
     cv::circle(frame, pt, 3, draw::kBLUE, -1);
+#if WITH_UI
     cv::imshow("WINDOW", frame);
     int key = cv::waitKey(10);
     switch (key) {
@@ -70,6 +71,9 @@ TEST(TestVision, TestKalmanBuffPredictor) {
         continue;
         break;
     }
+#else
+    break;
+#endif
   }
   cv::destroyAllWindows();
   cap.release();

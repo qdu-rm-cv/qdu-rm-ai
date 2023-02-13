@@ -8,10 +8,9 @@ namespace {
 const cv::Point2f center(1., 1.);
 const cv::Size2f size(2., 3.);
 const double angle = 5.;
+const cv::RotatedRect test_rect(center, size, angle);
 
 }  // namespace
-
-const cv::RotatedRect test_rect(center, size, angle);
 
 TEST(TestVision, TestLightBar) {
   LightBar light_bar(test_rect);

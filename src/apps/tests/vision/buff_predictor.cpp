@@ -22,6 +22,7 @@ TEST(TestVision, TestKalmanPredictor) {
   predictor.SetRace(game::Race::kRMUT);
   predictor.SetTime(10);
 
+  if (!algo::FileExist("../../../../../../redbuff01.avi")) return;
   cv::VideoCapture cap("../../../../../../redbuff01.avi");
   if (!cap.isOpened()) {
     SPDLOG_WARN("Video can't be loaded.");
@@ -38,16 +39,19 @@ TEST(TestVision, TestKalmanPredictor) {
     predictor.Predict();
     detector.VisualizeResult(frame, 3);
     predictor.VisualizePrediction(frame, 3);
-
+#if WITH_UI
     cv::imshow("Predictor", frame);
-    // auto key = cv::waitKey(10);
-    // if (key == 'q') {
-    //   cv::waitKey(0);
-    //   cap.release();
-    //   return;
-    // } else if (key == ' ') {
-    //   cv::waitKey(0);
-    // }
+    auto key = cv::waitKey(10);
+    if (key == 'q') {
+      cv::waitKey(0);
+      cap.release();
+      return;
+    } else if (key == ' ') {
+      cv::waitKey(0);
+    }
+#else
+    break;
+#endif
   }
   cv::destroyAllWindows();
   cap.release();

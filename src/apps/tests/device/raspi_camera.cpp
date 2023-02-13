@@ -12,6 +12,7 @@ const std::string kPATH = kPATH_IMAGE + "test.png";
 }  // namespace
 
 TEST(TestRaspiCamera, TestCapture) {
+#if WITH_CAMERA
   RaspiCamera cam;
   ASSERT_TRUE(cam.Open(0) == false) << "Can not open camera 0.";
 
@@ -28,4 +29,5 @@ TEST(TestRaspiCamera, TestCapture) {
 
   cv::Mat img = imread(kPATH, cv::IMREAD_COLOR);
   ASSERT_FALSE(img.empty()) << "Can not opening image after wrote.";
+#endif
 }
