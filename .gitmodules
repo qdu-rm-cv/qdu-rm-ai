@@ -5,3 +5,7 @@
 [submodule "third_party/qdu-rm-protocol"]
 	path = third_party/qdu-rm-protocol
 	url = https://gitee.com/qsheeeeen/qdu-rm-protocol.git
+
+[submodule "third_party/OneMessageCPP"]
+	path = third_party/OneMessageCPP
+	url = https://github.com/Jiu-xiao/OneMessageCPP
