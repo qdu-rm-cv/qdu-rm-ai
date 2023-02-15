@@ -175,7 +175,8 @@
         "future": "cpp",
         "*.in": "txt",
         "compare": "cpp",
-        "valarray": "cpp"
+        "valarray": "cpp",
+        "pthread.h": "c"
     },
     "githubPullRequests.ignoredPullRequestBranches": [
         "2023"
