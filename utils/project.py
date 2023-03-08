@@ -6,7 +6,7 @@ import sys
 import logging
 import pwd
 
-VERSION = "0.1.0"
+VERSION = "0.1.1"
 LOG_FILE_NAME = "project.log"
 LOG_FMT = "%(asctime)s - %(levelname)s - [%(filename)s:%(lineno)s]  %(message)s"
 
@@ -71,6 +71,7 @@ def env():
         os.system(f"rm -rf {env_path}")
         print(f"{env_path} exist")
     os.system(f"git clone https://github.com/qdu-rm-cv/environment.git {env_path}")
+    # os.system(f"git clone https://gitee.com/qdu-rm-2022/environment.git {env_path}")
     os.system(f"sudo chmod 777 {env_path}/shell/*")
     os.system(f"{env_path}/shell/env_dep_install.sh")
     logger.info("[env] success")
@@ -82,6 +83,8 @@ def init():
     os.system("git submodule update --init --recursive")
     # os.chdir(f"{root}/third_party/yolov5")
     # os.system("pip3 install -r requirements.txt")
+    os.system("sudo apt install -y python-is-python3 python3-pip clang-format")
+    os.system("sudo python -m pip install pylint cpplint autopep8 yapf")
     logger.warning("[init] success")
 
 

@@ -177,11 +177,11 @@ std::string ToString(const Team& team) {
 }
 
 std::string ToString(const component::Direction& direction) {
-  return game::ToString(direction);
+  return component::ToString(direction);
 }
 
 std::string ToString(const component::FilterMethod& m) {
-  return game::ToString(m);
+  return component::ToString(m);
 }
 
 [[deprecated("The gtk-ui is recommended")]] AimMethod StringToAimMethod(
