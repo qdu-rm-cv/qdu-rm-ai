@@ -22,7 +22,7 @@ class BuffAim : private App {
     SPDLOG_WARN("***** Setting Up Buff Aiming System. *****");
 
     /* 初始化设备 */
-    robot_.Init("/dev/ttyACM0");
+    robot_.Init("/dev/ttyUSB0");
     cam_.Open(0);
     cam_.Setup(640, 480);
     detector_.LoadParams(kPATH_RUNTIME + "RMUT2022_Buff.json");
@@ -55,17 +55,23 @@ class BuffAim : private App {
     while (1) {
       if (!cam_.GetFrame(frame)) continue;
 
+      robot_.GetEuler();
       auto buffs = detector_.Detect(frame);
       if (buffs.size() > 0) {
         predictor_.SetBuff(buffs.back());
-        auto armors = predictor_.Predict();
-        auto armor = armors.front();
-        SPDLOG_WARN("size : {}", armors.size());
-        // auto armor = buffs.front().GetTarget();
+        // auto armors = predictor_.Predict();
+        // auto armor = armors.front();
+        // SPDLOG_WARN("size : {}", armors.size());
+        auto armor = buffs.front().GetTarget();
         compensator_.Apply(armor, frame, robot_.GetBalletSpeed(),
                            robot_.GetEuler(), game::AimMethod::kBUFF);
+        // compensator_.Apply(armor, frame, 9999, )
         manager_.Aim(armor.GetAimEuler());
         robot_.Pack(manager_.GetData(), 9999);
+        // Protocol_DownData_t d;
+        // d.gimbal.pit = 0.3;
+        // d.gimbal.yaw = 0.6;
+        // robot_.Pack(d, 7000);
 
         predictor_.VisualizePrediction(frame, 10);
 
@@ -77,9 +83,9 @@ class BuffAim : private App {
       if (' ' == key) {
         cv::waitKey(0);
       } else if ('M' == key) {
-        predictor_.ChangeDirection(true);
+        // predictor_.ChangeDirection(true);
       }
-      predictor_.ChangeDirection(robot_.GetNotice());
+      // predictor_.ChangeDirection(robot_.GetNotice());
     }
   }
 };

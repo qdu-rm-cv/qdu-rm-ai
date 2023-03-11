@@ -105,10 +105,12 @@ void Compensator::SolveAngles(Armor& armor, const component::Euler& euler) {
     aiming_eulr.yaw = atan(x_pos / z_pos);
   }
   SPDLOG_INFO("compensator pitch : {}", aiming_eulr.pitch);
+  SPDLOG_INFO("compensator yaw : {}", aiming_eulr.yaw);
   aiming_eulr.pitch = aiming_eulr.pitch + euler.pitch;
-  aiming_eulr.yaw = aiming_eulr.yaw + euler.yaw;
+  aiming_eulr.yaw = -aiming_eulr.yaw + euler.yaw;
 
   SPDLOG_INFO("final pitch : {}", aiming_eulr.pitch);
+  SPDLOG_INFO("final yaw : {}", aiming_eulr.yaw);
   armor.SetAimEuler(aiming_eulr);
 }
 
@@ -159,8 +161,8 @@ void Compensator::CompensateGravity(Armor& armor, const double ballet_speed,
     /* B = sin(pitch) / (cos(pitch) * cos(pitch)) */
     double C = 1 / cos(pitch);
     double D = B * B + C * C;
-    double E = 2 * B * (A + B);
-    double F = (A + B) * (A + B) - C * C;
+    double E = 2 * B * (A - B);
+    double F = (A - B) * (A - B) - C * C;
 
     double temporary_result =
         0.5 * acos((-E + pow(-1, 0) * sqrt(E * E - 4 * D * F)) / (2 * D));
@@ -169,11 +171,11 @@ void Compensator::CompensateGravity(Armor& armor, const double ballet_speed,
     }
     if (distance_ > 3 && distance_ <= 5) {
       pitch *= 0.9;
-      aiming_eulr.yaw += 0.1 / 180 * CV_PI;
+      // aiming_eulr.yaw += 0.1 / 180 * CV_PI;
     }
     if (distance_ > 7) {
       pitch *= 0.85;
-      aiming_eulr.yaw += 0.3 / 180 * CV_PI;
+      // aiming_eulr.yaw += 0.3 / 180 * CV_PI;
     }
     SPDLOG_INFO("Distance : {} <=> Now pitch : {}", distance_, pitch);
     aiming_eulr.pitch = pitch;

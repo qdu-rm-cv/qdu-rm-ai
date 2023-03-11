@@ -164,8 +164,18 @@ game::Arm Robot::GetArm() {
 
 component::Euler Robot::GetEuler() {
   cv::Quatf q(mcu_.quat.q0, mcu_.quat.q1, mcu_.quat.q2, mcu_.quat.q3);
-  cv::Vec3d vec = q.toEulerAngles(cv::QuatEnum::EulerAnglesType::INT_XYZ);
   component::Euler euler;
+  if (q == cv::Quatf()) return euler;
+  cv::Vec3d vec = q.toEulerAngles(cv::QuatEnum::EulerAnglesType::INT_XYZ);
+  SPDLOG_INFO("Quatf: {}, {}, {}, {}", static_cast<float>(mcu_.quat.q0),
+              static_cast<float>(mcu_.quat.q1),
+              static_cast<float>(mcu_.quat.q2),
+              static_cast<float>(mcu_.quat.q3));
+
+  while (vec[0] < 0) vec[0] += M_PI * 2;
+  while (vec[1] < 0) vec[1] += M_PI * 2;
+  while (vec[2] < 0) vec[2] += M_PI * 2;
+
   euler.pitch = vec[0];
   euler.roll = vec[1];
   euler.yaw = vec[2];
