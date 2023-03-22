@@ -68,10 +68,40 @@ void Compensator::LoadCameraMat(const std::string& path) {
 
 void Compensator::PnpEstimate(Armor& armor) {
   cv::Mat rot_vec, trans_vec;
+  std::vector<cv::Point2f> img;         // Points of 2D after adjusted
+  std::vector<cv::Point2f> img_out(4);  // Points of 2D after update
+  /*调整识别到的像素坐标,手动消除与处理带来的2D坐标
+  不准的为问题,该参数可以根据ui_param灯条的变形情况
+  来确定*/
+  double k = 1.15;
+  cv::Point2f t1 =
+      (armor.ImageVertices()[1] - armor.ImageVertices()[0]) * k;  //向量t1,t2
+  cv::Point2f t2 = (armor.ImageVertices()[2] - armor.ImageVertices()[3]) * k;
+  cv::Point2f tr = armor.ImageVertices()[0];  // Right bottom point
+  cv::Point2f tl = armor.ImageVertices()[3];  // Left bottom point
 
-  cv::solvePnP(armor.PhysicVertices(), armor.ImageVertices(), cam_mat_,
-               distor_coff_, rot_vec, trans_vec, false, cv::SOLVEPNP_ITERATIVE);
+  img.clear();
+  img.push_back(tr);
+  img.push_back(tr + t1);
+  img.push_back(tl + t2);
+  img.push_back(tl);
+  double k2;  // k2值是目标装甲板的长宽比
+  if (game::HasBigArmor(armor.GetModel())) {
+    k2 = 230 / 127 * cos(15 / 180 * M_PI);
+  } else if (armor.GetModel() == game::Model::kBUFF) {
+    k2 = 1;  // TODO:等Buff和buff_detector完成后修改
+    SPDLOG_ERROR("Error param of buff has not been set!");
+    return;
+  } else {
+    k2 == 135 / 125 * cos(15 / 180 * M_PI);
+  }
 
+  UpdateImgPoints(img, k2, img_out);
+
+  cv::solvePnP(armor.PhysicVertices(), /* armor.ImageVertices() */ img_out,
+               cam_mat_, distor_coff_, rot_vec, trans_vec, false,
+               cv::SOLVEPNP_ITERATIVE);
+  // TODO:TO DELETE THE "//" BELOW
   trans_vec.at<double>(1, 0) -= gun_cam_distance_;
   armor.SetRotVec(rot_vec), armor.SetTransVec(trans_vec);
 }
@@ -229,7 +259,22 @@ void Compensator::CompensateGravity(Armor& armor, const double ballet_speed,
   armor.SetAimEuler(aiming_eulr);
   SPDLOG_DEBUG("Armor Euler is setted");
 }
-
+/*图片坐标默认顺序
+左下，左上，右上，右下
+ */
+/*使用前体装甲板底边和书平面平行或者偏差不大并且者相机不能倾斜，
+以下函数中提到的length和width均为img中的,1/K为装甲版的实际
+长宽比，注意要区分大小装甲版*/
+void Compensator::UpdateImgPoints(std::vector<cv::Point2f>& img, double k,
+                                  std::vector<cv::Point2f>& img_out) {
+  double length, width;
+  width = std::max(cv::norm(img[0] - img[1]), cv::norm(img[3] - img[2]));
+  length = width * k;
+  img_out[0] = img[0];
+  img_out[1] = img[0] - cv::Point2f(0, width);
+  img_out[2] = img_out[1] + cv::Point2f(length, 0);
+  img_out[3] = img_out[2] + cv::Point2f(0, width);
+}
 #ifdef RMU2021
 /**
  * @brief Angle θ required to hit coordinate (x, y)
