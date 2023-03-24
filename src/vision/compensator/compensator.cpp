@@ -97,15 +97,18 @@ void Compensator::PnpEstimate(Armor& armor) {
   }
 
   UpdateImgPoints(img, k2, img_out);
+  double k3 = 125 / cv::norm(img_out[0] - img_out[1]);
+
   cv::Point2f new_img_center = cv::Point2f((img_out[0].x+img_out[1].x+img_out[2].x+img_out[3].x)/4,(img_out[0].y+img_out[1].y+img_out[2].y+img_out[3].y)/4));
-  cv::Point2f center_diff =
-      armor.ImageCenter() - new_img_center;  //重构之后装甲板的中心会有偏移
+  double center_diff_x = abs(armor.ImageCenter().x - new_img_center.x) *
+                         k3;  //重构之后装甲板的中心会有偏移
+  double center_diff_y = abs(armor.ImageCenter().y - new_img_center.y) * k3;
 
   cv::solvePnP(armor.PhysicVertices(), /* armor.ImageVertices() */ img_out,
                cam_mat_, distor_coff_, rot_vec, trans_vec, false,
                cv::SOLVEPNP_ITERATIVE);
-  trans_vec.at<double>(0, 0) -= center_diff.x;
-  trans_vec.at<double>(1, 0) -= center_diff.y;
+  trans_vec.at<double>(0, 0) -= center_diff_x;
+  trans_vec.at<double>(1, 0) -= center_diff_y;
 
   trans_vec.at<double>(1, 0) -= gun_cam_distance_;
   armor.SetRotVec(rot_vec), armor.SetTransVec(trans_vec);
@@ -188,7 +191,7 @@ void Compensator::CompensateGravity(Armor& armor, const double ballet_speed,
                                     game::AimMethod method) {
   component::Euler aiming_eulr = armor.GetAimEuler();
   if (method == game::AimMethod::kARMOR) {
-    double pitch = -aiming_eulr.pitch;
+    double pitch = -aiming_eulr.pitch;  //抬起的角度
     double A = (distance_ * kG) / (ballet_speed * ballet_speed);
     double B = tan(pitch) / cos(pitch);
     /* B = sin(pitch) / (cos(pitch) * cos(pitch)) */
