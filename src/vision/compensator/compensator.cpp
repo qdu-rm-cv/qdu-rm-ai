@@ -93,15 +93,20 @@ void Compensator::PnpEstimate(Armor& armor) {
     SPDLOG_ERROR("Error param of buff has not been set!");
     return;
   } else {
-    k2 == 135 / 125 * cos(15 / 180 * M_PI);
+    k2 = 135 / 125 * cos(15 / 180 * M_PI);
   }
 
   UpdateImgPoints(img, k2, img_out);
+  cv::Point2f new_img_center = cv::Point2f((img_out[0].x+img_out[1].x+img_out[2].x+img_out[3].x)/4,(img_out[0].y+img_out[1].y+img_out[2].y+img_out[3].y)/4));
+  cv::Point2f center_diff =
+      armor.ImageCenter() - new_img_center;  //重构之后装甲板的中心会有偏移
 
   cv::solvePnP(armor.PhysicVertices(), /* armor.ImageVertices() */ img_out,
                cam_mat_, distor_coff_, rot_vec, trans_vec, false,
                cv::SOLVEPNP_ITERATIVE);
-  // TODO:TO DELETE THE "//" BELOW
+  trans_vec.at<double>(0, 0) -= center_diff.x;
+  trans_vec.at<double>(1, 0) -= center_diff.y;
+
   trans_vec.at<double>(1, 0) -= gun_cam_distance_;
   armor.SetRotVec(rot_vec), armor.SetTransVec(trans_vec);
 }
