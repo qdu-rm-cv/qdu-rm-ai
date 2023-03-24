@@ -191,7 +191,7 @@ void Compensator::CompensateGravity(Armor& armor, const double ballet_speed,
                                     game::AimMethod method) {
   component::Euler aiming_eulr = armor.GetAimEuler();
   if (method == game::AimMethod::kARMOR) {
-    double pitch = -aiming_eulr.pitch;  //抬起的角度
+    double pitch = -aiming_eulr.pitch;
     double A = (distance_ * kG) / (ballet_speed * ballet_speed);
     double B = tan(pitch) / cos(pitch);
     /* B = sin(pitch) / (cos(pitch) * cos(pitch)) */
