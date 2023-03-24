@@ -1,10 +1,14 @@
 {
-    "binary_th": 66.0,
-    "contour_size_low_th": 10,
-    "rect_ratio_low_th": 3.1600000000000000e-01,
-    "rect_ratio_high_th": 3.3119999999999998e+00,
-    "contour_center_area_low_th": 208.0,
-    "contour_center_area_high_th": 481.0,
-    "rect_center_ratio_low_th": 1.7899999999999999e-01,
-    "rect_center_ratio_high_th": 1.3310000000000000e+00
+    "binary_th": 210.0,
+    "contour_size_low_th": 2,
+    "rect_ratio_low_th": 1.7789999999999999e+00,
+    "rect_ratio_high_th": 5.0,
+    "rect_area_low_th": 300.0,
+    "rect_area_high_th": 3000.0,
+    "armor_rect_center_dis_high_th": 100.0,
+    "armor_area_diff_th": 4.0000000000000002e-01,
+    "contour_center_area_low_th": 20.0,
+    "contour_center_area_high_th": 200.0,
+    "rect_center_ratio_low_th": 1.0,
+    "rect_center_ratio_high_th": 1.25
 }

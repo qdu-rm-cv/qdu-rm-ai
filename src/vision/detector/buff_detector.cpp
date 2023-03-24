@@ -20,10 +20,13 @@ void BuffDetector::InitDefaultParams(const std::string &params_path) {
   fs << "hammar_rect_center_div_high_th" << 18;
 
   fs << "armor_rect_center_div_low_th" << 2;
-  fs << "armor_rect_center_div_high_th" << 10;
+  fs << "armor_rect_center_dis_high_th" << 10;
   fs << "armor_contour_rect_div_low_th" << 0.5;
   fs << "armor_contour_rect_div_high_th" << 1.6;
+  fs << "armor_area_diff_th" << 0.4;
 
+  fs << "rect_area_low_th" << 100;
+  fs << "rect_area_high_th" << 6000;
   fs << "contour_center_area_low_th" << 100;
   fs << "contour_center_area_high_th" << 1000;
   fs << "rect_center_ratio_low_th" << 0.6;
@@ -47,11 +50,14 @@ bool BuffDetector::PrepareParams(const std::string &params_path) {
         fs["hammar_rect_center_div_high_th"];
 
     params_.armor_rect_center_div_low_th = fs["armor_rect_center_div_low_th"];
-    params_.armor_rect_center_div_high_th = fs["armor_rect_center_div_high_th"];
+    params_.armor_rect_center_dis_high_th = fs["armor_rect_center_dis_high_th"];
     params_.armor_contour_rect_div_low_th = fs["armor_contour_rect_div_low_th"];
     params_.armor_contour_rect_div_high_th =
         fs["armor_contour_rect_div_high_th"];
+    params_.armor_area_diff_th = fs["armor_area_diff_th"];
 
+    params_.rect_area_low_th = fs["rect_area_low_th"];
+    params_.rect_area_high_th = fs["rect_area_high_th"];
     params_.contour_center_area_low_th = fs["contour_center_area_low_th"];
     params_.contour_center_area_high_th = fs["contour_center_area_high_th"];
     params_.rect_center_ratio_low_th = fs["rect_center_ratio_low_th"];
@@ -64,6 +70,132 @@ bool BuffDetector::PrepareParams(const std::string &params_path) {
 }
 
 void BuffDetector::MatchBuff(const cv::Mat &frame) {
+#if 1
+  duration_armors_.Start();
+  tbb::concurrent_vector<cv::RotatedRect> rects;
+  tbb::concurrent_vector<Armor> armors;
+  frame_size_ = cv::Size(frame.cols, frame.rows);
+
+  cv::Mat channels[3], img;
+  cv::split(frame, channels);
+
+#if 0
+  if (team_ == game::Team::kBLUE) {
+    img = channels[0] - channels[2];
+  } else if (team_ == game::Team::kRED) {
+    img = channels[2] - channels[0];
+  }
+#else
+  if (team_ == game::Team::kBLUE) {
+    img = channels[0];
+  } else if (team_ == game::Team::kRED) {
+    img = channels[2];
+  }
+#endif
+  // cv::blur(img, img, cv::Size(3, 3));
+  cv::threshold(img, img, params_.binary_th, 255., cv::THRESH_BINARY);
+#if 0
+  /* adjusting param */
+  cv::namedWindow("threshold", cv::WINDOW_NORMAL);
+  cv::imshow("threshold", img);
+#endif
+  cv::findContours(img, contours_, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+
+  SPDLOG_DEBUG("Found contours: {}", contours_.size());
+
+  auto check_rect = [&](const auto &contour) {
+    if (contour.size() < static_cast<std::size_t>(params_.contour_size_low_th))
+      return;
+
+    cv::RotatedRect minrect = cv::minAreaRect(contour);
+    double rect_area = minrect.size.area();
+    double rect_ratio = std::max(minrect.size.height, minrect.size.width) /
+                        std::min(minrect.size.height, minrect.size.width);
+
+    // find R
+    double contour_area = cv::contourArea(contour) + 1;
+    double center_k = 1 / 3.0;
+    if (contour_area > params_.contour_center_area_low_th &&
+        contour_area < params_.contour_center_area_high_th) {
+      if (rect_ratio < params_.rect_center_ratio_high_th &&
+          rect_ratio >= params_.rect_center_ratio_low_th) {
+        if (cv::norm(minrect.center - cv::Point2f(img.size().width / 2.,
+                                                  img.size().height / 2.)) >
+            img.size().height * center_k)
+          return;
+
+        buff_.SetCenter(minrect.center);
+        SPDLOG_WARN("rect_ratio is {}", rect_ratio);
+        return;
+      }
+    }
+
+    // find armors
+    if (rect_area > params_.rect_area_low_th &&
+        rect_area < params_.rect_area_high_th) {
+      if (rect_ratio < params_.rect_ratio_high_th &&
+          rect_ratio > params_.rect_ratio_low_th) {
+#if 0
+        /* adjusting param */
+        armors.emplace_back(Armor(minrect));
+#endif
+        rects.emplace_back(minrect);
+        return;
+      }
+    }
+  };
+
+  std::for_each(std::execution::par_unseq, contours_.begin(), contours_.end(),
+                check_rect);
+
+  duration_armors_.Calc("Find rects");
+  SPDLOG_WARN("rects.size is {}", rects.size());
+
+  duration_buff_.Start();
+  bool is_find = false;
+  // find target_armor
+  if (rects.size() == 0) return;
+  for (size_t i = 0; i < rects.size() - 1; i++) {
+    for (size_t j = i + 1; j < rects.size(); j++) {
+      double dis = cv::norm(rects[i].center - rects[j].center);
+      if (dis > params_.armor_rect_center_dis_high_th) continue;
+      SPDLOG_WARN("dis is {}", dis);
+
+      const double area_diff =
+          algo::RelativeDifference(rects[i].size.area(), rects[j].size.area());
+      if (area_diff > params_.armor_area_diff_th) continue;
+      SPDLOG_WARN("area_diff is {}", area_diff);
+
+      // swap
+      double dis1 = cv::norm(rects[i].center - buff_.GetCenter());  // inside
+      double dis2 = cv::norm(rects[j].center - buff_.GetCenter());  // outside
+      if (dis1 > dis2) cv::swap(rects[i], rects[j]);
+
+      cv::Point2f center = (rects[i].center + rects[j].center) / 2.;
+      float angle = rects[j].angle;
+      cv::Size size;
+      const double k = 0.9;  // pnp可调
+      if (rects[j].size.width < rects[j].size.height) {
+        size = cv::Size(rects[j].size.width * k, rects[j].size.height);
+      } else {
+        size = cv::Size(rects[j].size.width, rects[j].size.height * k);
+      }
+
+      Armor target_armor(cv::RotatedRect(center, size, angle));
+      buff_.SetTarget(target_armor);
+      armors.emplace_back(target_armor);
+      buff_.SetArmors(armors);
+      SPDLOG_WARN("Find Target Buff Armor");
+      targets_.emplace_back(buff_);
+
+      is_find = true;
+      break;
+    }
+    if (is_find) break;
+  }
+  if (!is_find) SPDLOG_WARN("can't find buff_armor");
+  duration_buff_.Calc("Find Buff");
+#else
   duration_armors_.Start();
   float center_rect_area = params_.contour_center_area_low_th * 1.5;
   tbb::concurrent_vector<Armor> armors;
@@ -199,6 +331,7 @@ void BuffDetector::MatchBuff(const cv::Mat &frame) {
   }
 
   duration_buff_.Calc("Find Buff");
+#endif
 }
 
 void BuffDetector::VisualizeArmors(const cv::Mat &output, bool add_lable) {
@@ -264,11 +397,12 @@ void BuffDetector::VisualizeResult(const cv::Mat &output, int verbose) {
     draw::VisualizeLabel(output, label, 2);
   }
   if (verbose > 2) {
+    /*
     cv::Point2f vertices[4];
     hammer_.points(vertices);
     for (std::size_t i = 0; i < 4; ++i)
       cv::line(output, vertices[i], vertices[(i + 1) % 4], draw::kYELLOW);
-
+    */
     cv::circle(output, buff_.GetCenter(), 5, draw::kRED, -1);
   }
   std::string label =

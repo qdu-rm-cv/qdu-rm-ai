@@ -9,6 +9,10 @@ BuffDetectorParam<double> BuffParam::TransformToDouble() {
   paramd_.rect_ratio_low_th = parami_.rect_ratio_low_th / 1000.;
   paramd_.rect_ratio_high_th = parami_.rect_ratio_high_th / 1000.;
 
+  paramd_.rect_area_low_th = parami_.rect_area_low_th;
+  paramd_.rect_area_high_th = parami_.rect_area_high_th;
+  paramd_.armor_rect_center_dis_high_th = parami_.armor_rect_center_dis_high_th;
+  paramd_.armor_area_diff_th = parami_.armor_area_diff_th / 1000.;
   paramd_.contour_center_area_low_th = parami_.contour_center_area_low_th;
   paramd_.contour_center_area_high_th = parami_.contour_center_area_high_th;
   paramd_.rect_center_ratio_low_th = parami_.rect_center_ratio_low_th / 1000.;
@@ -28,6 +32,12 @@ bool BuffParam::Read(const std::string &params_path) {
     parami_.rect_ratio_high_th =
         static_cast<double>(fs["rect_ratio_high_th"]) * 1000.;
 
+    parami_.rect_area_low_th = static_cast<double>(fs["rect_area_low_th"]);
+    parami_.rect_area_high_th = static_cast<double>(fs["rect_area_high_th"]);
+    parami_.armor_rect_center_dis_high_th =
+        static_cast<double>(fs["armor_rect_center_dis_high_th"]);
+    parami_.armor_area_diff_th =
+        static_cast<double>(fs["armor_area_diff_th"]) * 1000.;
     parami_.contour_center_area_low_th =
         static_cast<double>(fs["contour_center_area_low_th"]);
     parami_.contour_center_area_high_th =
@@ -53,6 +63,11 @@ void BuffParam::Write(const std::string &params_path) {
 
   fs << "rect_ratio_low_th" << paramd_.rect_ratio_low_th;
   fs << "rect_ratio_high_th" << paramd_.rect_ratio_high_th;
+  fs << "rect_area_low_th" << paramd_.rect_area_low_th;
+  fs << "rect_area_high_th" << paramd_.rect_area_high_th;
+  fs << "armor_rect_center_dis_high_th"
+     << paramd_.armor_rect_center_dis_high_th;
+  fs << "armor_area_diff_th" << paramd_.armor_area_diff_th;
   fs << "contour_center_area_low_th" << paramd_.contour_center_area_low_th;
   fs << "contour_center_area_high_th" << paramd_.contour_center_area_high_th;
   fs << "rect_center_ratio_low_th" << paramd_.rect_center_ratio_low_th;
