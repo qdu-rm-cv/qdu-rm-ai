@@ -4,17 +4,19 @@
 #include "common.hpp"
 #include "light_ui.hpp"
 #include "opencv2/opencv.hpp"
+#include "antitop_ui.hpp"
 
 namespace {
 
 const std::string kLOG = "logs/ui_param.log";
-const std::string kPARAMARMOR = kPATH_RUNTIME + "RMUL2022_Armor.json";
-const std::string kPARAMBUFF = kPATH_RUNTIME + "RMUT2022_Buff.json";
-const std::string kPARAMLIGHT = kPATH_RUNTIME + "RMUT2022_Light.json";
+const std::string kPARAMARMOR = "../../../../runtime/RMUL2022_Armor.json";
+const std::string kPARAMBUFF = "../../../../runtime/RMUT2022_Buff.json";
+const std::string kPARAMLIGHT = "../../../../runtime/RMUT2022_Light.json";
+const std::string kPARAMANTITOP = "../../../../runtime/RMUT2022_Antitop.json";
 const std::string kWINDOW = "ui_setting";
 
 /* 此处修改按钮数量 */
-const int kB_NUM = 3;
+const int kB_NUM = 4;
 
 const int kB_H = 52;
 const int kW_O = 0;
@@ -43,6 +45,7 @@ int main(int argc, char const* argv[]) {
   CreateButton(black, "Armor", 1);
   CreateButton(black, "Buff", 2);
   CreateButton(black, "Light", 3);
+  CreateButton(black, "Antitop", 4);
 
   cv::imshow(kWINDOW, black);
   cv::setMouseCallback(kWINDOW, MouseCallback);
@@ -56,6 +59,9 @@ int main(int argc, char const* argv[]) {
     ui_param.Run();
   } else if (method == game::AimMethod::kLIGHT) {
     LightUIParam ui_param(kLOG, kPARAMLIGHT);
+    ui_param.Run();
+  } else if (method == game::AimMethod::kANTITOP) {
+    AntiTopUIParam ui_param(kLOG, kPARAMARMOR, kPARAMANTITOP);
     ui_param.Run();
   }
 
@@ -74,6 +80,9 @@ void MouseCallback(int event, int x, int y, int, void*) {
         break;
       case 2:
         method = game::AimMethod::kLIGHT;
+        break;
+      case 3:
+        method = game::AimMethod::kANTITOP;
         break;
       default:
         method = game::AimMethod::kUNKNOWN;

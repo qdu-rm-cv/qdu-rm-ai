@@ -3,8 +3,6 @@
 #include <random>
 #include <string>
 
-#include "build_type.hpp"
-
 #define RMU2023
 
 #ifndef EnumName
@@ -69,6 +67,7 @@ enum class AimMethod {
   kORECUBE,
   kSNIPE,
   kLIGHT,
+  kANTITOP
 };
 
 enum class Arm {

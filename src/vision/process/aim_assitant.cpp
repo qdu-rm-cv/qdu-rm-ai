@@ -34,18 +34,21 @@ void AimAssitant::LoadParams(const std::string& armor_param,
                              const std::string& buff_param,
                              const std::string& snipe_param,
                              const std::string& armor_pre_param,
-                             const std::string& buff_pre_param) {
+                             const std::string& buff_pre_param,
+                             const std::string& antitop_param) {
   a_detector_.LoadParams(armor_param);
   b_detector_.LoadParams(buff_param);
   s_detector_.LoadParams(snipe_param);
   a_predictor_.LoadParams(armor_pre_param);
   b_predictor_.LoadParams(buff_pre_param);
+  antitop_.LoadParams(antitop_param);
 }
 
 void AimAssitant::SetEnemyTeam(game::Team enemy_team) {
   a_detector_.SetEnemyTeam(enemy_team);
   b_detector_.SetTeam(enemy_team);
   s_detector_.SetEnemyTeam(enemy_team);
+  antitop_.SetEnemyTeam(enemy_team);
 }
 
 void AimAssitant::SetClassiferParam(const std::string model_path,
@@ -108,6 +111,9 @@ const tbb::concurrent_vector<Armor>& AimAssitant::Aim(const cv::Mat& frame) {
   } else {
     if (method_ == game::AimMethod::kARMOR) {
       armors_ = a_detector_.Detect(frame);
+      antitop_.SetDetects(armors_);
+      if (antitop_.GetIsWhipping())
+        method_ = game::AimMethod::kANTITOP;
       for (auto& armor : armors_) classifier_.ClassifyModel(armor, frame);
       Sort(frame);
     } else if (method_ == game::AimMethod::kSNIPE) {
@@ -130,5 +136,8 @@ void AimAssitant::VisualizeResult(const cv::Mat& frame, int add_label) {
   } else if (method_ == game::AimMethod::kSNIPE) {
     s_detector_.VisualizeResult(frame, add_label);
     a_predictor_.VisualizePrediction(frame, add_label);
+  } else if (method_ == game::AimMethod::kANTITOP) {
+    a_detector_.VisualizeResult(frame, add_label);
+    antitop_.VisualizePrediction(frame, add_label);
   }
 }

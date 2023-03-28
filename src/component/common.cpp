@@ -13,7 +13,7 @@
 namespace component {
 
 std::string ToString(const Euler& e) {
-  return fmt::format("pitch : {}, roll : {}， yaw : {}", e.pitch, e.roll,
+  return fmt::format("pitch : {}, roll : {}, yaw : {}", e.pitch, e.roll,
                      e.yaw);
 }
 
@@ -207,6 +207,10 @@ std::string ToString(const component::FilterMethod& m) {
       !name.compare("guiding-light") || !name.compare("guiding_light") ||
       !name.compare("5")) {
     return AimMethod::kLIGHT;
+  }
+  if (!name.compare("antiwhipping_top") || !name.compare("antitop") ||
+      !name.compare("6")) {
+    return AimMethod::kANTITOP;
   }
   return AimMethod::kUNKNOWN;
 }
