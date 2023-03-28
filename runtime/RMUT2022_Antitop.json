@@ -1,0 +1,9 @@
+{
+    "detector_param_th": 12,
+    "missing_frame_param_th": 22,
+    "whipping_top_param_th": 4,
+    "center_height_diff_low": 18.0,
+    "center_height_diff_high": 65.0,
+    "center_width_diff_low": 222.0,
+    "center_width_diff_high": 488.0
+}

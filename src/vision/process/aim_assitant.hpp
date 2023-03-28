@@ -7,6 +7,7 @@
 #include "buff_predictor.hpp"
 #include "common.hpp"
 #include "snipe_detector.hpp"
+#include "anti_whippingtop.hpp"
 
 class AimAssitant {
  private:
@@ -16,6 +17,7 @@ class AimAssitant {
   BuffPredictor b_predictor_;
   SnipeDetector s_detector_;
   ArmorClassifier classifier_;
+  AntiWhippingTop antitop_;
 
   tbb::concurrent_vector<Armor> armors_;
   game::AimMethod method_ = game::AimMethod::kUNKNOWN;
@@ -31,7 +33,8 @@ class AimAssitant {
   void LoadParams(const std::string& armor_param, const std::string& buff_param,
                   const std::string& snipe_param,
                   const std::string& armor_pre_param,
-                  const std::string& buff_pre_param);
+                  const std::string& buff_pre_param,
+                  const std::string& antitop_param);
   void SetClassiferParam(const std::string model_path,
                          const std::string lable_path,
                          const cv::Size& input_size);
