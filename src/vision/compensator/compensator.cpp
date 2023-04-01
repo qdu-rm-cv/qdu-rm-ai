@@ -190,7 +190,7 @@ void Compensator::VisualizeResult(tbb::concurrent_vector<Armor>& armors,
 void Compensator::CompensateGravity(Armor& armor, const double ballet_speed,
                                     game::AimMethod method) {
   component::Euler aiming_eulr = armor.GetAimEuler();
-  if (method == game::AimMethod::kARMOR) {
+  if (method == game::AimMethod::kARMOR || aiming_eulr.pitch < 0) {
     double pitch = -aiming_eulr.pitch;
     double A = (distance_ * kG) / (ballet_speed * ballet_speed);
     double B = tan(pitch) / cos(pitch);
@@ -241,28 +241,50 @@ void Compensator::CompensateGravity(Armor& armor, const double ballet_speed,
     }
     aiming_eulr.pitch = pitch;
   } else {
-    SPDLOG_WARN("start {}, {}", aiming_eulr.yaw, aiming_eulr.pitch);
-    aiming_eulr.yaw += 0.4 / 180 * CV_PI;
-    if (aiming_eulr.pitch < 0.15) {
-      aiming_eulr.pitch += 1.7 / 180 * CV_PI;
-      SPDLOG_WARN("0.1");
-    } else if (aiming_eulr.pitch < 0.25) {
-      aiming_eulr.pitch += 1.8 / 180 * CV_PI;
-      SPDLOG_WARN("0.2");
-    } else if (aiming_eulr.pitch < 0.3) {
-      aiming_eulr.pitch += 2.5 / 180 * CV_PI;
-      SPDLOG_WARN("0.3");
-    } else if (aiming_eulr.pitch < 0.4) {
-      aiming_eulr.pitch += 2.5 / 180 * CV_PI;
-      SPDLOG_WARN("0.4");
-    } else if (aiming_eulr.pitch < 0.5) {
-      aiming_eulr.pitch += 2.8 / 180 * CV_PI;
-      SPDLOG_WARN("0.5");
-    } else {
-      aiming_eulr.pitch += 3.0 / 180 * CV_PI;
-      SPDLOG_WARN("else");
+    if (0) {
+      SPDLOG_WARN("start {}, {}", aiming_eulr.yaw, aiming_eulr.pitch);
+      aiming_eulr.yaw += 0.4 / 180 * CV_PI;
+      if (aiming_eulr.pitch < 0.15) {
+        aiming_eulr.pitch += 1.7 / 180 * CV_PI;
+        SPDLOG_WARN("0.1");
+      } else if (aiming_eulr.pitch < 0.25) {
+        aiming_eulr.pitch += 1.8 / 180 * CV_PI;
+        SPDLOG_WARN("0.2");
+      } else if (aiming_eulr.pitch < 0.3) {
+        aiming_eulr.pitch += 2.5 / 180 * CV_PI;
+        SPDLOG_WARN("0.3");
+      } else if (aiming_eulr.pitch < 0.4) {
+        aiming_eulr.pitch += 2.5 / 180 * CV_PI;
+        SPDLOG_WARN("0.4");
+      } else if (aiming_eulr.pitch < 0.5) {
+        aiming_eulr.pitch += 2.8 / 180 * CV_PI;
+        SPDLOG_WARN("0.5");
+      } else {
+        aiming_eulr.pitch += 3.0 / 180 * CV_PI;
+        SPDLOG_WARN("else");
+      }
+      SPDLOG_WARN(" end {}, {}", aiming_eulr.yaw, aiming_eulr.pitch);
     }
-    SPDLOG_WARN(" end {}, {}", aiming_eulr.yaw, aiming_eulr.pitch);
+  }
+  else {
+    double pitch = aiming_eulr.pitch;
+    double A = distance_ / sin(pitch);
+    double B = 1 / (2 * kG);
+    double result1 = (-1 + sqrt(1 - 4 * A * B)) / 2 * B;
+    // double result2 = ;
+    double final_result = asin(result1);
+    pitch = final_result;
+    if (final_result > pitch) {
+      pitch = temporary_result;
+    }
+    if (distance_ > 3 && distance_ <= 5) {
+      pitch *= 0.9;
+      aiming_eulr.yaw += 0.1 / 180 * CV_PI;
+    }
+    if (distance_ > 7) {
+      pitch *= 0.85;
+      aiming_eulr.yaw += 0.3 / 180 * CV_PI;
+    }
   }
   armor.SetAimEuler(aiming_eulr);
   SPDLOG_DEBUG("Armor Euler is setted");
