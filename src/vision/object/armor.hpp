@@ -26,7 +26,7 @@ class Armor : public ImageObject, public PhysicObject {
   void SetModel(game::Model model);
   const cv::RotatedRect GetRect() const;
   cv::Mat Face(const cv::Mat &frame);
-
+  double GetArea();
   component::Euler GetAimEuler() const;
   void SetAimEuler(const component::Euler &elur);
 };
