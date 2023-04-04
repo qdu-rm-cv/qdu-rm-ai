@@ -131,7 +131,7 @@ cv::Mat Armor::Face(const cv::Mat &frame) {
   face = face(cv::Rect(offset_w, offset_h, min_edge, min_edge));
   return face;
 }
-double Armor::GetArea(){return rect_.size.width * rect_.size.height};
+double Armor::GetArea() { return rect_.size.width * rect_.size.height; }
 component::Euler Armor::GetAimEuler() const { return aiming_euler_; }
 void Armor::SetAimEuler(const component::Euler &elur) { aiming_euler_ = elur; }
 bool Armor::IsBigArmor() {
@@ -140,7 +140,7 @@ bool Armor::IsBigArmor() {
   double light_length2 =
       cv::norm(this->image_vertices_[4] - this->image_vertices_[3]);
   double aspect_ratio =
-      armor.ImageAspectRatio;  // double aspect_ratio = cv::norm();
+      this->ImageAspectRatio();  // double aspect_ratio = cv::norm();
   double heightScale = light_length1 > light_length2
                            ? (light_length1 / light_length2)
                            : (light_length2 / light_length1);
@@ -152,6 +152,7 @@ bool Armor::IsBigArmor() {
     } else {
       return false;
     }
-  } else
+  } else {
     return false;
+  }
 }

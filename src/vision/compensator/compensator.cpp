@@ -99,7 +99,9 @@ void Compensator::PnpEstimate(Armor& armor) {
   UpdateImgPoints(img, k2, img_out);
   double k3 = 125 / cv::norm(img_out[0] - img_out[1]);
 
-  cv::Point2f new_img_center = cv::Point2f((img_out[0].x+img_out[1].x+img_out[2].x+img_out[3].x)/4,(img_out[0].y+img_out[1].y+img_out[2].y+img_out[3].y)/4));
+  cv::Point2f new_img_center = cv::Point2f(
+      (img_out[0].x + img_out[1].x + img_out[2].x + img_out[3].x) / 4,
+      (img_out[0].y + img_out[1].y + img_out[2].y + img_out[3].y) / 4);
   double center_diff_x = abs(armor.ImageCenter().x - new_img_center.x) *
                          k3;  //重构之后装甲板的中心会有偏移
   double center_diff_y = abs(armor.ImageCenter().y - new_img_center.y) * k3;
@@ -264,28 +266,28 @@ void Compensator::CompensateGravity(Armor& armor, const double ballet_speed,
         SPDLOG_WARN("else");
       }
       SPDLOG_WARN(" end {}, {}", aiming_eulr.yaw, aiming_eulr.pitch);
+    } else {
+      double pitch = aiming_eulr.pitch;
+      double A = distance_ / sin(pitch);
+      double B = 1 / (2 * kG);
+      double result1 = (-1 + sqrt(1 - 4 * A * B)) / 2 * B;
+      // double result2 = ;
+      double final_result = asin(result1);
+      pitch = final_result;
+      if (final_result > pitch) {
+        pitch = result1;
+      }
+      if (distance_ > 3 && distance_ <= 5) {
+        pitch *= 0.9;
+        aiming_eulr.yaw += 0.1 / 180 * CV_PI;
+      }
+      if (distance_ > 7) {
+        pitch *= 0.85;
+        aiming_eulr.yaw += 0.3 / 180 * CV_PI;
+      }
     }
   }
-  else {
-    double pitch = aiming_eulr.pitch;
-    double A = distance_ / sin(pitch);
-    double B = 1 / (2 * kG);
-    double result1 = (-1 + sqrt(1 - 4 * A * B)) / 2 * B;
-    // double result2 = ;
-    double final_result = asin(result1);
-    pitch = final_result;
-    if (final_result > pitch) {
-      pitch = temporary_result;
-    }
-    if (distance_ > 3 && distance_ <= 5) {
-      pitch *= 0.9;
-      aiming_eulr.yaw += 0.1 / 180 * CV_PI;
-    }
-    if (distance_ > 7) {
-      pitch *= 0.85;
-      aiming_eulr.yaw += 0.3 / 180 * CV_PI;
-    }
-  }
+
   armor.SetAimEuler(aiming_eulr);
   SPDLOG_DEBUG("Armor Euler is setted");
 }
