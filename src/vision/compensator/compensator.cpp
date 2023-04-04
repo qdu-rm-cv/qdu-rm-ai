@@ -86,7 +86,7 @@ void Compensator::PnpEstimate(Armor& armor) {
   img.push_back(tl + t2);
   img.push_back(tl);
   double k2;  // k2值是目标装甲板的长宽比
-  if (game::HasBigArmor(armor.GetModel())) {
+  if (armor.IsBigArmor()) {
     k2 = 230 / 127 * cos(15 / 180 * M_PI);
   } else if (armor.GetModel() == game::Model::kBUFF) {
     k2 = 1;  // TODO:等Buff和buff_detector完成后修改

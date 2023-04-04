@@ -29,4 +29,5 @@ class Armor : public ImageObject, public PhysicObject {
   double GetArea();
   component::Euler GetAimEuler() const;
   void SetAimEuler(const component::Euler &elur);
+  bool IsBigArmor();
 };
