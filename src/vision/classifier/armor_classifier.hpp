@@ -26,4 +26,6 @@ class ArmorClassifier {
   void SetInputSize(const cv::Size &input_size);
 
   void ClassifyModel(Armor &armor, const cv::Mat &frame);
+  int GetArmorId(cv::Mat &armor_face);
+  double MatchTemplate(cv::Mat &img, cv::Mat &temp);
 };
