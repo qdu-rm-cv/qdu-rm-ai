@@ -6,9 +6,9 @@ ArmorDetectorParam<double> ArmorParam::TransformToDouble() {
   paramd_.binary_th = parami_.binary_th;
   paramd_.contour_size_low_th = parami_.contour_size_low_th;
 
-  paramd_.contour_area_low_th = parami_.contour_area_low_th / 100000.;
+  paramd_.contour_area_low_th = parami_.contour_area_low_th / 10000000.;
   paramd_.contour_area_high_th = parami_.contour_area_high_th / 100000.;
-  paramd_.bar_area_low_th = parami_.bar_area_low_th / 100000.;
+  paramd_.bar_area_low_th = parami_.bar_area_low_th / 10000000.;
   paramd_.bar_area_high_th = parami_.bar_area_high_th / 100000.;
   paramd_.angle_high_th = parami_.angle_high_th / 10.;
   paramd_.aspect_ratio_low_th = parami_.aspect_ratio_low_th / 10.;
@@ -31,11 +31,11 @@ bool ArmorParam::Read(const std::string &params_path) {
     parami_.contour_size_low_th = fs["contour_size_low_th"];
 
     parami_.contour_area_low_th =
-        static_cast<double>(fs["contour_area_low_th"]) * 100000.;
+        static_cast<double>(fs["contour_area_low_th"]) * 10000000.;
     parami_.contour_area_high_th =
         static_cast<double>(fs["contour_area_high_th"]) * 100000.;
     parami_.bar_area_low_th =
-        static_cast<double>(fs["bar_area_low_th"]) * 100000.;
+        static_cast<double>(fs["bar_area_low_th"]) * 10000000.;
     parami_.bar_area_high_th =
         static_cast<double>(fs["bar_area_high_th"]) * 100000.;
     parami_.angle_high_th = static_cast<double>(fs["angle_high_th"]) * 10.;

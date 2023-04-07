@@ -138,21 +138,21 @@ class AutoAim : private App {
       robot_.GetEuler();
       cam_.GetFrame(frame);
       if (frame.empty()) continue;
+      /* cv::flip(frame, frame, -1); */ /* 平衡步兵 */
       auto armors = detector_.Detect(frame);
-
       if (armors.size() != 0) {
-        compensator_.Apply(armors.front(), frame, robot_.GetBalletSpeed(),
+        compensator_.Apply(armors, frame, robot_.GetBalletSpeed(),
                            robot_.GetEuler(), game::AimMethod::kARMOR);
         manager_.Aim(armors.front().GetAimEuler());
-        // Protocol_DownData_t d;
-        // d.gimbal.pit = 6.28;
-        // d.gimbal.rol = 0;
-        // d.gimbal.yaw = 0;
-        // robot_.Pack(d, 9999);
         robot_.Pack(manager_.GetData(), 9999);
 
         detector_.VisualizeResult(frame, 10);
       }
+      cv::line(frame, cv::Point2f(320, 0), cv::Point2f(320, 480),
+               cv::Scalar(0, 0, 255), 2);
+      cv::line(frame, cv::Point2f(0, 240), cv::Point2f(640, 240),
+               cv::Scalar(0, 0, 255), 2);
+      /* cv::flip(frame, frame, -1); */ /* 平衡步兵 */
       cv::imshow("show", frame);
       if (' ' == cv::waitKey(10)) {
         cv::waitKey(0);

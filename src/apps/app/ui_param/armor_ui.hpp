@@ -16,8 +16,6 @@ class ArmorUIParam : private UI {
     SPDLOG_WARN("***** Setting Up ArmorUIParam System. *****");
 
     /* 初始化设备 */
-    cam_.Open(0);
-    cam_.Setup(640, 480);
     detector_.SetEnemyTeam(game::Team::kBLUE);
     armor_param_.Read(param_path_);
   }
@@ -38,11 +36,11 @@ class ArmorUIParam : private UI {
     cv::createTrackbar("contour_size_low_th", window_handle_,
                        &armor_param_.parami_.contour_size_low_th, 50);
     cv::createTrackbar("contour_area_low_th", window_handle_,
-                       &armor_param_.parami_.contour_area_low_th, 200);
+                       &armor_param_.parami_.contour_area_low_th, 2000);
     cv::createTrackbar("contour_area_high_th", window_handle_,
                        &armor_param_.parami_.contour_area_high_th, 500);
     cv::createTrackbar("bar_area_low_th", window_handle_,
-                       &armor_param_.parami_.bar_area_low_th, 200);
+                       &armor_param_.parami_.bar_area_low_th, 2000);
     cv::createTrackbar("bar_area_high_th", window_handle_,
                        &armor_param_.parami_.bar_area_high_th, 500);
     cv::createTrackbar("angle_high_th", window_handle_,
@@ -50,18 +48,18 @@ class ArmorUIParam : private UI {
     cv::createTrackbar("aspect_ratio_low_th", window_handle_,
                        &armor_param_.parami_.aspect_ratio_low_th, 100);
     cv::createTrackbar("aspect_ratio_high_th", window_handle_,
-                       &armor_param_.parami_.aspect_ratio_high_th, 100);
+                       &armor_param_.parami_.aspect_ratio_high_th, 1000);
 
     cv::createTrackbar("angle_diff_th", window_handle_,
                        &armor_param_.parami_.angle_diff_th, 30000);
     cv::createTrackbar("length_diff_th", window_handle_,
-                       &armor_param_.parami_.length_diff_th, 200);
+                       &armor_param_.parami_.length_diff_th, 1000);
     cv::createTrackbar("height_diff_th", window_handle_,
                        &armor_param_.parami_.height_diff_th, 200);
     cv::createTrackbar("area_diff_th", window_handle_,
                        &armor_param_.parami_.area_diff_th, 5000);
     cv::createTrackbar("center_dist_low_th", window_handle_,
-                       &armor_param_.parami_.center_dist_low_th, 200);
+                       &armor_param_.parami_.center_dist_low_th, 5000);
     cv::createTrackbar("center_dist_high_th", window_handle_,
                        &armor_param_.parami_.center_dist_high_th, 9000);
 
@@ -71,8 +69,6 @@ class ArmorUIParam : private UI {
     while (true) {
       cam_.GetFrame(frame);
       if (frame.empty()) continue;
-
-      SPDLOG_INFO("frame size {},{}", frame.size().width, frame.size().height);
 
       detector_.params_ = armor_param_.TransformToDouble();
       detector_.Detect(frame);
