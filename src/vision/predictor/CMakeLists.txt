@@ -30,6 +30,7 @@ target_include_directories(module_${PROJECT_NAME}_base PUBLIC
 # ---------------------------------------------------------------------------------------
 file(GLOB ${Taim}_${PROJECT_NAME}_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/armor_predictor.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/anti_whippingtop.cpp"
 )
 
 add_library(${Taim}_${PROJECT_NAME} STATIC ${${Taim}_${PROJECT_NAME}_SRC})

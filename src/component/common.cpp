@@ -13,7 +13,7 @@
 namespace component {
 
 std::string ToString(const Euler& e) {
-  return fmt::format("pitch : {}, roll : {}， yaw : {}", e.pitch, e.roll,
+  return fmt::format("pitch : {}, roll : {}, yaw : {}", e.pitch, e.roll,
                      e.yaw);
 }
 
@@ -63,6 +63,8 @@ std::string ToString(const AimMethod& method) {
       return std::string("Use Snipe Detector");
     case AimMethod::kLIGHT:
       return std::string("Use GuidingLight Detector");
+    case AimMethod::kANTITOP:
+      return std::string("Use Antitop Predictor");
     default:
       return std::string("Unknown");
   }
@@ -207,6 +209,10 @@ std::string ToString(const component::FilterMethod& m) {
       !name.compare("guiding-light") || !name.compare("guiding_light") ||
       !name.compare("5")) {
     return AimMethod::kLIGHT;
+  }
+  if (!name.compare("antiwhipping_top") || !name.compare("antitop") ||
+      !name.compare("6")) {
+    return AimMethod::kANTITOP;
   }
   return AimMethod::kUNKNOWN;
 }
