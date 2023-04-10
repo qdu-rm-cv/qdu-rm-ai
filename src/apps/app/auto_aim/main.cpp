@@ -140,6 +140,17 @@ class AutoAim : private App {
       auto armors = detector_.Detect(frame);
 
       if (armors.size() != 0) {
+        std::sort(armors.begin(), armors.end(), [](Armor& a, Armor& b) {
+          if (a.GetArea() > b.GetArea())
+            return 0;
+          else {
+            if (abs(a.image_center_.x - 640 / 2) >
+                abs(b.image_center_.x - 640 / 2))
+              return 0;
+            else
+              return 1;
+          }
+        });
         compensator_.Apply(armors, frame, robot_.GetBalletSpeed(),
                            robot_.GetEuler());
         manager_.Aim(armors.front().GetAimEuler());

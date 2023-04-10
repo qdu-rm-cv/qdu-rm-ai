@@ -36,6 +36,8 @@ class Compensator {
 
   void VisualizeResult(tbb::concurrent_vector<Armor>& armors,
                        const cv::Mat& output, int verbose = 1);
+  void UpdateImgPoints(std::vector<cv::Point2f>& img, double k,
+                       std::vector<cv::Point2f>& img_out);
 
 #ifdef RMU2021
   double SolveSurfaceLanchAngle(cv::Point2f target, double ballet_speed);
