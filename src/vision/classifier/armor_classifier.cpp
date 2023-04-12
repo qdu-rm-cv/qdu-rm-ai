@@ -59,9 +59,7 @@ int ArmorClassifier::GetArmorId(cv::Mat &armor_face) {
   std::vector<std::vector<cv::Point>> contours;  // 存储原图轮廓
   std::vector<cv::Vec4i> hierarcy;
   cv::findContours(img, contours, hierarcy, cv::RETR_EXTERNAL,
-                   cv::CHAIN_APPROX_NONE);  // 查找轮廓
-  // cv::drawContours(clone_img, contours, -1, cv::Scalar(0, 255, 0), 1,
-  //                  8);                               // 绘制轮廓
+                   cv::CHAIN_APPROX_NONE);           // 查找轮廓
   std::vector<cv::Rect> sort_rect(contours.size());  // 外接矩形
   std::vector<cv::Mat> img_mat;  // 存储原图中的有效数字区域
   for (int i = 0; size_t(i) < contours.size(); i++) {
@@ -70,11 +68,6 @@ int ArmorClassifier::GetArmorId(cv::Mat &armor_face) {
     cv::Mat dstroi;
     cv::resize(roi, dstroi, roi.size(), 0, 0);  // 重设大小
     img_mat.push_back(dstroi);
-    // 绘制外接矩形
-    // cv::rectangle(clone_img, cv::Point(sort_rect[i].x, sort_rect[i].y),
-    //               cv::Point(sort_rect[i].x + sort_rect[i].width,
-    //                         sort_rect[i].y + sort_rect[i].height),
-    //               cv::Scalar(0, 0, 255), 1, 8);
   }
   // 对矩形进行排序，因为轮廓的顺序不一定是数字真正的顺序
   for (int i = 0; size_t(i) < sort_rect.size(); i++) {
@@ -90,7 +83,7 @@ int ArmorClassifier::GetArmorId(cv::Mat &armor_face) {
   }
   std::vector<cv::Mat> myTemplate;  // 模板容器
   for (int i = 1; i < 4; i++) {
-    std::string name = cv::format("./template/%d.png", i);
+    std::string name = cv::format("runtime/template/%d.png", i);
     cv::Mat temp = cv::imread(name);
     if (temp.empty()) {
       // std::cout << "模板读取失败" << std::endl;
@@ -117,9 +110,6 @@ int ArmorClassifier::GetArmorId(cv::Mat &armor_face) {
     double min = 0;
     int min_seq = 0;  // 记录识别结果
     for (int j = 0; size_t(j) < myTemplate.size(); j++) {
-      // cv::imshow("s", img_mat[i]);
-      // cv::imshow("t", myTemplate[j]);
-      // cv::waitKey(5000);
       com = MatchTemplate(img_mat[i], myTemplate[j]);
       if (com > min) {
         min = com;
@@ -129,10 +119,6 @@ int ArmorClassifier::GetArmorId(cv::Mat &armor_face) {
     }
     seq.push_back(min_seq + 1);
   }
-  // 输出结果
-  //        std::cout << "识别结果为：";
-  //        for (int i = 0; i < seq.size(); i++)
-  //        std::cout << seq[i];
   if (!seq.empty()) return seq[0] + 1;
   return 0;
 }

@@ -126,7 +126,6 @@ void Compensator::SolveAngles(Armor& armor, const component::Euler& euler) {
   SPDLOG_WARN("x : {}, y : {}, z : {} ", x_pos, y_pos, z_pos);
   distance_ = sqrt(x_pos * x_pos + y_pos * y_pos + z_pos * z_pos) / 1000;
   SPDLOG_INFO("distance:{}", distance_);
-
   if (distance_ > 5) {
     // PinHoleSolver
     double ax = cam_mat_.at<double>(0, 0);
@@ -191,114 +190,59 @@ void Compensator::VisualizeResult(tbb::concurrent_vector<Armor>& armors,
 }
 void Compensator::CompensateGravity(Armor& armor, const double ballet_speed,
                                     game::AimMethod method) {
-  component::Euler aiming_eulr = armor.GetAimEuler();
-  if (method == game::AimMethod::kARMOR || aiming_eulr.pitch < 0) {
-    double pitch = -aiming_eulr.pitch;
-    double A = (distance_ * kG) / (ballet_speed * ballet_speed);
-    double B = tan(pitch) / cos(pitch);
-    /* B = sin(pitch) / (cos(pitch) * cos(pitch)) */
-    double C = 1 / cos(pitch);
-    double D = B * B + C * C;
-    double E = 2 * B * (A + B);
-    double F = (A + B) * (A + B) - C * C;
-
-    double temporary_result =
-        0.5 * acos((-E + pow(-1, 0) * sqrt(E * E - 4 * D * F)) / (2 * D));
-    if (temporary_result > pitch) {
-      pitch = temporary_result;
-    }
-    if (distance_ > 3 && distance_ <= 5) {
-      pitch *= 0.9;
-      aiming_eulr.yaw += 0.1 / 180 * CV_PI;
-    }
-    if (distance_ > 7) {
-      pitch *= 0.85;
-      aiming_eulr.yaw += 0.3 / 180 * CV_PI;
-    }
-    SPDLOG_INFO("Distance : {} <=> Now pitch : {}", distance_, pitch);
-    aiming_eulr.pitch = pitch;
-  } else if (0) {
-    // (void)ballet_speed;
-    aiming_eulr.yaw -= 0.3 / 180 * CV_PI;
-    double pitch = aiming_eulr.pitch;
-    double A = -((distance_ * kG) / (ballet_speed * ballet_speed));
-    double B = tan(pitch) / cos(pitch);
-    /* B = sin(pitch) / (cos(pitch) * cos(pitch)) */
-    double C = 1 / cos(pitch);
-    double D = B * B + C * C;
-    double E = 2 * B * (A - B);
-    double F = (A - B) * (A - B) - C * C;
-
-    for (int i = 0; i < 2; i++) {
-      double temporary_result =
-          0.5 * acos((E + pow(-1, i) * sqrt(E * E - 4 * D * F)) / (2 * D));
-      SPDLOG_DEBUG("temporary_pitch{}", temporary_result);
-
-      if (temporary_result > 0 && temporary_result > pitch &&
-          temporary_result < 0.5) {
-        pitch = 1.3 * temporary_result;
-        SPDLOG_INFO("{} <=> {}", aiming_eulr.pitch, pitch);
-        continue;
-      }
-    }
-    aiming_eulr.pitch = pitch;
-  } else {
-    if (0) {
-      SPDLOG_WARN("start {}, {}", aiming_eulr.yaw, aiming_eulr.pitch);
-      aiming_eulr.yaw += 0.4 / 180 * CV_PI;
-      if (aiming_eulr.pitch < 0.15) {
-        aiming_eulr.pitch += 1.7 / 180 * CV_PI;
-        SPDLOG_WARN("0.1");
-      } else if (aiming_eulr.pitch < 0.25) {
-        aiming_eulr.pitch += 1.8 / 180 * CV_PI;
-        SPDLOG_WARN("0.2");
-      } else if (aiming_eulr.pitch < 0.3) {
-        aiming_eulr.pitch += 2.5 / 180 * CV_PI;
-        SPDLOG_WARN("0.3");
-      } else if (aiming_eulr.pitch < 0.4) {
-        aiming_eulr.pitch += 2.5 / 180 * CV_PI;
-        SPDLOG_WARN("0.4");
-      } else if (aiming_eulr.pitch < 0.5) {
-        aiming_eulr.pitch += 2.8 / 180 * CV_PI;
-        SPDLOG_WARN("0.5");
+  //高斯牛顿迭代法
+  if (method == game::AimMethod::kARMOR || method == game::AimMethod::kBUFF) {
+    component::Euler aiming_eulr = armor.GetAimEuler();
+    double x = distance_ * cos(aiming_eulr.pitch);
+    double angle = aiming_eulr.pitch;
+    double k = 0;
+    double target_y = distance_ * sin(angle) + k;
+    double temple_y = target_y;
+    for (int i = 0; i < 10; i++) {
+      double real_y;
+      double a = -kG * cos(aiming_eulr.pitch) * cos(aiming_eulr.pitch) * x * x /
+                 (ballet_speed * ballet_speed * cos(angle) * cos(angle));
+      double b = tan(angle) * cos(aiming_eulr.pitch) * x;
+      real_y = a + b;
+      double diff = target_y - real_y;
+      temple_y = temple_y + diff;
+      if (distance_ > 5) {
+        // PinHoleSolver
+        double ay = cam_mat_.at<double>(1, 1);
+        double v0 = cam_mat_.at<double>(1, 2);
+        std::vector<cv::Point2f> in{
+            cv::Point2f(armor.image_center_.x, temple_y)};
+        std::vector<cv::Point2f> out;
+        cv::undistortPoints(in, out, cam_mat_, distor_coff_, cv::noArray(),
+                            cam_mat_);
+        angle = -atan((out.front().y - v0) / ay);
       } else {
-        aiming_eulr.pitch += 3.0 / 180 * CV_PI;
-        SPDLOG_WARN("else");
-      }
-      SPDLOG_WARN(" end {}, {}", aiming_eulr.yaw, aiming_eulr.pitch);
-    } else {
-      double pitch = aiming_eulr.pitch;
-      double A = distance_ / sin(pitch);
-      double B = 1 / (2 * kG);
-      double result1 = (-1 + sqrt(1 - 4 * A * B)) / 2 * B;
-      // double result2 = ;
-      double final_result = asin(result1);
-      pitch = final_result;
-      if (final_result > pitch) {
-        pitch = result1;
-      }
-      if (distance_ > 3 && distance_ <= 5) {
-        pitch *= 0.9;
-        aiming_eulr.yaw += 0.1 / 180 * CV_PI;
-      }
-      if (distance_ > 7) {
-        pitch *= 0.85;
-        aiming_eulr.yaw += 0.3 / 180 * CV_PI;
+        double x_pos = armor.GetTransVec().at<double>(0, 0);
+        double z_pos = armor.GetTransVec().at<double>(2, 0);
+        // P4PSolver
+        angle = -atan(temple_y / sqrt(x_pos * x_pos + z_pos * z_pos));
       }
     }
+    if (1) {
+      double a = cv::norm(armor.ImageVertices()[0] - armor.ImageVertices()[1]);
+      double b = cv::norm(armor.ImageVertices()[2] - armor.ImageVertices()[3]);
+      double c = std::max(a, b);
+      double real_img_ratio = 125 / c;
+      double tan = abs(armor.ImageCenter().x - armor.ImageCenter().x) *
+                   real_img_ratio / distance_;
+      double add_yaw = atan(tan) / 180 * CV_PI;
+      aiming_eulr.pitch = angle;
+      aiming_eulr.yaw += add_yaw;
+    }
+    armor.SetAimEuler(aiming_eulr);
+    SPDLOG_DEBUG("Armor Euler is setted");
   }
-
-  armor.SetAimEuler(aiming_eulr);
-  SPDLOG_DEBUG("Armor Euler is setted");
 }
-/*图片坐标默认顺序
-左下，左上，右上，右下
- */
-/*使用前体装甲板底边和书平面平行或者偏差不大并且者相机不能倾斜，
-以下函数中提到的length和width均为img中的,1/K为装甲版的实际
-长宽比，注意要区分大小装甲版*/
 void Compensator::UpdateImgPoints(std::vector<cv::Point2f>& img, double k,
                                   std::vector<cv::Point2f>& img_out) {
+  /*图片坐标默认顺序为左下，左上，右上，右下，使用前体装甲板底边和书平面平行或者偏差不大并且者相机不能倾斜，
+  以下函数中提到的length和width均为img中的,1/K为装甲版的实际
+  长宽比，注意要区分大小装甲版*/
   double length, width;
   width = std::max(cv::norm(img[0] - img[1]), cv::norm(img[3] - img[2]));
   length = width * k;
