@@ -37,7 +37,7 @@
   - [OpenCV (4.5.0 - 4.5.4)](https://docs.opencv.org/4.5.4/d7/d9f/tutorial_linux_install.html)
   - [BehavoirTree.CPP (3.3.0 - 3.8.1)](https://github.com/BehaviorTree/BehaviorTree.CPP)
   - [MVS SDK from HIKROBOT](https://www.hikrobotics.com/cn/machinevision/service/download?module=0)
-  - [spdlog (1.6.0 - 1.11.0)](https://github.com/gabime/spdlog)
+  - [spdlog (1.9.2)](https://github.com/gabime/spdlog)
   - [Google Test (1.8.0 - 1.10.0)](https://github.com/google/googletest)
   - [oneTBB (only tested 2020.1)](https://github.com/oneapi-src/oneTBB) or `libtbb-dev`
   - [libusbp](https://github.com/pololu/libusbp)
