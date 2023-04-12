@@ -69,7 +69,7 @@ void BuffDetector::MatchBuff(const cv::Mat &frame) {
   tbb::concurrent_vector<Armor> armors;
   hammer_ = cv::RotatedRect();
 
-  frame_size_ = cv::Size(frame.cols, frame.rows);
+  frame_size_ = cv::Size(kIMAGE_WIDTH, kIMAGE_HEIGHT);
 
   cv::Mat channels[3], img;
   cv::split(frame, channels);

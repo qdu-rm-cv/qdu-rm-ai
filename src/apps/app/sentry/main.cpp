@@ -19,7 +19,7 @@ class SentryAim : private App {
     /* 初始化设备 */
     robot_.Init("/dev/ttyTHS2");
     cam_.Open(0);
-    cam_.Setup(640, 480);
+    cam_.Setup(kIMAGE_WIDTH, kIMAGE_HEIGHT);
     detector_.LoadParams("RMUL2021_Armor.json");
     compensator_.LoadCameraMat("MV-CA016-10UC-6mm.json");
 
@@ -46,7 +46,7 @@ class SentryAim : private App {
       if (frame.empty()) continue;
       auto armors = detector_.Detect(frame);
       // target = predictor.Predict(armors, frame);
-      // compensator_.Apply(target, frame, robot_.GetRotMat());
+      // compensator_.Apply(target, robot_.GetRotMat());
       // robot_.Aim(target.GetAimEuler(), false);
       detector_.VisualizeResult(frame, 10);
       cv::imshow("show", frame);

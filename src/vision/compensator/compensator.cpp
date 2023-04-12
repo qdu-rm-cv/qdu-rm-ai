@@ -6,9 +6,11 @@
 namespace {
 
 const double kG = 9.7945;
-const double kINFANTRY = 60;
+const double kINFANTRY = 60.;
 const double kHERO = 10.;
 const double kSENTRY = 10.;
+const double kBIG_ARMOR = 230. / 127 * cos(15. / 180 * M_PI);
+const double kSMALL_ARMOR = 135. / 125 * cos(15. / 180 * M_PI);
 
 }  // namespace
 
@@ -68,47 +70,43 @@ void Compensator::LoadCameraMat(const std::string& path) {
 
 void Compensator::PnpEstimate(Armor& armor) {
   cv::Mat rot_vec, trans_vec;
-  std::vector<cv::Point2f> img;         // Points of 2D after adjusted
-  std::vector<cv::Point2f> img_out(4);  // Points of 2D after update
+  std::vector<cv::Point2f> trsd_cords(4);  // Points of 2D after update
   /*调整识别到的像素坐标,手动消除与处理带来的2D坐标
   不准的为问题,该参数可以根据ui_param灯条的变形情况
   来确定*/
   double k = 1.15;
   cv::Point2f t1 =
-      (armor.ImageVertices()[1] - armor.ImageVertices()[0]) * k;  //向量t1,t2
+      (armor.ImageVertices()[1] - armor.ImageVertices()[0]) * k;  // 向量t1,t2
   cv::Point2f t2 = (armor.ImageVertices()[2] - armor.ImageVertices()[3]) * k;
-  cv::Point2f tr = armor.ImageVertices()[0];  // Right bottom point
-  cv::Point2f tl = armor.ImageVertices()[3];  // Left bottom point
+  cv::Point2f br = armor.ImageVertices()[0];  // Right bottom point
+  cv::Point2f bl = armor.ImageVertices()[3];  // Left bottom point
 
-  img.clear();
-  img.push_back(tr);
-  img.push_back(tr + t1);
-  img.push_back(tl + t2);
-  img.push_back(tl);
+  // Points of 2D after adjusted
+  std::vector<cv::Point2f> ori_cords = {br, br + t1, bl + t2, bl};
+
   double k2;  // k2值是目标装甲板的长宽比
   if (armor.IsBigArmor()) {
-    k2 = 230 / 127 * cos(15 / 180 * M_PI);
+    k2 = kBIG_ARMOR;
   } else if (armor.GetModel() == game::Model::kBUFF) {
-    k2 = 1;  // TODO:等Buff和buff_detector完成后修改
+    k2 = 1;  // TODO(GY.Wang): 等Buff和buff_detector完成后修改
     SPDLOG_ERROR("Error param of buff has not been set!");
     return;
   } else {
-    k2 = 135 / 125 * cos(15 / 180 * M_PI);
+    k2 = kSMALL_ARMOR;
   }
 
-  UpdateImgPoints(img, k2, img_out);
-  double k3 = 125 / cv::norm(img_out[0] - img_out[1]);
+  UpdateImgPoints(ori_cords, k2, trsd_cords);
+  double k3 = 125. / cv::norm(trsd_cords[0] - trsd_cords[1]);
 
-  cv::Point2f new_img_center = cv::Point2f(
-      (img_out[0].x + img_out[1].x + img_out[2].x + img_out[3].x) / 4,
-      (img_out[0].y + img_out[1].y + img_out[2].y + img_out[3].y) / 4);
-  double center_diff_x = abs(armor.ImageCenter().x - new_img_center.x) *
-                         k3;  //重构之后装甲板的中心会有偏移
+  auto new_img_center =
+      (trsd_cords[0] + trsd_cords[1] + trsd_cords[2] + trsd_cords[3]) / 4;
+  // 重构之后装甲板的中心会有偏移
+  double center_diff_x = abs(armor.ImageCenter().x - new_img_center.x) * k3;
   double center_diff_y = abs(armor.ImageCenter().y - new_img_center.y) * k3;
 
-  cv::solvePnP(armor.PhysicVertices(), /* armor.ImageVertices() */ img_out,
-               cam_mat_, distor_coff_, rot_vec, trans_vec, false,
-               cv::SOLVEPNP_ITERATIVE);
+  cv::solvePnP(armor.PhysicVertices(),
+               /* armor.ImageVertices() */ trsd_cords, cam_mat_, distor_coff_,
+               rot_vec, trans_vec, false, cv::SOLVEPNP_ITERATIVE);
   trans_vec.at<double>(0, 0) -= center_diff_x;
   trans_vec.at<double>(1, 0) -= center_diff_y;
 
@@ -153,14 +151,24 @@ void Compensator::SolveAngles(Armor& armor, const component::Euler& euler) {
 }
 
 void Compensator::Apply(tbb::concurrent_vector<Armor>& armors,
-                        const cv::Mat& frame, const double ballet_speed,
+                        const double ballet_speed,
                         const component::Euler& euler, game::AimMethod method) {
-  cv::Point2f frame_center(frame.cols / 2, frame.rows / 2);
+#if 0
+  cv::Point2f frame_center(kIMAGE_WIDTH / 2, kIMAGE_HEIGHT / 2);
   std::sort(armors.begin(), armors.end(),
             [frame_center](Armor& armor1, Armor& armor2) {
               return cv::norm(armor1.ImageCenter() - frame_center) <
                      cv::norm(armor2.ImageCenter() - frame_center);
             });
+#endif
+  std::sort(armors.begin(), armors.end(), [](Armor& a, Armor& b) {
+    if (a.GetArea() > b.GetArea()) {
+      return false;
+    } else {
+      return abs(a.ImageCenter().x - kIMAGE_WIDTH / 2) <=
+             abs(b.ImageCenter().x - kIMAGE_WIDTH / 2);
+    }
+  });
   auto& armor = armors.front();
   if (armor.GetModel() == game::Model::kUNKNOWN) {
     armor.SetModel(game::Model::kINFANTRY);
@@ -170,10 +178,9 @@ void Compensator::Apply(tbb::concurrent_vector<Armor>& armors,
   CompensateGravity(armor, ballet_speed, method);
 }
 
-void Compensator::Apply(Armor& armor, const cv::Mat& frame,
-                        const double ballet_speed,
+void Compensator::Apply(Armor& armor, const double ballet_speed,
                         const component::Euler& euler, game::AimMethod method) {
-  cv::Point2f frame_center(frame.cols / 2, frame.rows / 2);
+  cv::Point2f frame_center(kIMAGE_WIDTH / 2, kIMAGE_HEIGHT / 2);
 
   if (armor.GetModel() == game::Model::kUNKNOWN) {
     armor.SetModel(game::Model::kINFANTRY);
@@ -189,124 +196,80 @@ void Compensator::VisualizeResult(tbb::concurrent_vector<Armor>& armors,
     VisualizePnp(armor, output, verbose > 1);
   }
 }
+
 void Compensator::CompensateGravity(Armor& armor, const double ballet_speed,
                                     game::AimMethod method) {
-  component::Euler aiming_eulr = armor.GetAimEuler();
-  if (method == game::AimMethod::kARMOR || aiming_eulr.pitch < 0) {
-    double pitch = -aiming_eulr.pitch;
-    double A = (distance_ * kG) / (ballet_speed * ballet_speed);
-    double B = tan(pitch) / cos(pitch);
-    /* B = sin(pitch) / (cos(pitch) * cos(pitch)) */
-    double C = 1 / cos(pitch);
-    double D = B * B + C * C;
-    double E = 2 * B * (A + B);
-    double F = (A + B) * (A + B) - C * C;
-
-    double temporary_result =
-        0.5 * acos((-E + pow(-1, 0) * sqrt(E * E - 4 * D * F)) / (2 * D));
-    if (temporary_result > pitch) {
-      pitch = temporary_result;
-    }
-    if (distance_ > 3 && distance_ <= 5) {
-      pitch *= 0.9;
-      aiming_eulr.yaw += 0.1 / 180 * CV_PI;
-    }
-    if (distance_ > 7) {
-      pitch *= 0.85;
-      aiming_eulr.yaw += 0.3 / 180 * CV_PI;
-    }
-    SPDLOG_INFO("Distance : {} <=> Now pitch : {}", distance_, pitch);
-    aiming_eulr.pitch = pitch;
-  } else if (0) {
-    // (void)ballet_speed;
-    aiming_eulr.yaw -= 0.3 / 180 * CV_PI;
-    double pitch = aiming_eulr.pitch;
-    double A = -((distance_ * kG) / (ballet_speed * ballet_speed));
-    double B = tan(pitch) / cos(pitch);
-    /* B = sin(pitch) / (cos(pitch) * cos(pitch)) */
-    double C = 1 / cos(pitch);
-    double D = B * B + C * C;
-    double E = 2 * B * (A - B);
-    double F = (A - B) * (A - B) - C * C;
-
-    for (int i = 0; i < 2; i++) {
-      double temporary_result =
-          0.5 * acos((E + pow(-1, i) * sqrt(E * E - 4 * D * F)) / (2 * D));
-      SPDLOG_DEBUG("temporary_pitch{}", temporary_result);
-
-      if (temporary_result > 0 && temporary_result > pitch &&
-          temporary_result < 0.5) {
-        pitch = 1.3 * temporary_result;
-        SPDLOG_INFO("{} <=> {}", aiming_eulr.pitch, pitch);
-        continue;
-      }
-    }
-    aiming_eulr.pitch = pitch;
-  } else {
-    if (0) {
-      SPDLOG_WARN("start {}, {}", aiming_eulr.yaw, aiming_eulr.pitch);
-      aiming_eulr.yaw += 0.4 / 180 * CV_PI;
-      if (aiming_eulr.pitch < 0.15) {
-        aiming_eulr.pitch += 1.7 / 180 * CV_PI;
-        SPDLOG_WARN("0.1");
-      } else if (aiming_eulr.pitch < 0.25) {
-        aiming_eulr.pitch += 1.8 / 180 * CV_PI;
-        SPDLOG_WARN("0.2");
-      } else if (aiming_eulr.pitch < 0.3) {
-        aiming_eulr.pitch += 2.5 / 180 * CV_PI;
-        SPDLOG_WARN("0.3");
-      } else if (aiming_eulr.pitch < 0.4) {
-        aiming_eulr.pitch += 2.5 / 180 * CV_PI;
-        SPDLOG_WARN("0.4");
-      } else if (aiming_eulr.pitch < 0.5) {
-        aiming_eulr.pitch += 2.8 / 180 * CV_PI;
-        SPDLOG_WARN("0.5");
+  // 高斯牛顿迭代法
+  if (method == game::AimMethod::kARMOR || method == game::AimMethod::kBUFF) {
+    component::Euler aiming_eulr = armor.GetAimEuler();
+    double x = distance_ * cos(aiming_eulr.pitch);
+    double angle = aiming_eulr.pitch;
+    double k = 0;
+    double target_y = distance_ * sin(angle) + k;
+    double temple_y = target_y;
+    for (int i = 0; i < 10; i++) {
+      double a = -kG * cos(aiming_eulr.pitch) * cos(aiming_eulr.pitch) * x * x /
+                 (ballet_speed * ballet_speed * cos(angle) * cos(angle));
+      double b = tan(angle) * cos(aiming_eulr.pitch) * x;
+      double real_y = a + b;
+      temple_y = temple_y + target_y - real_y;
+      if (distance_ > 5) {
+        // PinHoleSolver
+        double ay = cam_mat_.at<double>(1, 1);
+        double v0 = cam_mat_.at<double>(1, 2);
+        std::vector<cv::Point2f> in{
+            cv::Point2f(armor.image_center_.x, temple_y)};
+        std::vector<cv::Point2f> out;
+        cv::undistortPoints(in, out, cam_mat_, distor_coff_, cv::noArray(),
+                            cam_mat_);
+        angle = -atan((out.front().y - v0) / ay);
       } else {
-        aiming_eulr.pitch += 3.0 / 180 * CV_PI;
-        SPDLOG_WARN("else");
-      }
-      SPDLOG_WARN(" end {}, {}", aiming_eulr.yaw, aiming_eulr.pitch);
-    } else {
-      double pitch = aiming_eulr.pitch;
-      double A = distance_ / sin(pitch);
-      double B = 1 / (2 * kG);
-      double result1 = (-1 + sqrt(1 - 4 * A * B)) / 2 * B;
-      // double result2 = ;
-      double final_result = asin(result1);
-      pitch = final_result;
-      if (final_result > pitch) {
-        pitch = result1;
-      }
-      if (distance_ > 3 && distance_ <= 5) {
-        pitch *= 0.9;
-        aiming_eulr.yaw += 0.1 / 180 * CV_PI;
-      }
-      if (distance_ > 7) {
-        pitch *= 0.85;
-        aiming_eulr.yaw += 0.3 / 180 * CV_PI;
+        double x_pos = armor.GetTransVec().at<double>(0, 0);
+        double z_pos = armor.GetTransVec().at<double>(2, 0);
+        // P4PSolver
+        angle = -atan(temple_y / sqrt(x_pos * x_pos + z_pos * z_pos));
       }
     }
-  }
+    if (1) {
+      auto vertices = armor.ImageVertices();
+      double real_img_ratio =
+          125. / std::max(cv::norm(vertices[0] - vertices[1]),
+                          cv::norm(vertices[2] - vertices[3]));
+      double tan = abs(armor.ImageCenter().x - kIMAGE_WIDTH / 2) *
+                   real_img_ratio / distance_;
 
-  armor.SetAimEuler(aiming_eulr);
-  SPDLOG_DEBUG("Armor Euler is setted");
+      double add_yaw = atan(tan) / 180 * CV_PI;
+      aiming_eulr.pitch = angle;
+      aiming_eulr.yaw += add_yaw;
+    }
+    armor.SetAimEuler(aiming_eulr);
+    SPDLOG_DEBUG("Armor Euler is setted");
+  }
 }
-/*图片坐标默认顺序
-左下，左上，右上，右下
+
+/**
+ * @brief 更新矫正图像座标点
+ *  图片坐标默认顺序: 左下，左上，右上，右下
+ *  使用前体装甲板底边和书平面平行或者偏差不大并且者相机不能倾斜，以下函数中提到的
+ *  length和width均为img中的,1/K为装甲版的实际长宽比，注意要区分大小装甲版
+ *
+ * @param origin_coords
+ * @param k
+ * @param transformed_coords
  */
-/*使用前体装甲板底边和书平面平行或者偏差不大并且者相机不能倾斜，
-以下函数中提到的length和width均为img中的,1/K为装甲版的实际
-长宽比，注意要区分大小装甲版*/
-void Compensator::UpdateImgPoints(std::vector<cv::Point2f>& img, double k,
-                                  std::vector<cv::Point2f>& img_out) {
+void Compensator::UpdateImgPoints(
+    std::vector<cv::Point2f>& origin_coords, double k,
+    std::vector<cv::Point2f>& transformed_coords) {
   double length, width;
-  width = std::max(cv::norm(img[0] - img[1]), cv::norm(img[3] - img[2]));
+  width = std::max(cv::norm(origin_coords[0] - origin_coords[1]),
+                   cv::norm(origin_coords[3] - origin_coords[2]));
   length = width * k;
-  img_out[0] = img[0];
-  img_out[1] = img[0] - cv::Point2f(0, width);
-  img_out[2] = img_out[1] + cv::Point2f(length, 0);
-  img_out[3] = img_out[2] + cv::Point2f(0, width);
+  transformed_coords[0] = origin_coords[0];
+  transformed_coords[1] = origin_coords[0] - cv::Point2f(0, width);
+  transformed_coords[2] = transformed_coords[1] + cv::Point2f(length, 0);
+  transformed_coords[3] = transformed_coords[2] + cv::Point2f(0, width);
 }
+
 #ifdef RMU2021
 /**
  * @brief Angle θ required to hit coordinate (x, y)

@@ -59,6 +59,10 @@ const std::string kPATH_BUILD = "../../../../../build/";
 const std::string kPATH_IMAGE = "../../../../../assets/image/";
 const std::string kPATH_RUNTIME = "../../../../../runtime/";
 #endif
+
+const int kIMAGE_HEIGHT = 480;
+const int kIMAGE_WIDTH = 640;
+
 /* clang-format on */
 
 namespace component {

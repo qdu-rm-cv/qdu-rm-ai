@@ -14,7 +14,7 @@ class UI : private App {
       : App(log_path), param_path_(param_path), window_handle_(window) {
     /* 初始化设备 */
     cam_.Open(0);
-    cam_.Setup(640, 480);
+    cam_.Setup(kIMAGE_WIDTH, kIMAGE_HEIGHT);
   }
   ~UI() {}
 

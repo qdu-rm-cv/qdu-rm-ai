@@ -24,7 +24,7 @@ class BuffAim : private App {
     /* 初始化设备 */
     robot_.Init("/dev/ttyACM0");
     cam_.Open(0);
-    cam_.Setup(640, 480);
+    cam_.Setup(kIMAGE_WIDTH, kIMAGE_HEIGHT);
     detector_.LoadParams(kPATH_RUNTIME + "RMUT2022_Buff.json");
     predictor_.LoadParams(kPATH_RUNTIME + "RMUT2022_Buff_Pre.json");
     compensator_.LoadCameraMat(kPATH_RUNTIME + "MV-CA016-10UC-6mm_2.json");
@@ -62,8 +62,8 @@ class BuffAim : private App {
         auto armor = armors.front();
         SPDLOG_WARN("size : {}", armors.size());
         // auto armor = buffs.front().GetTarget();
-        compensator_.Apply(armor, frame, robot_.GetBalletSpeed(),
-                           robot_.GetEuler(), game::AimMethod::kBUFF);
+        compensator_.Apply(armor, robot_.GetBalletSpeed(), robot_.GetEuler(),
+                           game::AimMethod::kBUFF);
         manager_.Aim(armor.GetAimEuler());
         robot_.Pack(manager_.GetData(), 9999);
 

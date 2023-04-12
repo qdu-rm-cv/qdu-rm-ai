@@ -44,7 +44,7 @@ RaspiCamera::RaspiCamera() { SPDLOG_TRACE("Constructed."); }
 RaspiCamera::RaspiCamera(unsigned int index, unsigned int height,
                          unsigned int width) {
   Open(index);
-  Setup(height, width);
+  Setup(width, height);
   SPDLOG_TRACE("Constructed.");
 }
 
@@ -64,7 +64,7 @@ RaspiCamera::~RaspiCamera() {
  * @param width 输出图像宽度
  */
 void RaspiCamera::Setup(unsigned int height, unsigned int width) {
-  Camera::Setup(height, width);
+  Camera::Setup(width, height);
   cam_.set(cv::CAP_PROP_FRAME_HEIGHT, height);
   cam_.set(cv::CAP_PROP_FRAME_WIDTH, width);
 }
