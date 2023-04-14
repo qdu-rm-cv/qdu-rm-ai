@@ -9,10 +9,10 @@
 namespace {
 
 const std::string kLOG = "logs/ui_param.log";
-const std::string kPARAMARMOR = "../../../../runtime/RMUL2022_Armor.json";
-const std::string kPARAMBUFF = "../../../../runtime/RMUT2022_Buff.json";
-const std::string kPARAMLIGHT = "../../../../runtime/RMUT2022_Light.json";
-const std::string kPARAMANTITOP = "../../../../runtime/RMUT2022_Antitop.json";
+const std::string kPARAMARMOR = kPATH_RUNTIME + "RMUL2022_Armor.json";
+const std::string kPARAMBUFF = kPATH_RUNTIME + "RMUT2022_Buff.json";
+const std::string kPARAMLIGHT = kPATH_RUNTIME + "RMUT2022_Light.json";
+const std::string kPARAMANTITOP = kPATH_RUNTIME + "RMUT2022_Antitop.json";
 const std::string kWINDOW = "ui_setting";
 
 /* 此处修改按钮数量 */
