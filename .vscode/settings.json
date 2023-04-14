@@ -175,7 +175,11 @@
         "future": "cpp",
         "*.in": "txt",
         "compare": "cpp",
-        "valarray": "cpp"
+        "valarray": "cpp",
+        "*.ipp": "cpp",
+        "hash_map": "cpp",
+        "hash_set": "cpp",
+        "span": "cpp"
     },
     "githubPullRequests.ignoredPullRequestBranches": [
         "2023"

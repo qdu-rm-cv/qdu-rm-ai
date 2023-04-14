@@ -20,7 +20,7 @@ class AutomaticAim : public App {
   explicit AutomaticAim(const std::string& log_path) : App(log_path) {
     SPDLOG_WARN("***** Setting Up Auto Aiming System. *****");
     cam_.Open(0);
-    cam_.Setup(480, 640);
+    cam_.Setup(kIMAGE_WIDTH, kIMAGE_HEIGHT);
 
     assitant_.LoadParams(kPATH_RUNTIME + "RMUL2021_Armor.json",
                          kPATH_RUNTIME + "RMUT2021_Buff.json",
@@ -82,8 +82,8 @@ class AutomaticAim : public App {
       auto armors = assitant_.Aim(frame);
 
       if (armors.size() > 0) {
-        compensator_.Apply(armors, frame, robot_.GetBalletSpeed(),
-                           robot_.GetEuler(), assitant_.GetMethod());
+        compensator_.Apply(armors, robot_.GetBalletSpeed(), robot_.GetEuler(),
+                           assitant_.GetMethod());
         Armor armor = armors.front();
 
         if (arm_ == game::Arm::kSENTRY) {

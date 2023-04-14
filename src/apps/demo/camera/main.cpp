@@ -21,7 +21,7 @@ class CameraDemo : public App {
 
     /* 初始化设备 */
     cam_.Open(0);
-    cam_.Setup(640, 480);
+    cam_.Setup(kIMAGE_WIDTH, kIMAGE_HEIGHT);
 
     writer_.open(kOUTPUT, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), 60,
                  cv::Size(640, 480));

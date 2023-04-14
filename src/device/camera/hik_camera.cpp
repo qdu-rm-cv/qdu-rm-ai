@@ -191,7 +191,7 @@ HikCamera::HikCamera(unsigned int index, unsigned int height,
                      unsigned int width) {
   Prepare();
   Open(index);
-  Setup(height, width);
+  Setup(width, height);
   SPDLOG_TRACE("Constructed.");
 }
 

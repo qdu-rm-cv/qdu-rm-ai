@@ -28,7 +28,7 @@ class AutoAim : private App {
     /* 初始化设备 */
     robot_.Init("/dev/ttyACM0");
     cam_.Open(0);
-    cam_.Setup(640, 480);
+    cam_.Setup(kIMAGE_WIDTH, kIMAGE_HEIGHT);
     detector_async_.LoadParams(kPATH_RUNTIME + "RMUL2022_Armor.json");
     compensator_.LoadCameraMat(kPATH_RUNTIME + "MV-CA016-10UC-6mm_1.json");
     classifier_.LoadModel(kPATH_RUNTIME + "armor_classifier.onnx");
@@ -65,8 +65,8 @@ class AutoAim : private App {
       for (auto armor : armors) {
         classifier_.ClassifyModel(armor, frame);
       }
-      compensator_.Apply(armors, frame, robot_.GetBalletSpeed(),
-                         robot_.GetEuler(), game::AimMethod::kARMOR);
+      compensator_.Apply(armors, robot_.GetBalletSpeed(), robot_.GetEuler(),
+                         game::AimMethod::kARMOR);
       manager_.Aim(armors.front().GetAimEuler());
       robot_.Pack(manager_.GetData(), 9999);
       SPDLOG_WARN("pack");
@@ -111,7 +111,7 @@ class AutoAim : private App {
     /* 初始化设备 */
     robot_.Init();
     cam_.Open(0);
-    cam_.Setup(640, 480);
+    cam_.Setup(kIMAGE_WIDTH, kIMAGE_HEIGHT);
     detector_.LoadParams(kPATH_RUNTIME + "RMUL2022_Armor.json");
     compensator_.LoadCameraMat(kPATH_RUNTIME + "MV-CA016-10UC-6mm_1.json");
 
@@ -140,19 +140,7 @@ class AutoAim : private App {
       auto armors = detector_.Detect(frame);
 
       if (armors.size() != 0) {
-        std::sort(armors.begin(), armors.end(), [](Armor& a, Armor& b) {
-          if (a.GetArea() > b.GetArea())
-            return 0;
-          else {
-            if (abs(a.image_center_.x - 640 / 2) >
-                abs(b.image_center_.x - 640 / 2))
-              return 0;
-            else
-              return 1;
-          }
-        });
-        compensator_.Apply(armors, frame, robot_.GetBalletSpeed(),
-                           robot_.GetEuler());
+        compensator_.Apply(armors, robot_.GetBalletSpeed(), robot_.GetEuler());
         manager_.Aim(armors.front().GetAimEuler());
         robot_.Pack(manager_.GetData(), 9999);
 
