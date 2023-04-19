@@ -241,7 +241,6 @@ BuffPredictor::BuffPredictor(const std::string &param) {
 
   //* 3rd. buff init
   state_ = game::BuffState::kUNKNOWN;
-  direction_ = component::Direction::kUNKNOWN;
   buff_ = Buff();
   circumference_.clear();
   SPDLOG_INFO("Buff init");

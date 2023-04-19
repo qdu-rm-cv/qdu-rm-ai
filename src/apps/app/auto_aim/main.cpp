@@ -1,4 +1,4 @@
-// #define async
+#define async
 #ifdef async
 
 #include "app.hpp"
@@ -18,7 +18,7 @@ class AutoAim : private App {
   Behavior manager_;
 
   component::Recorder recorder_ = component::Recorder("AutoAimThread");
-  // ArmorClassifier classifier_;
+  ArmorClassifier classifier_;
 
  public:
   explicit AutoAim(const std::string& log_path)
@@ -26,21 +26,21 @@ class AutoAim : private App {
     SPDLOG_WARN("***** Setting Up Auto Aiming System. *****");
 
     /* 初始化设备 */
-    robot_.Init("/dev/ttyUSB0");
+    robot_.Init("/dev/ttyACM0");
     cam_.Open(0);
-    cam_.Setup(640, 480);
+    cam_.Setup(kIMAGE_WIDTH, kIMAGE_HEIGHT);
     detector_async_.LoadParams(kPATH_RUNTIME + "RMUL2022_Armor.json");
-    compensator_.LoadCameraMat(kPATH_RUNTIME + "MV-CA016-10UC-6mm_2.json");
-    // classifier_.LoadModel(kPATH_RUNTIME + "armor_classifier.onnx");
-    // classifier_.LoadLable(kPATH_RUNTIME + "armor_classifier_lable.json");
-    // classifier_.SetInputSize(cv::Size(28, 28));
+    compensator_.LoadCameraMat(kPATH_RUNTIME + "MV-CA016-10UC-6mm_1.json");
+    classifier_.LoadModel(kPATH_RUNTIME + "armor_classifier.onnx");
+    classifier_.LoadLable(kPATH_RUNTIME + "armor_classifier_lable.json");
+    classifier_.SetInputSize(cv::Size(28, 28));
 
-    // do {
-    //   std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    // } while (robot_.GetEnemyTeam() != game::Team::kUNKNOWN);
+    do {
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    } while (robot_.GetEnemyTeam() != game::Team::kUNKNOWN);
 
-    // detector_async_.SetEnemyTeam(robot_.GetEnemyTeam());
-    detector_async_.SetEnemyTeam(game::Team::kBLUE);
+    detector_async_.SetEnemyTeam(robot_.GetEnemyTeam());
+    // detector_async_.SetEnemyTeam(game::Team::kBLUE);
   }
 
   ~AutoAim() {
@@ -58,15 +58,15 @@ class AutoAim : private App {
 
     while (1) {
       if (!cam_.GetFrame(frame)) continue;
-      robot_.GetEuler();
+
       detector_async_.PutFrame(frame);
       if (!detector_async_.GetResult(armors)) continue;
 
-      // for (auto armor : armors) {
-      //   classifier_.ClassifyModel(armor, frame);
-      // }
-      compensator_.Apply(armors.front(), frame, robot_.GetBalletSpeed(),
-                         robot_.GetEuler(), game::AimMethod::kARMOR);
+      for (auto armor : armors) {
+        classifier_.ClassifyModel(armor, frame);
+      }
+      compensator_.Apply(armors, robot_.GetBalletSpeed(), robot_.GetEuler(),
+                         game::AimMethod::kARMOR);
       manager_.Aim(armors.front().GetAimEuler());
       robot_.Pack(manager_.GetData(), 9999);
       SPDLOG_WARN("pack");
@@ -109,18 +109,18 @@ class AutoAim : private App {
     SPDLOG_WARN("***** Setting Up Auto Aiming System. *****");
 
     /* 初始化设备 */
-    robot_.Init("/dev/ttyUSB0");
+    robot_.Init();
     cam_.Open(0);
-    cam_.Setup(640, 480);
+    cam_.Setup(kIMAGE_WIDTH, kIMAGE_HEIGHT);
     detector_.LoadParams(kPATH_RUNTIME + "RMUL2022_Armor.json");
-    compensator_.LoadCameraMat(kPATH_RUNTIME + "MV-CA016-10UC-6mm_2.json");
+    compensator_.LoadCameraMat(kPATH_RUNTIME + "MV-CA016-10UC-6mm_1.json");
 
-    // do {
-    //   std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    // } while (robot_.GetEnemyTeam() != game::Team::kUNKNOWN);
+    do {
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    } while (robot_.GetEnemyTeam() != game::Team::kUNKNOWN);
 
-    // detector_.SetEnemyTeam(robot_.GetEnemyTeam());
-    detector_.SetEnemyTeam(game::Team::kBLUE);
+    detector_.SetEnemyTeam(robot_.GetEnemyTeam());
+    // detector_.SetEnemyTeam(game::Team::kBLUE);
   }
 
   ~AutoAim() {
@@ -135,20 +135,13 @@ class AutoAim : private App {
     cv::Mat frame;
 
     while (1) {
-      robot_.GetEuler();
       cam_.GetFrame(frame);
       if (frame.empty()) continue;
       auto armors = detector_.Detect(frame);
 
       if (armors.size() != 0) {
-        compensator_.Apply(armors.front(), frame, robot_.GetBalletSpeed(),
-                           robot_.GetEuler(), game::AimMethod::kARMOR);
+        compensator_.Apply(armors, robot_.GetBalletSpeed(), robot_.GetEuler());
         manager_.Aim(armors.front().GetAimEuler());
-        // Protocol_DownData_t d;
-        // d.gimbal.pit = 6.28;
-        // d.gimbal.rol = 0;
-        // d.gimbal.yaw = 0;
-        // robot_.Pack(d, 9999);
         robot_.Pack(manager_.GetData(), 9999);
 
         detector_.VisualizeResult(frame, 10);
@@ -161,6 +154,7 @@ class AutoAim : private App {
     }
   }
 };
+
 int main(int argc, char const* argv[]) {
   (void)argc;
   (void)argv;

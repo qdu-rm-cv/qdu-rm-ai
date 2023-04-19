@@ -2,8 +2,8 @@
 
 #include "armor.hpp"
 
-void AimAssitant::Sort(const cv::Mat& frame) {
-  cv::Point2f image_center(frame.cols / 2, frame.rows / 2);
+void AimAssitant::Sort() {
+  cv::Point2f image_center(kIMAGE_WIDTH / 2, kIMAGE_HEIGHT / 2);
   auto weight = [image_center](Armor armor) {
     double center_dis = cv::norm(armor.ImageCenter() - image_center);
     auto corner_points = armor.ImageVertices();
@@ -109,7 +109,7 @@ const tbb::concurrent_vector<Armor>& AimAssitant::Aim(const cv::Mat& frame) {
     if (method_ == game::AimMethod::kARMOR) {
       armors_ = a_detector_.Detect(frame);
       for (auto& armor : armors_) classifier_.ClassifyModel(armor, frame);
-      Sort(frame);
+      Sort();
     } else if (method_ == game::AimMethod::kSNIPE) {
       armors_ = s_detector_.Detect(frame);
     }

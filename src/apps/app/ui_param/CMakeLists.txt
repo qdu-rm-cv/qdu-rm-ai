@@ -9,7 +9,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     spdlog::spdlog
     ${Dcamera}
     ${Taim}_detector
-    ${Taim}_predictor
     ${Tbuff}_detector
     ${Tdart}_detector
 )

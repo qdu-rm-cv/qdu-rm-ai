@@ -28,16 +28,16 @@ std::vector<cv::Point2f> kDST_POV_BIG{
 
 /* clang-format off */
 const cv::Matx43d kCOORD_SMALL_ARMOR(
+    -kARMOR_LENGTH_SMALL / 2., kARMOR_HEIGHT / 2, -kARMOR_DEPTH / 2.,
     -kARMOR_LENGTH_SMALL / 2., -kARMOR_HEIGHT / 2, kARMOR_DEPTH / 2.,
     kARMOR_LENGTH_SMALL / 2., -kARMOR_HEIGHT / 2, kARMOR_DEPTH / 2.,
-    kARMOR_LENGTH_SMALL / 2., kARMOR_HEIGHT / 2, -kARMOR_DEPTH / 2.,
-    -kARMOR_LENGTH_SMALL / 2., kARMOR_HEIGHT / 2, -kARMOR_DEPTH / 2.);
+    kARMOR_LENGTH_SMALL / 2., kARMOR_HEIGHT / 2, -kARMOR_DEPTH / 2.);
 
 const cv::Matx43d kCOORD_BIG_ARMOR(
+    -kARMOR_LENGTH_BIG / 2., kARMOR_HEIGHT / 2, -kARMOR_DEPTH / 2.,
     -kARMOR_LENGTH_BIG / 2., -kARMOR_HEIGHT / 2, kARMOR_DEPTH / 2.,
     kARMOR_LENGTH_BIG / 2., -kARMOR_HEIGHT / 2, kARMOR_DEPTH / 2.,
-    kARMOR_LENGTH_BIG / 2., kARMOR_HEIGHT / 2, -kARMOR_DEPTH / 2.,
-    -kARMOR_LENGTH_BIG / 2., kARMOR_HEIGHT / 2, -kARMOR_DEPTH / 2.);
+    kARMOR_LENGTH_BIG / 2., kARMOR_HEIGHT / 2, -kARMOR_DEPTH / 2.);
 
 const cv::Matx43d kCOORD_BUFF_ARMOR(
     -kARMOR_LENGTH_BIG / 2., -kARMOR_WIDTH / 2, 0.,
@@ -131,6 +131,29 @@ cv::Mat Armor::Face(const cv::Mat &frame) {
   face = face(cv::Rect(offset_w, offset_h, min_edge, min_edge));
   return face;
 }
-
+double Armor::GetArea() { return rect_.size.width * rect_.size.height; }
 component::Euler Armor::GetAimEuler() const { return aiming_euler_; }
 void Armor::SetAimEuler(const component::Euler &elur) { aiming_euler_ = elur; }
+
+bool Armor::IsBigArmor() {
+  double light_length1 =
+      cv::norm(this->image_vertices_[0] - this->image_vertices_[1]);
+  double light_length2 =
+      cv::norm(this->image_vertices_[4] - this->image_vertices_[3]);
+  // double aspect_ratio = cv::norm();
+  double aspect_ratio = this->ImageAspectRatio();
+  double height_scale = light_length1 > light_length2
+                            ? (light_length1 / light_length2)
+                            : (light_length2 / light_length1);
+  if (aspect_ratio > 3.3f) {
+    return true;
+  } else if (aspect_ratio > 2.6f) {
+    if (height_scale > 1.3f) {
+      return true;
+    } else {
+      return false;
+    }
+  } else {
+    return false;
+  }
+}

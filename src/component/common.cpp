@@ -13,7 +13,8 @@
 namespace component {
 
 std::string ToString(const Euler& e) {
-  return fmt::format("pitch : {}, roll : {}, yaw : {}", e.pitch, e.roll, e.yaw);
+  return fmt::format("pitch : {}, roll : {}， yaw : {}", e.pitch, e.roll,
+                     e.yaw);
 }
 
 Euler::Euler(double pitch, double roll, double yaw)

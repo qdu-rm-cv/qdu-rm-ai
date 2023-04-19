@@ -23,9 +23,9 @@ class Radar : private App {
     cam_.Open(0);
     base_cam_.Open(1);
     outpost_cam_.Open(2);
-    cam_.Setup(640, 480);
-    base_cam_.Setup(640, 480);
-    outpost_cam_.Setup(640, 480);
+    cam_.Setup(kIMAGE_WIDTH, kIMAGE_HEIGHT);
+    base_cam_.Setup(kIMAGE_WIDTH, kIMAGE_HEIGHT);
+    outpost_cam_.Setup(kIMAGE_WIDTH, kIMAGE_HEIGHT);
   }
 
   ~Radar() {

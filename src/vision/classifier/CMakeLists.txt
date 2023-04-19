@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.12)
 project(module_classifier)
 
 file(GLOB ${PROJECT_NAME}_SOURCES
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/armor_classifier.cpp"
 )
 
 add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_SOURCES})

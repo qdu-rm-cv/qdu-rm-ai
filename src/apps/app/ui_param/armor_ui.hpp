@@ -16,8 +16,6 @@ class ArmorUIParam : private UI {
     SPDLOG_WARN("***** Setting Up ArmorUIParam System. *****");
 
     /* 初始化设备 */
-    cam_.Open(0);
-    cam_.Setup(640, 480);
     detector_.SetEnemyTeam(game::Team::kBLUE);
     armor_param_.Read(param_path_);
   }

@@ -21,7 +21,7 @@ class AimAssitant {
   game::AimMethod method_ = game::AimMethod::kUNKNOWN;
   game::Arm arm_ = game::Arm::kUNKNOWN;
 
-  void Sort(const cv::Mat& frame);
+  void Sort();
 
  public:
   AimAssitant();

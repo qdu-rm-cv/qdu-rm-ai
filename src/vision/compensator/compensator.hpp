@@ -27,15 +27,16 @@ class Compensator {
   void LoadCameraMat(const std::string& path);
 
   void PnpEstimate(Armor& armor);
-  void Apply(tbb::concurrent_vector<Armor>& armors, const cv::Mat& frame,
-             const double ballet_speed, const component::Euler& euler,
-             game::AimMethod method);
+  void Apply(tbb::concurrent_vector<Armor>& armors, const double ballet_speed,
+             const component::Euler& euler, game::AimMethod method);
 
-  void Apply(Armor& armor, const cv::Mat& frame, const double ballet_speed,
+  void Apply(Armor& armor, const double ballet_speed,
              const component::Euler& euler, game::AimMethod method);
 
   void VisualizeResult(tbb::concurrent_vector<Armor>& armors,
                        const cv::Mat& output, int verbose = 1);
+  void UpdateImgPoints(std::vector<cv::Point2f>& img, double k,
+                       std::vector<cv::Point2f>& img_out);
 
 #ifdef RMU2021
   double SolveSurfaceLanchAngle(cv::Point2f target, double ballet_speed);
