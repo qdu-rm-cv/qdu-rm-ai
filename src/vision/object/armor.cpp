@@ -134,21 +134,20 @@ cv::Mat Armor::Face(const cv::Mat &frame) {
 double Armor::GetArea() { return rect_.size.width * rect_.size.height; }
 component::Euler Armor::GetAimEuler() const { return aiming_euler_; }
 void Armor::SetAimEuler(const component::Euler &elur) { aiming_euler_ = elur; }
-
 bool Armor::IsBigArmor() {
   double light_length1 =
       cv::norm(this->image_vertices_[0] - this->image_vertices_[1]);
   double light_length2 =
       cv::norm(this->image_vertices_[4] - this->image_vertices_[3]);
-  // double aspect_ratio = cv::norm();
-  double aspect_ratio = this->ImageAspectRatio();
-  double height_scale = light_length1 > light_length2
-                            ? (light_length1 / light_length2)
-                            : (light_length2 / light_length1);
-  if (aspect_ratio > 3.3f) {
+  double aspect_ratio =
+      this->GetRect().size.aspectRatio();  // double aspect_ratio = cv::norm();
+  double heightScale = light_length1 > light_length2
+                           ? (light_length1 / light_length2)
+                           : (light_length2 / light_length1);
+  if (aspect_ratio > 2.0) {
     return true;
-  } else if (aspect_ratio > 2.6f) {
-    if (height_scale > 1.3f) {
+  } else if (aspect_ratio > 1.5) {
+    if (heightScale > 1.3) {
       return true;
     } else {
       return false;

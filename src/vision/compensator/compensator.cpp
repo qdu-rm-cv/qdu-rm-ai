@@ -110,6 +110,12 @@ void Compensator::PnpEstimate(Armor& armor) {
   trans_vec.at<double>(0, 0) -= center_diff_x;
   trans_vec.at<double>(1, 0) -= center_diff_y;
 
+  cv::solvePnP(armor.PhysicVertices(), armor.ImageVertices() /* img_out */,
+               cam_mat_, distor_coff_, rot_vec, trans_vec, false,
+               cv::SOLVEPNP_ITERATIVE);
+  /* trans_vec.at<double>(0, 0) -= center_diff_x;
+  trans_vec.at<double>(1, 0) -= center_diff_y;
+ */
   trans_vec.at<double>(1, 0) -= gun_cam_distance_;
   armor.SetRotVec(rot_vec), armor.SetTransVec(trans_vec);
 }
@@ -188,6 +194,74 @@ void Compensator::Apply(Armor& armor, const double ballet_speed,
   }
   SolveAngles(armor, euler);
   CompensateGravity(armor, ballet_speed, method);
+  // TODO： test
+  // component::Euler t = armor.GetAimEuler();
+  // double new_pitch =
+  //     GetRecompensation(t.pitch, distance_, euler.pitch, ballet_speed);
+  // t.pitch = new_pitch;
+  // t.yaw += 0;
+  // armor.SetAimEuler(t);
+}
+double Compensator::GetRecompensation(double camera_pitch,
+                                      double camera_distance,
+                                      double gimbal_pitch,
+                                      double bullet_speed) {
+  double pg_angle = atan(GUN_BIAS_Y / GUN_BIAS_X);
+  double pg_distance = sqrt(GUN_BIAS_X * GUN_BIAS_X + GUN_BIAS_Y * GUN_BIAS_Y);
+  // transform these to standard unit first
+  camera_pitch = camera_pitch / 180 * PI;
+  gimbal_pitch = gimbal_pitch / 180 * PI;
+  camera_distance /= 1000;
+
+  // calculate pitch angle of pivot axis
+  double pivot_horizontal_distance = camera_distance * cos(camera_pitch) -
+                                     CAMERA_BIAS_Y * sin(gimbal_pitch) +
+                                     CAMERA_BIAS_X * cos(gimbal_pitch);
+  double pivot_vertical_distance = camera_distance * sin(camera_pitch) +
+                                   CAMERA_BIAS_Y * cos(gimbal_pitch) +
+                                   CAMERA_BIAS_X * sin(gimbal_pitch);
+  double pivot_pitch_angle =
+      atan(pivot_vertical_distance / pivot_horizontal_distance);
+
+  double pivot_distance = pivot_horizontal_distance / cos(pivot_pitch_angle);
+
+  double gun_horizontal_distance =
+      pivot_horizontal_distance -
+      pg_distance * cos(pivot_pitch_angle + pg_angle);
+  double gun_vertical_distance =
+      pivot_vertical_distance - pg_distance * sin(pivot_pitch_angle + pg_angle);
+  double target_angle = atan(gun_vertical_distance / gun_horizontal_distance);
+  // double gun_distance = pivot_distance - pg_distance * cos(pg_angle);
+  // initialization and declaration of iteration
+  double temp_angle = target_angle;
+  double target_height = gun_vertical_distance;
+  // cout<<temp_angle*180/PI<<endl;
+  double temp_height;
+  double vy0;
+  double vx0;
+  double t;
+  double real_height;
+  double delta_height;
+
+  // fixed iteration times
+  for (int i = 0; i < FIX; i++) {
+    // updata parameters
+    gun_horizontal_distance =
+        pivot_horizontal_distance - pg_distance * cos(temp_angle + pg_angle);
+    temp_height = gun_horizontal_distance * tan(temp_angle);
+    vy0 = sin(temp_angle) * bullet_speed;
+    vx0 = cos(temp_angle) * bullet_speed;
+
+    t = (exp(KK * gun_horizontal_distance) - 1) / (KK * vx0);
+    real_height = vy0 * t - 0.5 * GG * t * t;
+    delta_height = target_height - real_height;
+
+    // angle should be updated as soon as we worked out delta
+    temp_angle = atan((temp_height + delta_height) / gun_horizontal_distance);
+    //            printf("height:%f  ", real_height);
+    //            printf("delta:%f  ", delta_height);
+  }
+  return temp_angle * 180 / PI;
 }
 
 void Compensator::VisualizeResult(tbb::concurrent_vector<Armor>& armors,
