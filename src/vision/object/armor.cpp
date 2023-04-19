@@ -92,7 +92,7 @@ void Armor::SetModel(game::Model model) {
 
   if (model_ == game::Model::kBUFF) {
     physic_vertices_ = cv::Mat(kCOORD_BUFF_ARMOR);
-  } else if (game::HasBigArmor(model_)) {
+  } else if (this->IsBigArmor()) {
     physic_vertices_ = cv::Mat(kCOORD_BIG_ARMOR);
   } else {
     physic_vertices_ = cv::Mat(kCOORD_SMALL_ARMOR);
@@ -131,7 +131,7 @@ cv::Mat Armor::Face(const cv::Mat &frame) {
   face = face(cv::Rect(offset_w, offset_h, min_edge, min_edge));
   return face;
 }
-double Armor::GetArea() { return rect_.size.width * rect_.size.height; }
+
 component::Euler Armor::GetAimEuler() const { return aiming_euler_; }
 void Armor::SetAimEuler(const component::Euler &elur) { aiming_euler_ = elur; }
 bool Armor::IsBigArmor() {

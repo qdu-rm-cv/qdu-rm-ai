@@ -110,12 +110,6 @@ void Compensator::PnpEstimate(Armor& armor) {
   trans_vec.at<double>(0, 0) -= center_diff_x;
   trans_vec.at<double>(1, 0) -= center_diff_y;
 
-  cv::solvePnP(armor.PhysicVertices(), armor.ImageVertices() /* img_out */,
-               cam_mat_, distor_coff_, rot_vec, trans_vec, false,
-               cv::SOLVEPNP_ITERATIVE);
-  /* trans_vec.at<double>(0, 0) -= center_diff_x;
-  trans_vec.at<double>(1, 0) -= center_diff_y;
- */
   trans_vec.at<double>(1, 0) -= gun_cam_distance_;
   armor.SetRotVec(rot_vec), armor.SetTransVec(trans_vec);
 }
