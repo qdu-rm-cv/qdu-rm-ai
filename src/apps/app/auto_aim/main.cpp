@@ -146,6 +146,10 @@ class AutoAim : private App {
 
         detector_.VisualizeResult(frame, 10);
       }
+      cv::line(frame, cv::Point2f(320, 0), cv::Point2f(320, 480),
+               cv::Scalar(0, 0, 255), 2);
+      cv::line(frame, cv::Point2f(0, 240), cv::Point2f(640, 240),
+               cv::Scalar(0, 0, 255), 2);
       cv::imshow("show", frame);
       if (' ' == cv::waitKey(10)) {
         cv::waitKey(0);
