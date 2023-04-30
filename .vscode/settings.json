@@ -179,7 +179,8 @@
         "*.ipp": "cpp",
         "hash_map": "cpp",
         "hash_set": "cpp",
-        "span": "cpp"
+        "span": "cpp",
+        "core": "cpp"
     },
     "githubPullRequests.ignoredPullRequestBranches": [
         "2023"

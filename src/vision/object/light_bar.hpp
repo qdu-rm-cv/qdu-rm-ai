@@ -18,4 +18,5 @@ class LightBar : public ImageObject, public PhysicObject {
 
   double Area() const;
   double Length() const;
+  cv::Rect GetLightBarROI();
 };

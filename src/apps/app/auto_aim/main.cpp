@@ -26,7 +26,7 @@ class AutoAim : private App {
     SPDLOG_WARN("***** Setting Up Auto Aiming System. *****");
 
     /* 初始化设备 */
-    robot_.Init("/dev/ttyACM0");
+    robot_.Init("/dev/ttyUSB0");
     cam_.Open(0);
     cam_.Setup(kIMAGE_WIDTH, kIMAGE_HEIGHT);
     detector_async_.LoadParams(kPATH_RUNTIME + "RMUL2022_Armor.json");

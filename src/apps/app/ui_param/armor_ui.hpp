@@ -68,11 +68,13 @@ class ArmorUIParam : private UI {
 
     while (true) {
       cam_.GetFrame(frame);
+
       if (frame.empty()) continue;
 
       SPDLOG_INFO("frame size {},{}", frame.size().width, frame.size().height);
 
       detector_.params_ = armor_param_.TransformToDouble();
+
       detector_.Detect(frame);
       detector_.VisualizeResult(frame, 3);
 

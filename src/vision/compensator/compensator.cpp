@@ -96,13 +96,15 @@ void Compensator::PnpEstimate(Armor& armor) {
   }
 
   UpdateImgPoints(ori_cords, k2, trsd_cords);
-  double k3 = 125. / cv::norm(trsd_cords[0] - trsd_cords[1]);
+  real_img_ratio_ = 125. / cv::norm(trsd_cords[0] - trsd_cords[1]);
 
   auto new_img_center =
       (trsd_cords[0] + trsd_cords[1] + trsd_cords[2] + trsd_cords[3]) / 4;
   // 重构之后装甲板的中心会有偏移
-  double center_diff_x = abs(armor.ImageCenter().x - new_img_center.x) * k3;
-  double center_diff_y = abs(armor.ImageCenter().y - new_img_center.y) * k3;
+  double center_diff_x = abs(armor.ImageCenter().x - new_img_center.x) *
+                         real_img_ratio_;  //重构之后装甲板的中心会有偏移
+  double center_diff_y =
+      abs(armor.ImageCenter().y - new_img_center.y) * real_img_ratio_;
 
   cv::solvePnP(armor.PhysicVertices(),
                /* armor.ImageVertices() */ trsd_cords, cam_mat_, distor_coff_,
@@ -199,20 +201,32 @@ void Compensator::VisualizeResult(tbb::concurrent_vector<Armor>& armors,
 
 void Compensator::CompensateGravity(Armor& armor, const double ballet_speed,
                                     game::AimMethod method) {
-  // 高斯牛顿迭代法
+  //高斯牛顿迭代法，水平方向阻力模型
   if (method == game::AimMethod::kARMOR || method == game::AimMethod::kBUFF) {
     component::Euler aiming_eulr = armor.GetAimEuler();
+    SPDLOG_INFO("初始值 {}", aiming_eulr.pitch);
+    SPDLOG_INFO("Distance: {}", distance_);
     double x = distance_ * cos(aiming_eulr.pitch);
     double angle = aiming_eulr.pitch;
-    double k = 0;
+    if (angle > M_PI) {
+      angle -= 2 * M_PI;
+    }
+    double k = 0 * real_img_ratio_;  //补偿高度
+    double k0 = 0.1;                 //空气阻力系数
     double target_y = distance_ * sin(angle) + k;
     double temple_y = target_y;
     for (int i = 0; i < 10; i++) {
-      double a = -kG * cos(aiming_eulr.pitch) * cos(aiming_eulr.pitch) * x * x /
+      double real_y;
+      /*理想弹道模型
+      double a = -kG * cos(angle) * cos(angle) * x * x /
                  (ballet_speed * ballet_speed * cos(angle) * cos(angle));
-      double b = tan(angle) * cos(aiming_eulr.pitch) * x;
-      double real_y = a + b;
-      temple_y = temple_y + target_y - real_y;
+      double b = tan(angle) * cos(angle) * x;
+      real_y = a + b;
+      */
+      double a = (exp(k0 * x) - 1) / (k0 * ballet_speed * sin(angle));
+      real_y = ballet_speed * cos(angle) * a - (1 / 2 * kG * a * a);
+      double diff = target_y - real_y;
+      temple_y = temple_y + diff;
       if (distance_ > 5) {
         // PinHoleSolver
         double ay = cam_mat_.at<double>(1, 1);
@@ -229,15 +243,15 @@ void Compensator::CompensateGravity(Armor& armor, const double ballet_speed,
         // P4PSolver
         angle = -atan(temple_y / sqrt(x_pos * x_pos + z_pos * z_pos));
       }
+      SPDLOG_INFO("第{}次迭代", i);
+      SPDLOG_INFO("pitch: {}", angle);
     }
     if (1) {
-      auto vertices = armor.ImageVertices();
-      double real_img_ratio =
-          125. / std::max(cv::norm(vertices[0] - vertices[1]),
-                          cv::norm(vertices[2] - vertices[3]));
-      double tan = abs(armor.ImageCenter().x - kIMAGE_WIDTH / 2) *
-                   real_img_ratio / distance_;
-
+      double a = cv::norm(armor.ImageVertices()[0] - armor.ImageVertices()[1]);
+      double b = cv::norm(armor.ImageVertices()[2] - armor.ImageVertices()[3]);
+      double c = std::max(a, b);
+      double tan =
+          abs(armor.ImageCenter().x - 640 / 2) * real_img_ratio_ / distance_;
       double add_yaw = atan(tan) / 180 * CV_PI;
       aiming_eulr.pitch = angle;
       aiming_eulr.yaw += add_yaw;
@@ -246,7 +260,6 @@ void Compensator::CompensateGravity(Armor& armor, const double ballet_speed,
     SPDLOG_DEBUG("Armor Euler is setted");
   }
 }
-
 /**
  * @brief 更新矫正图像座标点
  *  图片坐标默认顺序: 左下，左上，右上，右下

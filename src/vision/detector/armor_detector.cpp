@@ -67,7 +67,9 @@ void ArmorDetector::FindLightBars(const cv::Mat &frame) {
 
   frame_size_ = frame.size();
   const double frame_area = frame_size_.area();
-
+  cv::Mat result;
+  frame.copyTo(result);
+  /*
   std::vector<cv::Mat> channels(3);
   cv::Mat result;
   cv::split(frame, channels);
@@ -89,8 +91,8 @@ void ArmorDetector::FindLightBars(const cv::Mat &frame) {
   } else if (enemy_team_ == game::Team::kRED) {
     result = channels[2] - channels[0];
   }
-#endif
-
+#endif*/
+  cv::cvtColor(result, result, cv::COLOR_BGR2GRAY);
   cv::threshold(result, result, params_.binary_th, 255., cv::THRESH_BINARY);
   /*
     if (params_.se_erosion >= 0.) {
@@ -142,10 +144,31 @@ void ArmorDetector::FindLightBars(const cv::Mat &frame) {
     SPDLOG_INFO("aspect_ratio is {}", aspect_ratio);
     if (aspect_ratio < params_.aspect_ratio_low_th) return;
     if (aspect_ratio > params_.aspect_ratio_high_th) return;
-
+    /*进行灯条的颜色验证*/
+    auto rect = potential_bar.GetLightBarROI();
+    if (  // Avoid assertion failed
+        0 <= rect.x && 0 <= rect.width && rect.x + rect.width <= frame.cols &&
+        0 <= rect.y && 0 <= rect.height && rect.y + rect.height <= frame.rows) {
+      auto ROI = frame(rect);
+      int blue_sum = 0;
+      int red_sum = 0;
+      for (int i = 0; i < ROI.cols; i++) {
+        for (int j = 0; j < ROI.rows; j++) {
+          // if (cv::pointPolygonTest(contour, cv::Point2f(i, j), false) >= 0) {
+          // if point is inside contour
+          blue_sum += ROI.at<cv::Vec3b>(i, j)[0];
+          red_sum += ROI.at<cv::Vec3b>(i, j)[2];
+          //}
+        }
+      }
+      bool color = blue_sum > red_sum ? true : false;
+      if (enemy_team_ == game::Team::kBLUE && color) return;
+      if (enemy_team_ == game::Team::kRED && !color) return;
+    } else {
+      return;
+    }
     lightbars_.emplace_back(potential_bar);
   };
-
   /* 并行验证灯条 */
   std::for_each(std::execution::par_unseq, contours_.begin(), contours_.end(),
                 check_lightbar);
