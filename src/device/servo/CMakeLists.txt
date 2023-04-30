@@ -4,19 +4,19 @@ project(${Dservo})
 # ---------------------------------------------------------------------------------------
 # servo
 # ---------------------------------------------------------------------------------------
-file(GLOB ${Dservo}_SRC
+file(GLOB ${PROJECT_NAME}_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/servo.cpp"
 )
 
-add_library(${Dservo} STATIC ${${Dservo}_SRC})
+add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_SRC})
 
-target_link_libraries(${Dservo}
+target_link_libraries(${PROJECT_NAME}
     spdlog::spdlog
     module_component
 )
 
-target_include_directories(${Dservo} PUBLIC
+target_include_directories(${PROJECT_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-add_dependencies(${Dservo} module_component)
+add_dependencies(${PROJECT_NAME} module_component)
