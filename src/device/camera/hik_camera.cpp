@@ -95,6 +95,14 @@ void HikCamera::GrabLoop() {
   }
 }
 
+void HikCamera::PublishLoop() {
+  if (!frame_stack_.empty()) {
+    std::lock_guard<std::mutex> lock(frame_stack_mutex_);
+    cam_topic_.Publish(frame_stack_.front());
+    frame_signal_.Signal();
+  }
+}
+
 bool HikCamera::OpenPrepare(unsigned int index) {
   SPDLOG_DEBUG("Open index: {}.", index);
 
@@ -169,6 +177,10 @@ void HikCamera::Prepare() {
   } else {
     SPDLOG_ERROR("Find No Devices!");
   }
+
+  auto cam_callback = [](cv::Mat &frame) {
+    // TODO(ZX.Song) : to be continue...
+  };
 }
 
 /**
@@ -212,6 +224,7 @@ HikCamera::~HikCamera() {
 int HikCamera::Close() {
   grabing = false;
   grab_thread_.join();
+  topic_thread_.join();
 
   HikCheck(MV_CC_StopGrabbing(camera_handle_), "StopGrabbing");
   HikCheck(MV_CC_CloseDevice(camera_handle_), "CloseDevice");

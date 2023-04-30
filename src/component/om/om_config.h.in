@@ -1,0 +1,80 @@
+#ifndef __GENERATED_OM_CONFIG_H__
+#define __GENERATED_OM_CONFIG_H__
+
+#ifndef LEVEL_DEBUG
+#define LEVEL_DEBUG (1)
+#endif
+
+#ifndef LEVEL_INFO
+#define LEVEL_INFO (2)
+#endif
+
+#ifndef OM_DEBUG
+/* Debug */
+#define OM_DEBUG (@BUILD_TYPE@ == LEVEL_DEBUG)
+#endif  //  OM_DEBUG
+
+/* 使用用户自定义的内存分配 */
+#ifndef OM_USE_USER_MALLOC
+
+#define OM_USE_USER_MALLOC (0)
+
+/* 用户内存分配函数 */
+#if OM_USE_USER_MALLOC
+#define om_malloc user_malloc
+#define om_free user_free
+#endif
+
+#endif  //  OM_USE_USER_MALLOC
+
+/* 非阻塞延时函数 */
+#include <errno.h>
+#include <time.h>
+#define om_delay_ms(arg)                 \
+  struct timespec req = {0};             \
+  req.tv_sec = arg / 1000;               \
+  req.tv_nsec = (arg % 1000) * 1000000L; \
+  while (nanosleep(&req, &req) == -1 && errno == EINTR) continue;
+
+/* OS层互斥锁api */
+#include <pthread.h>
+#define om_mutex_t pthread_mutex_t
+#define om_mutex_init(arg) pthread_mutex_init(arg, NULL)
+#define om_mutex_lock(arg) pthread_mutex_lock(arg)
+#define om_mutex_trylock(arg) pthread_mutex_trylock(arg) == 0 ? OM_OK : OM_ERROR
+#define om_mutex_unlock(arg) pthread_mutex_unlock(arg)
+#define om_mutex_lock_isr(arg) pthread_mutex_lock(arg)
+#define om_mutex_unlock_isr(arg) pthread_mutex_unlock(arg)
+#define om_mutex_delete(arg) pthread_mutex_destroy(arg)
+
+
+#ifndef OM_TIME
+/* 将运行时间作为消息发出的时间 */
+#define OM_TIME (0)
+
+#if OM_TIME
+#define om_time_t time_t
+#define om_time_get(_time) time(_time)
+#endif
+
+#endif  //  OM_TIME
+
+#ifndef OM_LOG_OUTPUT
+/* 开启"om_log"话题作为OneMessage的日志输出 */
+#define OM_LOG_OUTPUT (0)
+
+#if OM_LOG_OUTPUT
+/* 按照日志等级以不同颜色输出 */
+#define OM_LOG_COLORFUL (1)
+/* 日志最大长度 */
+#define OM_LOG_MAX_LEN (60)
+#endif
+#endif  //  OM_LOG_OUTPUT
+
+#define OM_LOG_LEVEL (@BUILD_TYPE@)
+
+
+/* 话题名称最大长度 */
+#define OM_TOPIC_MAX_NAME_LEN (30)
+
+#endif  // __GENERATED_OM_CONFIG_H__

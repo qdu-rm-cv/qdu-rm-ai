@@ -15,6 +15,12 @@ void RaspiCamera::GrabLoop() {
   }
 }
 
+void RaspiCamera::PublishLoop() {
+  if (!frame_stack_.empty()) {
+    cam_topic_.Publish(frame_stack_.front());
+  }
+}
+
 bool RaspiCamera::OpenPrepare(unsigned int index) {
   bool err = false;
   cam_.open(index);

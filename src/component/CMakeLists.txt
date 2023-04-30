@@ -3,7 +3,7 @@ project(module_component)
 
 configure_file(build_type.hpp.in ${CMAKE_BINARY_DIR}/generated/build_type.hpp)
 
-add_subdirectory(${ROOT_PATH}/third_party/OneMessageCPP om.out)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/om)
 
 file(GLOB ${PROJECT_NAME}_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 

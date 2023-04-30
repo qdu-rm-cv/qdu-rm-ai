@@ -142,6 +142,7 @@ message(STATUS "WITH_MCU: ${WITH_MCU}")
 message(STATUS "WITH_UI: ${WITH_UI}")
 
 set(ROOT_PATH ${CMAKE_CURRENT_SOURCE_DIR})
+set(SUBMODULE_PATH "${ROOT_PATH}/third_party")
 set(CMAKE_INSTALL_LIBDIR ${ROOT_PATH}/build/install/lib/)
 set(CMAKE_INSTALL_BINDIR ${ROOT_PATH}/build/install/bin/)
 set(CMAKE_INSTALL_INCLUDEDIR ${ROOT_PATH}/build/install/include/)

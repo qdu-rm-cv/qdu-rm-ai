@@ -15,6 +15,7 @@ class RaspiCamera : public Camera {
 
   void GrabPrepare();
   void GrabLoop();
+  void PublishLoop();
   bool OpenPrepare(unsigned int index);
 
  public:
