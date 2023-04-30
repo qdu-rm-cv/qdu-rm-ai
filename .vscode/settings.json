@@ -176,7 +176,9 @@
         "*.in": "txt",
         "compare": "cpp",
         "valarray": "cpp",
-        "pthread.h": "c"
+        "pthread.h": "c",
+        "*.ipp": "cpp",
+        "om_config.h": "c"
     },
     "githubPullRequests.ignoredPullRequestBranches": [
         "2023"
