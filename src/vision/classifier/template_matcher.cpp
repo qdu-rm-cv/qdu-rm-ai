@@ -33,7 +33,7 @@
     }
   }
   std::vector<cv::Mat> templates;  // 模板容器
-  for (int i = 1; i < 4; i++) {
+  for (int i = 0; i < 4; i++) {
     std::string name = cv::format("%s/template/%d.png", kPATH_IMAGE, i);
     cv::Mat temp = cv::imread(name);
     if (temp.empty()) {
@@ -65,9 +65,9 @@
       }
       com = 0;
     }
-    seq.push_back(min_seq + 1);
+    seq.push_back(min_seq);
   }
-  if (!seq.empty()) return seq[0] + 1;
+  if (!seq.empty()) return seq[0];
   return 0;
 }
 

@@ -117,12 +117,12 @@ cv::Mat Armor::Face(const cv::Mat &frame) {
 
   cv::warpPerspective(frame, face, trans_, face_size_);
 
-  cv::cvtColor(face, face, cv::COLOR_RGB2GRAY);
-  cv::medianBlur(face, face, 1);
+  cv::cvtColor(face, face, cv::COLOR_BGR2GRAY);
+  // cv::medianBlur(face, face, 1);
 #if 0
   cv::equalizeHist(face, face); /* Tried. No help. */
 #endif
-  cv::threshold(face, face, 0., 255., cv::THRESH_BINARY | cv::THRESH_TRIANGLE);
+  cv::threshold(face, face, 0., 100., cv::THRESH_BINARY | cv::THRESH_TRIANGLE);
 
   /* 截取中间正方形 */
   float min_edge = std::min(face.cols, face.rows);
@@ -135,7 +135,7 @@ double Armor::GetArea() { return rect_.size.width * rect_.size.height; }
 component::Euler Armor::GetAimEuler() const { return aiming_euler_; }
 void Armor::SetAimEuler(const component::Euler &elur) { aiming_euler_ = elur; }
 
-bool Armor::IsBigArmor() {
+ArmorType Armor::GetArmorType() {
   double light_length1 =
       cv::norm(this->image_vertices_[0] - this->image_vertices_[1]);
   double light_length2 =
@@ -146,14 +146,14 @@ bool Armor::IsBigArmor() {
                             ? (light_length1 / light_length2)
                             : (light_length2 / light_length1);
   if (aspect_ratio > 3.3f) {
-    return true;
+    return LARGE;
   } else if (aspect_ratio > 2.6f) {
     if (height_scale > 1.3f) {
-      return true;
+      return LARGE;
     } else {
-      return false;
+      return LARGE;
     }
   } else {
-    return false;
+    return SMALL;
   }
 }

@@ -7,6 +7,7 @@
 #include "behavior.hpp"
 #include "compensator.hpp"
 #include "hik_camera.hpp"
+#include "number_classifier.hpp"
 #include "robot.hpp"
 
 class AutoAim : private App {

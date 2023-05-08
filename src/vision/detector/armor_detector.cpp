@@ -183,11 +183,12 @@ void ArmorDetector::FindLightBars(const cv::Mat &frame) {
   duration_bars_.Calc("Find Bars");
 }
 
-void ArmorDetector::MatchLightBars() {
+void ArmorDetector::MatchLightBars(const cv::Mat frame) {
   duration_armors_.Start();
   for (auto iti = lightbars_.begin(); iti != lightbars_.end(); ++iti) {
     for (auto itj = iti + 1; itj != lightbars_.end(); ++itj) {
       /* 两灯条角度差异 */
+
       const double angle_diff =
           algo::RelativeDifference(iti->ImageAngle(), itj->ImageAngle());
 
@@ -224,9 +225,13 @@ void ArmorDetector::MatchLightBars() {
       const double l = (iti->Length() + itj->Length()) / 2.;
       if (center_dist < l * params_.center_dist_low_th) continue;
       if (center_dist > l * params_.center_dist_high_th) continue;
-
       auto armor = Armor(*iti, *itj);
-      // armor.SetModel(game::Model::kINFANTRY);
+      cv::imshow("Armor Face", armor.Face(frame));
+      // cv::Mat face = armor.Face(frame);
+      // int id = matcher.GetArmorId(face);
+      // cv::waitKey(1);
+      // if (id == 0) continue;
+      // // armor.SetModel(game::Model::kINFANTRY);
       targets_.emplace_back(armor);
       break;
     }
@@ -254,7 +259,7 @@ const tbb::concurrent_vector<Armor> &ArmorDetector::Detect(
     const cv::Mat &frame) {
   SPDLOG_DEBUG("Detecting");
   FindLightBars(frame);
-  MatchLightBars();
+  MatchLightBars(frame);
   SPDLOG_DEBUG("Detected.");
   return targets_;
 }

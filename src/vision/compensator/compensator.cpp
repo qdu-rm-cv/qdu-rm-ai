@@ -85,7 +85,7 @@ void Compensator::PnpEstimate(Armor& armor) {
   std::vector<cv::Point2f> ori_cords = {br, br + t1, bl + t2, bl};
 
   double k2;  // k2值是目标装甲板的长宽比
-  if (armor.IsBigArmor()) {
+  if (armor.GetArmorType() == LARGE) {
     k2 = kBIG_ARMOR;
   } else if (armor.GetModel() == game::Model::kBUFF) {
     k2 = 1;  // TODO(GY.Wang): 等Buff和buff_detector完成后修改

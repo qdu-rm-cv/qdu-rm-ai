@@ -128,7 +128,7 @@ bool HikCamera::OpenPrepare(unsigned int index) {
            "ExposureAuto closes");
   HikCheck(MV_CC_SetEnumValue(camera_handle_, "ExposureMode", 0),
            "ExposureMode");
-  HikCheck(MV_CC_SetFloatValue(camera_handle_, "ExposureTime", 1000.0),
+  HikCheck(MV_CC_SetFloatValue(camera_handle_, "ExposureTime", 25000.0),
            "ExposureMode");
 
   unsigned int version = MV_CC_GetSDKVersion();
