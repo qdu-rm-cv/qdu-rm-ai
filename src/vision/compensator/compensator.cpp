@@ -144,7 +144,7 @@ void Compensator::SolveAngles(Armor& armor, const component::Euler& euler) {
   }
   SPDLOG_INFO("compensator pitch : {}", aiming_eulr.pitch);
   aiming_eulr.pitch = aiming_eulr.pitch + euler.pitch;
-  aiming_eulr.yaw = aiming_eulr.yaw + euler.yaw;
+  aiming_eulr.yaw = -aiming_eulr.yaw + euler.yaw;
 
   SPDLOG_INFO("final pitch : {}", aiming_eulr.pitch);
   armor.SetAimEuler(aiming_eulr);
@@ -161,14 +161,8 @@ void Compensator::Apply(tbb::concurrent_vector<Armor>& armors,
                      cv::norm(armor2.ImageCenter() - frame_center);
             });
 #endif
-  std::sort(armors.begin(), armors.end(), [](Armor& a, Armor& b) {
-    if (a.GetArea() > b.GetArea()) {
-      return false;
-    } else {
-      return abs(a.ImageCenter().x - kIMAGE_WIDTH / 2) <=
-             abs(b.ImageCenter().x - kIMAGE_WIDTH / 2);
-    }
-  });
+  std::sort(armors.begin(), armors.end(),
+            [](Armor& a, Armor& b) { return a.GetArea() > b.GetArea(); });
   auto& armor = armors.front();
   if (armor.GetModel() == game::Model::kUNKNOWN) {
     armor.SetModel(game::Model::kINFANTRY);

@@ -114,7 +114,7 @@ class AutoAim : private App {
     cam_.Setup(kIMAGE_WIDTH, kIMAGE_HEIGHT);
     detector_.LoadParams(kPATH_RUNTIME + "RMUL2022_Armor.json");
     compensator_.LoadCameraMat(kPATH_RUNTIME + "MV-CA016-10UC-6mm_1.json");
-
+    // TODO(me) : do至while得注释，不然相机报错
     do {
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
     } while (robot_.GetEnemyTeam() != game::Team::kUNKNOWN);

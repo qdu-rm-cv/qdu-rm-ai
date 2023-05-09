@@ -56,6 +56,8 @@ class ArmorUIParam : private UI {
                        &armor_param_.parami_.length_diff_th, 1000);
     cv::createTrackbar("height_diff_th", window_handle_,
                        &armor_param_.parami_.height_diff_th, 200);
+    cv::createTrackbar("center_y_dist", window_handle_,
+                       &armor_param_.parami_.center_y_dist, 1000);
     cv::createTrackbar("area_diff_th", window_handle_,
                        &armor_param_.parami_.area_diff_th, 5000);
     cv::createTrackbar("center_dist_low_th", window_handle_,

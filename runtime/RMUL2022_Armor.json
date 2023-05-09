@@ -11,6 +11,7 @@
     "angle_diff_th": 2.4231000000000002e+01,
     "length_diff_th": 5.8000000000000003e-02,
     "height_diff_th": 4.5000000000000004e-04,
+    "center_y_dist": 2.4600000000000000e-01,
     "area_diff_th": 3.3999999999999999e+00,
     "center_dist_low_th": 2.9000000000000001e-02,
     "center_dist_high_th": 5.4600000000000000e+00
