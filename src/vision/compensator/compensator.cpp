@@ -243,8 +243,8 @@ void Compensator::CompensateGravity(Armor& armor, const double ballet_speed,
         // P4PSolver
         angle = -atan(temple_y / sqrt(x_pos * x_pos + z_pos * z_pos));
       }
-      SPDLOG_INFO("第{}次迭代", i);
-      SPDLOG_INFO("pitch: {}", angle);
+      // SPDLOG_INFO("第{}次迭代", i);
+      // SPDLOG_INFO("pitch: {}", angle);
     }
     if (1) {
       double a = cv::norm(armor.ImageVertices()[0] - armor.ImageVertices()[1]);

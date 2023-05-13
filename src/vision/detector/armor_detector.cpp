@@ -226,7 +226,7 @@ void ArmorDetector::MatchLightBars(const cv::Mat frame) {
       if (center_dist < l * params_.center_dist_low_th) continue;
       if (center_dist > l * params_.center_dist_high_th) continue;
       auto armor = Armor(*iti, *itj);
-      cv::imshow("Armor Face", armor.Face(frame));
+      // cv::imshow("Armor Face", armor.Face(frame));
       // cv::Mat face = armor.Face(frame);
       // int id = matcher.GetArmorId(face);
       // cv::waitKey(1);

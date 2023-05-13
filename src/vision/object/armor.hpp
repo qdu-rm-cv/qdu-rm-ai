@@ -21,7 +21,7 @@ class Armor : public ImageObject, public PhysicObject {
   double confidence_;
   std::string number_;
   std::string classfication_result_;
-
+  cv::Mat number_img_;
   Armor();
   Armor(const LightBar &left_bar, const LightBar &right_bar);
   explicit Armor(const cv::RotatedRect &rect);

@@ -22,7 +22,6 @@
 #include "armor.hpp"
 #include "number_classifier.hpp"
 
-namespace rm_auto_aim {
 NumberClassifier::NumberClassifier(
     const std::string& model_path, const std::string& label_path,
     const double thre, const std::vector<std::string>& ignore_classes)
@@ -38,7 +37,7 @@ NumberClassifier::NumberClassifier(
 void NumberClassifier::classify(std::vector<Armor>& armors,
                                 const cv::Mat frame) {
   for (auto& armor : armors) {
-    cv::Mat image = armor.Face(frame);
+    cv::Mat image = armor.number_img_;  // armor.Face(frame);
 
     // Normalize
     image = image / 255.0;
@@ -102,5 +101,3 @@ void NumberClassifier::classify(std::vector<Armor>& armors,
                      }),
       armors.end());
 }
-
-}  // namespace rm_auto_aim
