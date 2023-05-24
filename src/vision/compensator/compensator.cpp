@@ -146,7 +146,7 @@ void Compensator::SolveAngles(Armor& armor, const component::Euler& euler) {
   }
   SPDLOG_INFO("compensator pitch : {}", aiming_eulr.pitch);
   aiming_eulr.pitch = aiming_eulr.pitch + euler.pitch;
-  aiming_eulr.yaw = aiming_eulr.yaw + euler.yaw;
+  aiming_eulr.yaw = -aiming_eulr.yaw + euler.yaw;
 
   SPDLOG_INFO("final pitch : {}", aiming_eulr.pitch);
   armor.SetAimEuler(aiming_eulr);
@@ -206,10 +206,11 @@ void Compensator::CompensateGravity(Armor& armor, const double ballet_speed,
     component::Euler aiming_eulr = armor.GetAimEuler();
     SPDLOG_INFO("初始值 {}", aiming_eulr.pitch);
     SPDLOG_INFO("Distance: {}", distance_);
-    double x = distance_ * cos(aiming_eulr.pitch);
+    double x = distance_ * abs(cos(aiming_eulr.pitch));
+    // angle 应为与水平面之间的夹角
     double angle = aiming_eulr.pitch;
     if (angle > M_PI) {
-      angle -= 2 * M_PI;
+      angle -= 2 * M_PI;  // limit protect
     }
     double k = 0 * real_img_ratio_;  //补偿高度
     double k0 = 0.1;                 //空气阻力系数
@@ -217,14 +218,19 @@ void Compensator::CompensateGravity(Armor& armor, const double ballet_speed,
     double temple_y = target_y;
     for (int i = 0; i < 10; i++) {
       double real_y;
-      /*理想弹道模型
-      double a = -kG * cos(angle) * cos(angle) * x * x /
-                 (ballet_speed * ballet_speed * cos(angle) * cos(angle));
-      double b = tan(angle) * cos(angle) * x;
-      real_y = a + b;
-      */
-      double a = (exp(k0 * x) - 1) / (k0 * ballet_speed * sin(angle));
-      real_y = ballet_speed * cos(angle) * a - (1 / 2 * kG * a * a);
+      /*理想弹道模型*/
+      // double a = -1 / 2 * kG * x * x /
+      //           (ballet_speed * ballet_speed * cos(angle) * cos(angle));
+      // double b = tan(angle) * x;
+      // real_y = a + b;
+
+      // double a = (exp(k0 * x) - 1) / (k0 * ballet_speed * sin(angle));
+      // real_y = ballet_speed * cos(angle) * a - (1 / 2 * kG * a * a);
+
+      real_y =
+          ballet_speed * sin(angle) * (-1 / 2) * kG *
+          ((exp(k0 * distance_) - 1)) /
+          (k0 * ballet_speed * sin(angle) * k0 * ballet_speed * sin(angle));
       double diff = target_y - real_y;
       temple_y = temple_y + diff;
       if (distance_ > 5) {
@@ -232,7 +238,8 @@ void Compensator::CompensateGravity(Armor& armor, const double ballet_speed,
         double ay = cam_mat_.at<double>(1, 1);
         double v0 = cam_mat_.at<double>(1, 2);
         std::vector<cv::Point2f> in{
-            cv::Point2f(armor.image_center_.x, temple_y)};
+            cv::Point2f(armor.image_center_.x,
+                        armor.image_center_.y + temple_y / real_img_ratio_)};
         std::vector<cv::Point2f> out;
         cv::undistortPoints(in, out, cam_mat_, distor_coff_, cv::noArray(),
                             cam_mat_);
@@ -241,21 +248,17 @@ void Compensator::CompensateGravity(Armor& armor, const double ballet_speed,
         double x_pos = armor.GetTransVec().at<double>(0, 0);
         double z_pos = armor.GetTransVec().at<double>(2, 0);
         // P4PSolver
-        angle = -atan(temple_y / sqrt(x_pos * x_pos + z_pos * z_pos));
+        angle = -atan(temple_y / sqrt(z_pos * z_pos));
       }
-      // SPDLOG_INFO("第{}次迭代", i);
-      // SPDLOG_INFO("pitch: {}", angle);
+      SPDLOG_INFO("第{}次迭代", i);
+      SPDLOG_INFO("pitch: {}", angle);
     }
     if (1) {
-      double a = cv::norm(armor.ImageVertices()[0] - armor.ImageVertices()[1]);
-      double b = cv::norm(armor.ImageVertices()[2] - armor.ImageVertices()[3]);
-      double c = std::max(a, b);
-      double tan =
-          abs(armor.ImageCenter().x - 640 / 2) * real_img_ratio_ / distance_;
-      double add_yaw = atan(tan) / 180 * CV_PI;
-      aiming_eulr.pitch = angle;
+      double tan = abs(armor.image_center_.x - 640 / 2) * real_img_ratio_ / x;
+      double add_yaw = -atan(tan) / 180 * CV_PI;  //'-' or '+'
       aiming_eulr.yaw += add_yaw;
     }
+    aiming_eulr.pitch = angle;
     armor.SetAimEuler(aiming_eulr);
     SPDLOG_DEBUG("Armor Euler is setted");
   }
