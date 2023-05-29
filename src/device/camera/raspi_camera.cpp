@@ -3,13 +3,13 @@
 void RaspiCamera::GrabPrepare() { return; }
 
 void RaspiCamera::GrabLoop() {
-  bool err = false;
-  cam_ >> frame_;
-  err = frame_.empty();
-  if (!err) {
+  cv::Mat frame;
+  cam_ >> frame;
+  if (!frame.empty()) {
     std::lock_guard<std::mutex> lock(frame_stack_mutex_);
-    frame_stack_.push_front(frame_);
+    frame_stack_.push_front(frame.clone());
     frame_signal_.Signal();
+    SPDLOG_DEBUG("frame_stack_ size: {}", frame_stack_.size());
   } else {
     SPDLOG_WARN("Empty frame");
   }
@@ -38,8 +38,8 @@ RaspiCamera::RaspiCamera() { SPDLOG_TRACE("Constructed."); }
  * @brief Construct a new RaspiCamera object
  *
  * @param index 相机索引号
- * @param height 输出图像高度
  * @param width 输出图像宽度
+ * @param height 输出图像高度
  */
 RaspiCamera::RaspiCamera(unsigned int index, unsigned int height,
                          unsigned int width) {
@@ -60,13 +60,13 @@ RaspiCamera::~RaspiCamera() {
 /**
  * @brief 设置相机参数
  *
- * @param height 输出图像高度
  * @param width 输出图像宽度
+ * @param height 输出图像高度
  */
-void RaspiCamera::Setup(unsigned int height, unsigned int width) {
+void RaspiCamera::Setup(unsigned int width, unsigned int height) {
   Camera::Setup(width, height);
-  cam_.set(cv::CAP_PROP_FRAME_HEIGHT, height);
   cam_.set(cv::CAP_PROP_FRAME_WIDTH, width);
+  cam_.set(cv::CAP_PROP_FRAME_HEIGHT, height);
 }
 
 /**

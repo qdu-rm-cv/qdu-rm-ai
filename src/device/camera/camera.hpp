@@ -75,6 +75,7 @@ class Camera {
   virtual bool GetFrame(cv::Mat& frame) {
     std::lock_guard<std::mutex> lock(frame_stack_mutex_);
     if (!frame_stack_.empty()) {
+      frame_signal_.Wait();
       cv::resize(frame_stack_.front(), frame, cv::Size(frame_w_, frame_h_));
       frame_stack_.clear();
     } else {
