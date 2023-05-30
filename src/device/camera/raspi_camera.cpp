@@ -8,7 +8,7 @@ void RaspiCamera::GrabLoop() {
   if (!frame.empty()) {
     std::lock_guard<std::mutex> lock(frame_stack_mutex_);
     frame_stack_.push_front(frame.clone());
-    frame_signal_.Signal();
+    frame_signal_.Give();
     SPDLOG_DEBUG("frame_stack_ size: {}", frame_stack_.size());
   } else {
     SPDLOG_WARN("Empty frame");

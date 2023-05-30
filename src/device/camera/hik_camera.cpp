@@ -87,7 +87,7 @@ void HikCamera::GrabLoop() {
   std::lock_guard<std::mutex> lock(frame_stack_mutex_);
   frame_stack_.clear();
   frame_stack_.push_front(raw_mat.clone());
-  frame_signal_.Signal();
+  frame_signal_.Give();
   SPDLOG_DEBUG("frame_stack_ size: {}", frame_stack_.size());
   if (nullptr != raw_frame_.pBufAddr) {
     HikCheck(MV_CC_FreeImageBuffer(camera_handle_, &raw_frame_),

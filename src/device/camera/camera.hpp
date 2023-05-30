@@ -18,7 +18,6 @@ class Camera {
 
   void GrabThread() {
     SPDLOG_DEBUG("[GrabThread] Started.");
-    frame_signal_.Init();
     GrabPrepare();
     while (grabing) {
       GrabLoop();
@@ -47,8 +46,6 @@ class Camera {
   void Setup(unsigned int width, unsigned int height) {
     frame_w_ = width;
     frame_h_ = height;
-
-    // TODO(Somebody) : 配置相机输入输出
   }
 
   /**
@@ -75,7 +72,7 @@ class Camera {
   virtual bool GetFrame(cv::Mat& frame) {
     std::lock_guard<std::mutex> lock(frame_stack_mutex_);
     if (!frame_stack_.empty()) {
-      frame_signal_.Wait();
+      frame_signal_.Take();
       cv::resize(frame_stack_.front(), frame, cv::Size(frame_w_, frame_h_));
       frame_stack_.clear();
     } else {
