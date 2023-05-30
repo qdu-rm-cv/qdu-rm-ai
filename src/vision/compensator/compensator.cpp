@@ -96,7 +96,7 @@ void Compensator::PnpEstimate(Armor& armor) {
   }
 
   UpdateImgPoints(ori_cords, k2, trsd_cords);
-  real_img_ratio_ = 125. / cv::norm(trsd_cords[0] - trsd_cords[1]);
+  real_img_ratio_ = 125. / cv::norm(trsd_cords[0] - trsd_cords[1]);  // mm/px
 
   auto new_img_center =
       (trsd_cords[0] + trsd_cords[1] + trsd_cords[2] + trsd_cords[3]) / 4;
@@ -106,11 +106,11 @@ void Compensator::PnpEstimate(Armor& armor) {
   double center_diff_y =
       abs(armor.ImageCenter().y - new_img_center.y) * real_img_ratio_;
 
-  cv::solvePnP(armor.PhysicVertices(),
-               /* armor.ImageVertices() */ trsd_cords, cam_mat_, distor_coff_,
-               rot_vec, trans_vec, false, cv::SOLVEPNP_ITERATIVE);
-  trans_vec.at<double>(0, 0) -= center_diff_x;
-  trans_vec.at<double>(1, 0) -= center_diff_y;
+  cv::solvePnP(armor.PhysicVertices(), armor.ImageVertices() /*trsd_cords*/,
+               cam_mat_, distor_coff_, rot_vec, trans_vec, false,
+               cv::SOLVEPNP_ITERATIVE);
+  // trans_vec.at<double>(0, 0) -= center_diff_x;
+  // trans_vec.at<double>(1, 0) -= center_diff_y;
 
   trans_vec.at<double>(1, 0) -= gun_cam_distance_;
   armor.SetRotVec(rot_vec), armor.SetTransVec(trans_vec);
@@ -145,10 +145,17 @@ void Compensator::SolveAngles(Armor& armor, const component::Euler& euler) {
     aiming_eulr.yaw = atan(x_pos / z_pos);
   }
   SPDLOG_INFO("compensator pitch : {}", aiming_eulr.pitch);
+  SPDLOG_CRITICAL("compensator yaw : {}", aiming_eulr.yaw);
   aiming_eulr.pitch = aiming_eulr.pitch + euler.pitch;
   aiming_eulr.yaw = -aiming_eulr.yaw + euler.yaw;
-
+  if (1) {  // if armor is not on the center line
+    double tan = (armor.image_center_.x - 640 / 2) * real_img_ratio_ / z_pos;
+    double add_yaw = atan(tan) / 180 * CV_PI;  //'-' or '+'
+    aiming_eulr.yaw = aiming_eulr.yaw + add_yaw;
+    SPDLOG_INFO("add_yaw: {}", add_yaw);
+  }
   SPDLOG_INFO("final pitch : {}", aiming_eulr.pitch);
+  SPDLOG_CRITICAL("final yaw : {}", aiming_eulr.yaw);
   armor.SetAimEuler(aiming_eulr);
 }
 
@@ -189,7 +196,7 @@ void Compensator::Apply(Armor& armor, const double ballet_speed,
     SPDLOG_ERROR("Hasn't set model.");
   }
   SolveAngles(armor, euler);
-  CompensateGravity(armor, ballet_speed, method);
+  // CompensateGravity(armor, ballet_speed, method);
 }
 
 void Compensator::VisualizeResult(tbb::concurrent_vector<Armor>& armors,
@@ -206,15 +213,17 @@ void Compensator::CompensateGravity(Armor& armor, const double ballet_speed,
     component::Euler aiming_eulr = armor.GetAimEuler();
     SPDLOG_INFO("初始值 {}", aiming_eulr.pitch);
     SPDLOG_INFO("Distance: {}", distance_);
+    SPDLOG_INFO("Speed: {}", ballet_speed);
     double x = distance_ * abs(cos(aiming_eulr.pitch));
     // angle 应为与水平面之间的夹角
     double angle = aiming_eulr.pitch;
     if (angle > M_PI) {
       angle -= 2 * M_PI;  // limit protect
     }
-    double k = 0 * real_img_ratio_;  //补偿高度
-    double k0 = 0.1;                 //空气阻力系数
-    double target_y = distance_ * sin(angle) + k;
+    double k =
+        -10 * real_img_ratio_;  //补偿高度,实现像素高度与现实高度的转换 mm/px
+    double k0 = 0.1;                                       //空气阻力系数
+    double target_y = distance_ * sin(angle) + k * 0.001;  //单位：m
     double temple_y = target_y;
     for (int i = 0; i < 10; i++) {
       double real_y;
@@ -251,12 +260,7 @@ void Compensator::CompensateGravity(Armor& armor, const double ballet_speed,
         angle = -atan(temple_y / sqrt(z_pos * z_pos));
       }
       SPDLOG_INFO("第{}次迭代", i);
-      SPDLOG_INFO("pitch: {}", angle);
-    }
-    if (1) {
-      double tan = abs(armor.image_center_.x - 640 / 2) * real_img_ratio_ / x;
-      double add_yaw = -atan(tan) / 180 * CV_PI;  //'-' or '+'
-      aiming_eulr.yaw += add_yaw;
+      SPDLOG_INFO("G pitch: {}", angle);
     }
     aiming_eulr.pitch = angle;
     armor.SetAimEuler(aiming_eulr);

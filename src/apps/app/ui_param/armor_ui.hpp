@@ -16,7 +16,7 @@ class ArmorUIParam : private UI {
     SPDLOG_WARN("***** Setting Up ArmorUIParam System. *****");
 
     /* 初始化设备 */
-    detector_.SetEnemyTeam(game::Team::kBLUE);
+    detector_.SetEnemyTeam(game::Team::kRED);
     armor_param_.Read(param_path_);
   }
 
@@ -76,10 +76,11 @@ class ArmorUIParam : private UI {
       detector_.params_ = armor_param_.TransformToDouble();
 
       detector_.Detect(frame);
-      detector_.VisualizeResult(frame, 3);
+      cv::Mat copy = frame.clone();
+      detector_.VisualizeResult(copy, 3);
 
       cv::imshow(window_handle_, frame);
-      cv::imshow("img", frame);
+      cv::imshow("img", copy);
       char key = cv::waitKey(10);
       if (key == 's' || key == 'S') {
         armor_param_.Write(param_path_);

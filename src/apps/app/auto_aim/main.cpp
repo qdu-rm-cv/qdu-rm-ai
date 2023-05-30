@@ -22,7 +22,7 @@ class NumberClassifier {
  public:
   /**
    * @param model_path：模型路径
-   * @param label_path：标签路径
+   * @param label_path：标签路径`
    * @param thre:置信度阈值
    * @param ignore_classes:要筛选掉的类型
    **/
@@ -39,6 +39,7 @@ class NumberClassifier {
     for (auto class_names : class_names_) {
       SPDLOG_ERROR("class_names:{}", class_names);
     }
+    ignore_classes_ = ignore_classes;
   }
   void extractNumbers(const cv::Mat& src, std::vector<Armor>& armors) {
     // Light length in image
@@ -228,28 +229,28 @@ class AutoAim : private App {
 
   component::Recorder recorder_ = component::Recorder("AutoAimThread");
   ArmorClassifier classifier_;
-  // kkk
+
  public:
   explicit AutoAim(const std::string& log_path)
       : App(log_path), detector_async_(ArmorDetectorAsync(2)) {
     SPDLOG_WARN("***** Setting Up Auto Aiming System. *****");
 
     /* 初始化设备 */
-    // robot_.Init("/dev/ttyUSB0");
+    robot_.Init("/dev/ttyUSB1");
     cam_.Open(0);
     cam_.Setup(kIMAGE_WIDTH, kIMAGE_HEIGHT);
     detector_async_.LoadParams(kPATH_RUNTIME + "RMUL2022_Armor.json");
     compensator_.LoadCameraMat(kPATH_RUNTIME + "MV-CA016-10UC-6mm_1.json");
-    // classifier_.LoadModel(kPATH_RUNTIME + "mpl.onnx");
-    // classifier_.LoadLable(kPATH_RUNTIME + "label.json");
-    // classifier_.SetInputSize(cv::Size(28, 28));
+    //// classifier_.LoadModel(kPATH_RUNTIME + "mpl.onnx");
+    //// classifier_.LoadLable(kPATH_RUNTIME + "label.json");
+    //// classifier_.SetInputSize(cv::Size(28, 28));
 
-    // do {
-    //   std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    // } while (robot_.GetEnemyTeam() != game::Team::kUNKNOWN);
+    //// do {
+    ////   std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    //// } while (robot_.GetEnemyTeam() != game::Team::kUNKNOWN);
 
     // detector_async_.SetEnemyTeam(robot_.GetEnemyTeam());
-    detector_async_.SetEnemyTeam(game::Team::kBLUE);
+    detector_async_.SetEnemyTeam(game::Team::kRED);
   }
 
   ~AutoAim() {
@@ -268,7 +269,8 @@ class AutoAim : private App {
     std::string path2 = kPATH_RUNTIME + "label.txt";
     std::vector<std::string> mask = {"Negative"};
     NumberClassifier num_classfier(
-        "/home/yang/Desktop/new/qdu-rm-ai/runtime/mlp.onnx", path2, 0.8);
+        "/home/yang/Desktop/new/qdu-rm-ai/runtime/mlp.onnx", path2,
+        0.8);  // TODO():If need the mask
     while (1) {
       if (!cam_.GetFrame(frame)) continue;
 
@@ -283,7 +285,7 @@ class AutoAim : private App {
         armors_t.push_back(armor);
       }
       // cv::imshow("face", armors_t.front().number_img_);
-      SPDLOG_ERROR("11111111111111111111111");
+      // SPDLOG_ERROR("11111111111111111111111");
       SPDLOG_ERROR("armor.num.1 {}", armors_t.size());
       num_classfier.extractNumbers(frame, armors_t);
       num_classfier.classify(armors_t, frame);
@@ -299,14 +301,14 @@ class AutoAim : private App {
         SPDLOG_ERROR("EMPTY!!!");
         continue;
       }
-      compensator_.Apply(armors2, /*robot_.GetBalletSpeed()*/ 999,
-                         component::Euler(0, 0, 0) /* robot_.GetEuler()*/,
+      compensator_.Apply(armors2, robot_.GetBalletSpeed() /* 999*/,
+                         /*component::Euler(0, 0, 0)*/ robot_.GetEuler(),
                          game::AimMethod::kARMOR);
-      // manager_.Aim(armors.front().GetAimEuler());
-      // robot_.Pack(manager_.GetData(), 9999);
+      manager_.Aim(armors.front().GetAimEuler());
+      robot_.Pack(manager_.GetData(), 9999);
 
       SPDLOG_WARN("pack");
-      // recorder_.Record();
+      recorder_.Record();
     }
   }
 };
