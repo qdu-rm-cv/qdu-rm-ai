@@ -31,6 +31,8 @@ class Semaphore {
     Init(init_count);
   }
 
+  ~Semaphore() { sem_destroy(&handle_); }
+
   void Init(int init_count = 0) { sem_init(&this->handle_, 0, init_count); }
 
   // Signal, V
@@ -44,9 +46,25 @@ class Semaphore {
 
   // Wait, P
   bool Take() { return sem_wait(&handle_) == 0; }
+
   bool Take(uint32_t timeout) {
-    struct timespec ts = CalDuration(timeout);
-    return sem_timedwait(&handle_, &ts) == 0;
+    auto ts = CalDuration(timeout);
+    return (sem_timedwait(&handle_, &ts) == 0);
+  }
+
+  bool TryTake(uint32_t timeout = 0) {
+    int value = 0;
+    bool ret = false;
+    sem_getvalue(&handle_, &value);
+    if (value >= this->max_count_) {
+      if (timeout == 0) {
+        auto ts = CalDuration(timeout);
+        ret = (sem_timedwait(&handle_, &ts) == 0);
+      } else {
+        ret = (sem_wait(&handle_) == 0);
+      }
+    }
+    return ret;
   }
 
   uint32_t GetCount() {
