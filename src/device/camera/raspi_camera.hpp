@@ -11,7 +11,6 @@
 class RaspiCamera : public Camera {
  private:
   cv::VideoCapture cam_;
-  cv::Mat frame_ = cv::Mat(cv::Size(640, 480), CV_16UC3);
 
   void GrabPrepare();
   void GrabLoop();
@@ -28,8 +27,8 @@ class RaspiCamera : public Camera {
    * @brief Construct a new RaspiCamera object
    *
    * @param index 相机索引号
-   * @param height 输出图像高度
    * @param width 输出图像宽度
+   * @param height 输出图像高度
    */
   RaspiCamera(unsigned int index, unsigned int height, unsigned int width);
 

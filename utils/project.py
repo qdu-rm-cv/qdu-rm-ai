@@ -1,12 +1,23 @@
 # -*- coding:utf-8 -*-
 # ! /usr/bin/python3
 
+# run 'python ./utils/project.py <COMMAND>'
+# -- <COMMAND> : description\n--")
+# -- help      : print help info
+# -- version   : print version
+# -- env       : get environment quickly
+# -- init      : git submodule update --init --recursive
+# -- pack      : pack install generation files
+# -- refresh   : rmdir 'build' dir and build
+# -- build     : cd build && cmake ..
+# -- test      : run ctest
+
 import os
 import sys
 import logging
 import pwd
 
-VERSION = "0.1.1"
+VERSION = "0.1.6"
 LOG_FILE_NAME = "project.log"
 LOG_FMT = "%(asctime)s - %(levelname)s - [%(filename)s:%(lineno)s]  %(message)s"
 

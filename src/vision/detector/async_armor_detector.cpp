@@ -39,7 +39,7 @@ void ArmorDetectorAsync::Work(const size_t i) {
   while (true) {
     if (!thread_continue) return;
 
-    source_signal_.Wait();
+    source_signal_.Take();
     mutex_source_.lock();
     cv::Mat frame = source_.front();
     source_.pop_front();
@@ -68,7 +68,7 @@ void ArmorDetectorAsync::PutFrame(const cv::Mat &frame) {
   if (source_.size() > kMAX_VECTOR_SIZE) {
     source_.pop_back();
   } else {
-    source_signal_.Signal();
+    source_signal_.Give();
   }
   mutex_source_.unlock();
 }
