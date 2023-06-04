@@ -24,6 +24,7 @@ void ArmorDetector::InitDefaultParams(const std::string &params_path) {
   fs << "angle_diff_th" << 0.2;
   fs << "length_diff_th" << 0.2;
   fs << "height_diff_th" << 0.2;
+  fs << "center_y_dist" << 0.2;
   fs << "area_diff_th" << 0.6;
   fs << "center_dist_low_th" << 1;
   fs << "center_dist_high_th" << 4;
@@ -50,6 +51,7 @@ bool ArmorDetector::PrepareParams(const std::string &params_path) {
     params_.angle_diff_th = fs["angle_diff_th"];
     params_.length_diff_th = fs["length_diff_th"];
     params_.height_diff_th = fs["height_diff_th"];
+    params_.center_y_dist = fs["center_y_dist"];
     params_.area_diff_th = fs["area_diff_th"];
     params_.center_dist_low_th = fs["center_dist_low_th"];
     params_.center_dist_high_th = fs["center_dist_high_th"];
@@ -218,6 +220,13 @@ void ArmorDetector::MatchLightBars(const cv::Mat frame) {
       const double area_diff =
           algo::RelativeDifference(iti->Area(), itj->Area());
       if (area_diff > params_.area_diff_th) continue;
+
+      /* 中心高度差 */
+      const double length = (iti->Length() + itj->Length()) / 2;
+      const double center_y_dis =
+          abs(iti->image_center_.y - itj->image_center_.y);
+      SPDLOG_INFO("center_y_dis is {}", center_y_dis);
+      if (center_y_dis >= length * params_.center_y_dist) continue;
 
       /* 灯条中心距离 */
       const double center_dist =

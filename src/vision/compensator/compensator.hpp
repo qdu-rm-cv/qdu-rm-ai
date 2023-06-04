@@ -38,6 +38,10 @@ class Compensator {
   void UpdateImgPoints(std::vector<cv::Point2f>& img, double k,
                        std::vector<cv::Point2f>& img_out);
 
+  double monoDirectionalAirResistanceModel(double s, double v,
+                                           double angle);  // ROS坐标系下
+  double pitchTrajectoryCompensation(double s, double z,
+                                     double v);  // ROS坐标系下
 #ifdef RMU2021
   double SolveSurfaceLanchAngle(cv::Point2f target, double ballet_speed);
   cv::Vec3f EstimateWorldCoord(Armor& armor);

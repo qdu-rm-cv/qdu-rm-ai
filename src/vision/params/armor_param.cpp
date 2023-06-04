@@ -17,6 +17,7 @@ ArmorDetectorParam<double> ArmorParam::TransformToDouble() {
   paramd_.angle_diff_th = parami_.angle_diff_th / 1000.;
   paramd_.length_diff_th = parami_.length_diff_th / 1000.;
   paramd_.height_diff_th = parami_.height_diff_th / 100000.;
+  paramd_.center_y_dist = parami_.center_y_dist / 1000.;
   paramd_.area_diff_th = parami_.area_diff_th / 1000.;
   paramd_.center_dist_low_th = parami_.center_dist_low_th / 1000.;
   paramd_.center_dist_high_th = parami_.center_dist_high_th / 1000.;
@@ -49,6 +50,7 @@ bool ArmorParam::Read(const std::string &params_path) {
     parami_.height_diff_th =
         static_cast<double>(fs["height_diff_th"]) * 100000.;
     parami_.area_diff_th = static_cast<double>(fs["area_diff_th"]) * 1000.;
+    parami_.center_y_dist = static_cast<double>(fs["center_y_dist"]) * 1000.;
     parami_.center_dist_low_th =
         static_cast<double>(fs["center_dist_low_th"]) * 1000.;
     parami_.center_dist_high_th =
@@ -77,6 +79,7 @@ void ArmorParam::Write(const std::string &params_path) {
   fs << "angle_diff_th" << paramd_.angle_diff_th;
   fs << "length_diff_th" << paramd_.length_diff_th;
   fs << "height_diff_th" << paramd_.height_diff_th;
+  fs << "center_y_dist" << paramd_.center_y_dist;
   fs << "area_diff_th" << paramd_.area_diff_th;
   fs << "center_dist_low_th" << paramd_.center_dist_low_th;
   fs << "center_dist_high_th" << paramd_.center_dist_high_th;

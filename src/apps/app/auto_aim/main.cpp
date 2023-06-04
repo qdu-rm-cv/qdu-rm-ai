@@ -236,7 +236,7 @@ class AutoAim : private App {
     SPDLOG_WARN("***** Setting Up Auto Aiming System. *****");
 
     /* 初始化设备 */
-    robot_.Init("/dev/ttyUSB1");
+    robot_.Init("/dev/ttyUSB0");
     cam_.Open(0);
     cam_.Setup(kIMAGE_WIDTH, kIMAGE_HEIGHT);
     detector_async_.LoadParams(kPATH_RUNTIME + "RMUL2022_Armor.json");
@@ -284,9 +284,8 @@ class AutoAim : private App {
       for (auto armor : armors) {
         armors_t.push_back(armor);
       }
-      // cv::imshow("face", armors_t.front().number_img_);
-      // SPDLOG_ERROR("11111111111111111111111");
-      SPDLOG_ERROR("armor.num.1 {}", armors_t.size());
+      // // cv::imshow("face", armors_t.front().number_img_);
+      // SPDLOG_ERROR("armor.num.1 {}", armors_t.size());
       num_classfier.extractNumbers(frame, armors_t);
       num_classfier.classify(armors_t, frame);
 
@@ -298,10 +297,10 @@ class AutoAim : private App {
       if (!armors2.empty())
         SPDLOG_ERROR("classfier {}");  // pai xv xou hua
       else {
-        SPDLOG_ERROR("EMPTY!!!");
+        SPDLOG_ERROR("The armors is 0");
         continue;
       }
-      compensator_.Apply(armors2, robot_.GetBalletSpeed() /* 999*/,
+      compensator_.Apply(armors, robot_.GetBalletSpeed() /* 999*/,
                          /*component::Euler(0, 0, 0)*/ robot_.GetEuler(),
                          game::AimMethod::kARMOR);
       manager_.Aim(armors.front().GetAimEuler());
