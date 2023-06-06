@@ -123,25 +123,25 @@ void ArmorDetector::FindLightBars(const cv::Mat &frame) {
 
     /* 只留下轮廓大小在一定比例内的 */
     const double c_area = cv::contourArea(contour) / frame_area;
-    SPDLOG_INFO("c_area is {}", c_area);
+    SPDLOG_DEBUG("c_area is {}", c_area);
     if (c_area < params_.contour_area_low_th) return;
     if (c_area > params_.contour_area_high_th) return;
 
     LightBar potential_bar(cv::minAreaRect(contour));
 
     /* 灯条倾斜角度不能太大 */
-    SPDLOG_INFO("angle is {}", std::abs(potential_bar.ImageAngle()));
+    SPDLOG_DEBUG("angle is {}", std::abs(potential_bar.ImageAngle()));
     if (std::abs(potential_bar.ImageAngle()) > params_.angle_high_th) return;
 
     /* 灯条在画面中的大小要满足条件 */
     const double bar_area = potential_bar.Area() / frame_area;
-    SPDLOG_INFO("bar_area is {}", bar_area);
+    SPDLOG_DEBUG("bar_area is {}", bar_area);
     if (bar_area < params_.bar_area_low_th) return;
     if (bar_area > params_.bar_area_high_th) return;
 
     /* 灯条的长宽比要满足条件 */
     const double aspect_ratio = potential_bar.ImageAspectRatio();
-    SPDLOG_INFO("aspect_ratio is {}", aspect_ratio);
+    SPDLOG_DEBUG("aspect_ratio is {}", aspect_ratio);
     if (aspect_ratio < params_.aspect_ratio_low_th) return;
     if (aspect_ratio > params_.aspect_ratio_high_th) return;
 
@@ -183,13 +183,13 @@ void ArmorDetector::MatchLightBars() {
       /* 灯条长度差异 */
       const double length_diff =
           algo::RelativeDifference(iti->Length(), itj->Length());
-      SPDLOG_INFO("length_diff is {}", length_diff);
+      SPDLOG_DEBUG("length_diff is {}", length_diff);
       if (length_diff >= params_.length_diff_th) continue;
 
       /* 灯条高度差异 */
       const double height_diff =
           algo::RelativeDifference(iti->ImageCenter().y, itj->ImageCenter().y);
-      SPDLOG_INFO("height_diff is {}", height_diff);
+      SPDLOG_DEBUG("height_diff is {}", height_diff);
       if (height_diff >= (params_.height_diff_th * frame_size_.height))
         continue;
 
@@ -197,7 +197,7 @@ void ArmorDetector::MatchLightBars() {
       const double length = (iti->Length() + itj->Length()) / 2;
       const double center_y_dis =
           abs(iti->image_center_.y - itj->image_center_.y);
-      SPDLOG_INFO("center_y_dis is {}", center_y_dis);
+      SPDLOG_DEBUG("center_y_dis is {}", center_y_dis);
       if (center_y_dis >= length * params_.center_y_dist) continue;
 
       /* 灯条面积差异 */
