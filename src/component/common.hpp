@@ -148,6 +148,8 @@ double RelativeDifference(double a, double b);
 int GetIntRandomValue(int min = 0, int max = 10);
 double GetRealRandomValue(double min = 0, double max = 1);
 
+std::string GetTimeStamp(std::string fmt_code = "%Y%m%d-%H%M%S-");
+
 bool FileExist(const std::string &file_name);
 
 }  // namespace algo
