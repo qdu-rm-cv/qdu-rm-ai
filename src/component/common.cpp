@@ -4,7 +4,10 @@
 
 #include <algorithm>
 #include <cctype>
+#include <chrono>
+#include <ctime>
 #include <filesystem>
+#include <sstream>
 #include <string>
 
 #include "spdlog/fmt/bundled/core.h"
@@ -269,6 +272,33 @@ double GetRealRandomValue(double min, double max) {
   if (min > max) std::swap(min, max);
   static std::uniform_real_distribution<double> distributer(min, max);
   return distributer(engine);
+}
+
+/*
+ reference:
+  https://zh.cppreference.com/w/cpp/io/manip/put_time
+
+ %Y   以 4 位十进制数写年
+ %m   将月写作十进制数（范围 [01,12] ）
+ %d   以十进制数写月的第几日（范围 [01,31] ）
+ %H   以十进制数写时， 24 小时制（范围 [00-23] ）
+ %M   以十进制数写分（范围 [00,59] ）
+ %S   以十进制数写秒（范围 [00,60] ）
+*/
+std::string GetTimeStamp(std::string fmt_code) {
+  auto now = std::chrono::high_resolution_clock::now();
+  std::time_t t = std::chrono::system_clock::to_time_t(now);
+  std::tm tm = *std::localtime(&t);
+  auto ms =
+      (std::chrono::duration_cast<std::chrono::milliseconds>(
+           now.time_since_epoch()) -
+       std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()))
+          .count();
+
+  std::ostringstream ss;
+  ss << std::put_time(&tm, fmt_code.c_str()) << std::setfill('0')
+     << std::setw(3) << ms;
+  return ss.str();
 }
 
 bool FileExist(const std::string& file_name) {
