@@ -24,6 +24,7 @@ void ArmorDetector::InitDefaultParams(const std::string &params_path) {
   fs << "angle_diff_th" << 0.2;
   fs << "length_diff_th" << 0.2;
   fs << "height_diff_th" << 0.2;
+  fs << "center_y_dist" << 0.2;
   fs << "area_diff_th" << 0.6;
   fs << "center_dist_low_th" << 1;
   fs << "center_dist_high_th" << 4;
@@ -50,6 +51,7 @@ bool ArmorDetector::PrepareParams(const std::string &params_path) {
     params_.angle_diff_th = fs["angle_diff_th"];
     params_.length_diff_th = fs["length_diff_th"];
     params_.height_diff_th = fs["height_diff_th"];
+    params_.center_y_dist = fs["center_y_dist"];
     params_.area_diff_th = fs["area_diff_th"];
     params_.center_dist_low_th = fs["center_dist_low_th"];
     params_.center_dist_high_th = fs["center_dist_high_th"];
@@ -121,25 +123,25 @@ void ArmorDetector::FindLightBars(const cv::Mat &frame) {
 
     /* 只留下轮廓大小在一定比例内的 */
     const double c_area = cv::contourArea(contour) / frame_area;
-    SPDLOG_INFO("c_area is {}", c_area);
+    SPDLOG_DEBUG("c_area is {}", c_area);
     if (c_area < params_.contour_area_low_th) return;
     if (c_area > params_.contour_area_high_th) return;
 
     LightBar potential_bar(cv::minAreaRect(contour));
 
     /* 灯条倾斜角度不能太大 */
-    SPDLOG_INFO("angle is {}", std::abs(potential_bar.ImageAngle()));
+    SPDLOG_DEBUG("angle is {}", std::abs(potential_bar.ImageAngle()));
     if (std::abs(potential_bar.ImageAngle()) > params_.angle_high_th) return;
 
     /* 灯条在画面中的大小要满足条件 */
     const double bar_area = potential_bar.Area() / frame_area;
-    SPDLOG_INFO("bar_area is {}", bar_area);
+    SPDLOG_DEBUG("bar_area is {}", bar_area);
     if (bar_area < params_.bar_area_low_th) return;
     if (bar_area > params_.bar_area_high_th) return;
 
     /* 灯条的长宽比要满足条件 */
     const double aspect_ratio = potential_bar.ImageAspectRatio();
-    SPDLOG_INFO("aspect_ratio is {}", aspect_ratio);
+    SPDLOG_DEBUG("aspect_ratio is {}", aspect_ratio);
     if (aspect_ratio < params_.aspect_ratio_low_th) return;
     if (aspect_ratio > params_.aspect_ratio_high_th) return;
 
@@ -172,28 +174,36 @@ void ArmorDetector::MatchLightBars() {
       const bool same_side = (iti->ImageAngle() * itj->ImageAngle()) > 0;
 
       if (same_side) {
-        if (angle_diff > params_.angle_diff_th) continue;
+        if (angle_diff >= params_.angle_diff_th) continue;
       } else {
         /* 两侧时限制更严格 */
-        if (angle_diff > (params_.angle_diff_th / 2.)) continue;
+        if (angle_diff >= (params_.angle_diff_th / 2.)) continue;
       }
 
       /* 灯条长度差异 */
       const double length_diff =
           algo::RelativeDifference(iti->Length(), itj->Length());
-      SPDLOG_INFO("length_diff is {}", length_diff);
-      if (length_diff > params_.length_diff_th) continue;
+      SPDLOG_DEBUG("length_diff is {}", length_diff);
+      if (length_diff >= params_.length_diff_th) continue;
 
       /* 灯条高度差异 */
       const double height_diff =
           algo::RelativeDifference(iti->ImageCenter().y, itj->ImageCenter().y);
-      SPDLOG_INFO("height_diff is {}", height_diff);
-      if (height_diff > (params_.height_diff_th * frame_size_.height)) continue;
+      SPDLOG_DEBUG("height_diff is {}", height_diff);
+      if (height_diff >= (params_.height_diff_th * frame_size_.height))
+        continue;
+
+      /* 中心高度差 */
+      const double length = (iti->Length() + itj->Length()) / 2;
+      const double center_y_dis =
+          abs(iti->image_center_.y - itj->image_center_.y);
+      SPDLOG_DEBUG("center_y_dis is {}", center_y_dis);
+      if (center_y_dis >= length * params_.center_y_dist) continue;
 
       /* 灯条面积差异 */
       const double area_diff =
           algo::RelativeDifference(iti->Area(), itj->Area());
-      if (area_diff > params_.area_diff_th) continue;
+      if (area_diff >= params_.area_diff_th) continue;
 
       /* 灯条中心距离 */
       const double center_dist =

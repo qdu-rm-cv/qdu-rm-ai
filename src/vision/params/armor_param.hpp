@@ -18,6 +18,7 @@ struct ArmorDetectorParam {
   Type angle_diff_th;
   Type length_diff_th;
   Type height_diff_th;
+  Type center_y_dist;
   Type area_diff_th;
   Type center_dist_low_th;
   Type center_dist_high_th;
