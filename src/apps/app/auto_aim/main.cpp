@@ -38,10 +38,8 @@ class AutoAim : private App {
 
     do {
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    } while (robot_.GetEnemyTeam() !=
-             game::Team::kUNKNOWN);  // TODO(SOMEBODY):Test this function and
-                                     // fix the unlimited cycle;
-
+    } while (robot_.GetEnemyTeam() != game::Team::kUNKNOWN);
+    // TODO(SOMEBODY):Test this function and fix the unlimited cycle;
     detector_async_.SetEnemyTeam(robot_.GetEnemyTeam());
     detector_async_.SetEnemyTeam(game::Team::kRED);
   }
@@ -68,22 +66,22 @@ class AutoAim : private App {
 
       detector_async_.PutFrame(frame);
       if (!detector_async_.GetResult(armors)) continue;
-      std::vector<Armor> armors_t;
+      std::vector<Armor> temple_translator;
       for (auto armor : armors) {
-        armors_t.push_back(armor);
+        temple_translator.push_back(armor);
       }
-      num_classfier.extractNumbers(frame, armors_t);
-      num_classfier.classify(armors_t, frame);
+      num_classfier.extractNumbers(frame, temple_translator);
+      num_classfier.classify(temple_translator, frame);
 
-      tbb::concurrent_vector<Armor> armors2;
-      for (auto armor : armors_t) {
-        armors2.push_back(armor);
+      tbb::concurrent_vector<Armor> concurrent_armors_vector;
+      for (auto armor : temple_translator) {
+        concurrent_armors_vector.push_back(armor);
       }
-      SPDLOG_ERROR("armor.num {}", armors2.size());
-      if (!armors2.empty())
-        SPDLOG_ERROR("classfier {}");
+      SPDLOG_ERROR("armors number is {}", concurrent_armors_vector.size());
+      if (!concurrent_armors_vector.empty())
+        SPDLOG_INFO("Classfier worked!");
       else {
-        SPDLOG_ERROR("The armors is 0");
+        SPDLOG_INFO("The armors queue id empty!");
         continue;
       }
       compensator_.Apply(armors, robot_.GetBalletSpeed() /* 999*/,

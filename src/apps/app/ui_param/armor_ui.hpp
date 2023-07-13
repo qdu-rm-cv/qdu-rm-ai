@@ -78,11 +78,11 @@ class ArmorUIParam : private UI {
       detector_.params_ = armor_param_.TransformToDouble();
 
       detector_.Detect(frame);
-      cv::Mat copy = frame.clone();
-      detector_.VisualizeResult(copy, 3);
+      cv::Mat copy_img = frame.clone();
+      detector_.VisualizeResult(copy_img, 3);
 
       cv::imshow(window_handle_, frame);
-      cv::imshow("img", copy);
+      cv::imshow("img", copy_img);
       char key = cv::waitKey(10);
       if (key == 's' || key == 'S') {
         armor_param_.Write(param_path_);
