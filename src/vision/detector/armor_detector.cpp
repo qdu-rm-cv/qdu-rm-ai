@@ -24,6 +24,7 @@ void ArmorDetector::InitDefaultParams(const std::string &params_path) {
   fs << "angle_diff_th" << 0.2;
   fs << "length_diff_th" << 0.2;
   fs << "height_diff_th" << 0.2;
+  fs << "center_y_dist" << 0.2;
   fs << "area_diff_th" << 0.6;
   fs << "center_dist_low_th" << 1;
   fs << "center_dist_high_th" << 4;
@@ -50,6 +51,7 @@ bool ArmorDetector::PrepareParams(const std::string &params_path) {
     params_.angle_diff_th = fs["angle_diff_th"];
     params_.length_diff_th = fs["length_diff_th"];
     params_.height_diff_th = fs["height_diff_th"];
+    params_.center_y_dist = fs["center_y_dist"];
     params_.area_diff_th = fs["area_diff_th"];
     params_.center_dist_low_th = fs["center_dist_low_th"];
     params_.center_dist_high_th = fs["center_dist_high_th"];
@@ -67,7 +69,9 @@ void ArmorDetector::FindLightBars(const cv::Mat &frame) {
 
   frame_size_ = frame.size();
   const double frame_area = frame_size_.area();
-
+  cv::Mat result;
+  frame.copyTo(result);
+  /*
   std::vector<cv::Mat> channels(3);
   cv::Mat result;
   cv::split(frame, channels);
@@ -89,8 +93,8 @@ void ArmorDetector::FindLightBars(const cv::Mat &frame) {
   } else if (enemy_team_ == game::Team::kRED) {
     result = channels[2] - channels[0];
   }
-#endif
-
+#endif*/
+  cv::cvtColor(result, result, cv::COLOR_BGR2GRAY);
   cv::threshold(result, result, params_.binary_th, 255., cv::THRESH_BINARY);
   /*
     if (params_.se_erosion >= 0.) {
@@ -142,10 +146,31 @@ void ArmorDetector::FindLightBars(const cv::Mat &frame) {
     SPDLOG_INFO("aspect_ratio is {}", aspect_ratio);
     if (aspect_ratio < params_.aspect_ratio_low_th) return;
     if (aspect_ratio > params_.aspect_ratio_high_th) return;
-
+    /*进行灯条的颜色验证*/
+    auto rect = potential_bar.GetLightBarROI();
+    if (  // Avoid assertion failed
+        0 <= rect.x && 0 <= rect.width && rect.x + rect.width <= frame.cols &&
+        0 <= rect.y && 0 <= rect.height && rect.y + rect.height <= frame.rows) {
+      auto ROI = frame(rect);
+      int blue_sum = 0;
+      int red_sum = 0;
+      for (int i = 0; i < ROI.cols; i++) {
+        for (int j = 0; j < ROI.rows; j++) {
+          // if (cv::pointPolygonTest(contour, cv::Point2f(i, j), false) >= 0) {
+          // if point is inside contour
+          blue_sum += ROI.at<cv::Vec3b>(i, j)[0];
+          red_sum += ROI.at<cv::Vec3b>(i, j)[2];
+          //}
+        }
+      }
+      bool color = blue_sum > red_sum ? true : false;
+      if (enemy_team_ == game::Team::kBLUE && color) return;
+      if (enemy_team_ == game::Team::kRED && !color) return;
+    } else {
+      return;
+    }
     lightbars_.emplace_back(potential_bar);
   };
-
   /* 并行验证灯条 */
   std::for_each(std::execution::par_unseq, contours_.begin(), contours_.end(),
                 check_lightbar);
@@ -160,11 +185,12 @@ void ArmorDetector::FindLightBars(const cv::Mat &frame) {
   duration_bars_.Calc("Find Bars");
 }
 
-void ArmorDetector::MatchLightBars() {
+void ArmorDetector::MatchLightBars(const cv::Mat frame) {
   duration_armors_.Start();
   for (auto iti = lightbars_.begin(); iti != lightbars_.end(); ++iti) {
     for (auto itj = iti + 1; itj != lightbars_.end(); ++itj) {
       /* 两灯条角度差异 */
+
       const double angle_diff =
           algo::RelativeDifference(iti->ImageAngle(), itj->ImageAngle());
 
@@ -195,15 +221,26 @@ void ArmorDetector::MatchLightBars() {
           algo::RelativeDifference(iti->Area(), itj->Area());
       if (area_diff > params_.area_diff_th) continue;
 
+      /* 中心高度差 */
+      const double length = (iti->Length() + itj->Length()) / 2;
+      const double center_y_dis =
+          abs(iti->image_center_.y - itj->image_center_.y);
+      SPDLOG_INFO("center_y_dis is {}", center_y_dis);
+      if (center_y_dis >= length * params_.center_y_dist) continue;
+
       /* 灯条中心距离 */
       const double center_dist =
           cv::norm(iti->ImageCenter() - itj->ImageCenter());
       const double l = (iti->Length() + itj->Length()) / 2.;
       if (center_dist < l * params_.center_dist_low_th) continue;
       if (center_dist > l * params_.center_dist_high_th) continue;
-
       auto armor = Armor(*iti, *itj);
-      // armor.SetModel(game::Model::kINFANTRY);
+      // cv::imshow("Armor Face", armor.Face(frame));
+      // cv::Mat face = armor.Face(frame);
+      // int id = matcher.GetArmorId(face);
+      // cv::waitKey(1);
+      // if (id == 0) continue;
+      // // armor.SetModel(game::Model::kINFANTRY);
       targets_.emplace_back(armor);
       break;
     }
@@ -231,7 +268,7 @@ const tbb::concurrent_vector<Armor> &ArmorDetector::Detect(
     const cv::Mat &frame) {
   SPDLOG_DEBUG("Detecting");
   FindLightBars(frame);
-  MatchLightBars();
+  MatchLightBars(frame);
   SPDLOG_DEBUG("Detected.");
   return targets_;
 }

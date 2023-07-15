@@ -10,7 +10,7 @@ class Compensator {
   cv::Mat cam_mat_, distor_coff_;
   double gun_cam_distance_; /* 枪口到镜头的距离 */
   game::Arm arm_;
-
+  double real_img_ratio_;
   void SolveAngles(Armor& armor, const component::Euler& euler);
   void CompensateGravity(Armor& armor, const double ballet_speed,
                          game::AimMethod method);
@@ -38,6 +38,10 @@ class Compensator {
   void UpdateImgPoints(std::vector<cv::Point2f>& img, double k,
                        std::vector<cv::Point2f>& img_out);
 
+  double MonoDirectionalAirResistanceModel(double s, double v,
+                                           double angle);  // ROS坐标系下
+  double PitchTrajectoryCompensation(double s, double z,
+                                     double v);  // ROS坐标系下
 #ifdef RMU2021
   double SolveSurfaceLanchAngle(cv::Point2f target, double ballet_speed);
   cv::Vec3f EstimateWorldCoord(Armor& armor);

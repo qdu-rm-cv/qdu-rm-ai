@@ -16,7 +16,7 @@ class ArmorUIParam : private UI {
     SPDLOG_WARN("***** Setting Up ArmorUIParam System. *****");
 
     /* 初始化设备 */
-    detector_.SetEnemyTeam(game::Team::kBLUE);
+    detector_.SetEnemyTeam(game::Team::kRED);
     armor_param_.Read(param_path_);
   }
 
@@ -56,6 +56,8 @@ class ArmorUIParam : private UI {
                        &armor_param_.parami_.length_diff_th, 200);
     cv::createTrackbar("height_diff_th", window_handle_,
                        &armor_param_.parami_.height_diff_th, 200);
+    cv::createTrackbar("center_y_dist", window_handle_,
+                       &armor_param_.parami_.center_y_dist, 1000);
     cv::createTrackbar("area_diff_th", window_handle_,
                        &armor_param_.parami_.area_diff_th, 5000);
     cv::createTrackbar("center_dist_low_th", window_handle_,
@@ -68,16 +70,19 @@ class ArmorUIParam : private UI {
 
     while (true) {
       cam_.GetFrame(frame);
+
       if (frame.empty()) continue;
 
       SPDLOG_INFO("frame size {},{}", frame.size().width, frame.size().height);
 
       detector_.params_ = armor_param_.TransformToDouble();
+
       detector_.Detect(frame);
-      detector_.VisualizeResult(frame, 3);
+      cv::Mat copy_img = frame.clone();
+      detector_.VisualizeResult(copy_img, 3);
 
       cv::imshow(window_handle_, frame);
-      cv::imshow("img", frame);
+      cv::imshow("img", copy_img);
       char key = cv::waitKey(10);
       if (key == 's' || key == 'S') {
         armor_param_.Write(param_path_);

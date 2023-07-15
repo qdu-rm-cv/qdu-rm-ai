@@ -47,3 +47,4 @@ double LightBar::Length() const {
                rect_.size.width);
   return std::max(rect_.size.height, rect_.size.width);
 }
+cv::Rect LightBar::GetLightBarROI() { return rect_.boundingRect(); }

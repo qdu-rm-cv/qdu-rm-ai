@@ -18,7 +18,7 @@ class ArmorDetector : public Detector<Armor, ArmorDetectorParam<double>> {
   bool PrepareParams(const std::string &path);
 
   void FindLightBars(const cv::Mat &frame);
-  void MatchLightBars();
+  void MatchLightBars(const cv::Mat frame102);
 
  public:
   ArmorDetector();

@@ -46,9 +46,9 @@ void ArmorDetectorAsync::Work(const size_t i) {
     mutex_source_.unlock();
 
     auto result = method_vec_[i]->Detect(frame);
-
-    method_vec_[i]->VisualizeResult(frame, 5);
-    cv::imshow(std::to_string(i), frame);
+    cv::Mat copy_img = frame.clone();
+    method_vec_[i]->VisualizeResult(copy_img, 5);
+    cv::imshow(std::to_string(i), copy_img);
     cv::waitKey(1);
 
     if (result.size() == 0) continue;
