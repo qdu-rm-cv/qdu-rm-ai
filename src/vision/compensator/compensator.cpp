@@ -82,10 +82,9 @@ void Compensator::PnpEstimate(Armor& armor) {
   double center_diff_y =
       abs(armor.ImageCenter().y - new_img_center.y) * real_img_ratio_;
 
-  cv::solvePnP(armor.PhysicVertices(), armor.ImageVertices(),
-               cam_mat_, distor_coff_, rot_vec, trans_vec, false,
-               cv::SOLVEPNP_ITERATIVE);
-  //TODO(SOMRBODY):Solver the problem of accency in x and y;
+  cv::solvePnP(armor.PhysicVertices(), armor.ImageVertices(), cam_mat_,
+               distor_coff_, rot_vec, trans_vec, false, cv::SOLVEPNP_ITERATIVE);
+  // TODO(SOMRBODY):Solver the problem of accency in x and y;
   trans_vec.at<double>(1, 0) -= gun_cam_distance_;
   armor.SetRotVec(rot_vec);
   armor.SetTransVec(trans_vec);
@@ -116,8 +115,7 @@ void Compensator::SolveAngles(Armor& armor, const component::Euler& euler) {
     aiming_eulr.yaw = atan((out.front().x - u0) / ax);
   } else {
     // P4PSolver
-    aiming_eulr.pitch =
-        -atan(y_pos / sqrt(x_pos * x_pos + z_pos * z_pos));
+    aiming_eulr.pitch = -atan(y_pos / sqrt(x_pos * x_pos + z_pos * z_pos));
     aiming_eulr.yaw = atan(x_pos / z_pos);
   }
   SPDLOG_INFO("compensator pitch : {}", aiming_eulr.pitch);
@@ -180,11 +178,10 @@ void Compensator::VisualizeResult(tbb::concurrent_vector<Armor>& armors,
 void Compensator::CompensateGravity(Armor& armor, const double ballet_speed,
                                     game::AimMethod method) {
   //高斯牛顿迭代法，水平方向阻力模型
-
+  component::Euler aiming_eulr = armor.GetAimEuler();
+  int k0 = 1;
   if (method == game::AimMethod::kARMOR) {
     double target_y = distance_ * tan(armor.GetAimEuler().pitch) * 0.001;
-    component::Euler aiming_eulr = armor.GetAimEuler();
-    int k0 = 1;
     if (ballet_speed == 15) {
       if (distance_ > 1.5 && distance_ < 5) {
         k0 = 1.3;
@@ -202,6 +199,12 @@ void Compensator::CompensateGravity(Armor& armor, const double ballet_speed,
       }
       aiming_eulr.pitch =
           PitchTrajectoryCompensation(distance_, -target_y, ballet_speed) * 1.3;
+    } else if (method == game::AimMethod::kLIGHT) {
+      k0 = 1.3;
+      double target_y = distance_ * tan(armor.GetAimEuler().pitch) * 0.001;
+      component::Euler aiming_eulr = armor.GetAimEuler();
+      aiming_eulr.pitch =
+          PitchTrajectoryCompensation(distance_, -target_y, ballet_speed) * k0;
     } else {
       if (distance_ > 1.5 && distance_ < 5) {
         k0 = 1.3;
@@ -211,10 +214,10 @@ void Compensator::CompensateGravity(Armor& armor, const double ballet_speed,
       double target_y = distance_ * tan(armor.GetAimEuler().pitch) * 0.001;
       component::Euler aiming_eulr = armor.GetAimEuler();
       aiming_eulr.pitch =
-          PitchTrajectoryCompensation(distance_, -target_y, ballet_speed) * 1.3;
+          PitchTrajectoryCompensation(distance_, -target_y, ballet_speed) * k0;
     }
-    armor.SetAimEuler(aiming_eulr);
   }
+  armor.SetAimEuler(aiming_eulr);
 }
 double Compensator::MonoDirectionalAirResistanceModel(double s, double v,
                                                       double angle) {
@@ -224,7 +227,6 @@ double Compensator::MonoDirectionalAirResistanceModel(double s, double v,
   double t = ((exp(k * s) - 1) / (k * v * cos(angle)));
   // z为给定v与angle时的高度
   z = (v * sin(angle) * t - kG * t * t / 2);
-  // printf("model %f %f\n", t, z);
   return z;
 }
 double Compensator::PitchTrajectoryCompensation(double s, double z, double v) {
