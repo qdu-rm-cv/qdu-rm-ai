@@ -69,6 +69,7 @@ enum class AimMethod {
   kORECUBE,
   kSNIPE,
   kLIGHT,
+  kANTITOP,
 };
 
 enum class Arm {
